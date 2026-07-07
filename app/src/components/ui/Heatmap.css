@@ -1,0 +1,217 @@
+/* ── GitHub Contribution Graph ── */
+
+.gh {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  font-size: 12px;
+}
+
+/* Header */
+.gh-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.gh-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-1, #e6edf3);
+}
+
+.gh-count-year {
+  color: var(--ink-4, #8b949e);
+  font-weight: 400;
+}
+
+/* Year tabs */
+.gh-years {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gh-ybtn {
+  padding: 3px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: #58a6ff;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  line-height: 1.6;
+}
+
+.gh-ybtn:hover {
+  background: rgba(88, 166, 255, 0.1);
+  border-color: #388bfd;
+}
+
+.gh-ybtn--on {
+  background: rgba(88, 166, 255, 0.12);
+  border-color: #388bfd;
+  color: #e6edf3;
+  font-weight: 600;
+}
+
+/* Scrollable wrapper — fills container, horizontal scroll only on tiny screens */
+.gh-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* Inner: dow labels + graph side by side */
+.gh-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+}
+
+/* Day-of-week label column */
+.gh-dow {
+  display: grid;
+  /* grid-template-rows set inline via JS for dynamic cell size */
+  font-size: 9px;
+  color: #8b949e;
+  text-align: right;
+  width: 28px;
+  align-items: center;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Right side: months + weeks stacked */
+.gh-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Month label row */
+.gh-months {
+  display: flex;
+  height: 17px;
+  align-items: flex-end;
+}
+
+.gh-mlabel {
+  /* width set inline via JS (cellPx + GAP) */
+  font-size: 10px;
+  color: #8b949e;
+  white-space: nowrap;
+  overflow: visible;
+  user-select: none;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Week columns */
+.gh-weeks {
+  display: flex;
+  gap: 3px;
+}
+
+.gh-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Single day cell */
+.gh-cell {
+  width: var(--gh-cell, 10px);
+  height: var(--gh-cell, 10px);
+  border-radius: 2px;
+  cursor: pointer;
+  outline: 1px solid rgba(255, 255, 255, 0.06);
+  outline-offset: -1px;
+  transition: outline 60ms;
+  box-sizing: border-box;
+  display: block;
+  flex-shrink: 0;
+}
+
+.gh-cell:hover {
+  outline: 2px solid rgba(255, 255, 255, 0.55);
+  outline-offset: -1px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Tone levels — exact GitHub dark theme colours */
+.gh-tx { background: #0d1117; outline: none !important; cursor: default; pointer-events: none; }
+.gh-tf { background: #161b22; outline: 1px solid rgba(255,255,255,0.03) !important; cursor: default; pointer-events: none; }
+.gh-t0 { background: #161b22; }
+.gh-t1 { background: #0e4429; }
+.gh-t2 { background: #006d32; }
+.gh-t3 { background: #26a641; }
+.gh-t4 { background: #39d353; }
+
+/* Footer */
+.gh-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.gh-legend {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #8b949e;
+  user-select: none;
+}
+
+.gh-legend span {
+  margin: 0 3px;
+}
+
+/* Tooltip */
+.gh-tip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  background: #1c2128;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gh-tip-val {
+  font-size: 12px;
+  color: #e6edf3;
+}
+
+.gh-tip-val strong {
+  color: #39d353;
+  font-weight: 700;
+}
+
+.gh-tip-empty {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.gh-tip-date {
+  font-size: 11px;
+  color: #8b949e;
+}
