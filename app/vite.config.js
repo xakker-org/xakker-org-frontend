@@ -5,6 +5,9 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   envDir: path.resolve(__dirname, ".."),
+  server: {
+    allowedHosts: ["self-study.xakker.org", "localhost", "127.0.0.1"],
+  },
   build: {
     outDir: "./dist",
     emptyOutDir: true,
