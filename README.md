@@ -5,18 +5,21 @@ Two independently deployed frontends for the Xakker platform. The API lives in a
 ## `app/` — React (Vite) SPA
 
 Deployed at `self-study.xakker.org`. Talks to the API via `VITE_API_BASE_URL`.
+Deploy config (`.env`, `.env.example`, `.env.production`, `Dockerfile`, `nginx.conf`, `vercel.json`)
+lives at the **repo root**, not inside `app/` — `app/` holds only the Vite/React source.
 
 ```bash
 cd app
 npm install
 npm run dev          # http://localhost:5173
-npm run build        # -> dist/
-docker build -t xakker-app .
+npm run build        # -> app/dist/ (reads ../.env, ../.env.production)
+docker build -t xakker-app .   # run from repo root, not from app/
 ```
 
-Vite env files (`.env`, `.env.production`) set `VITE_API_BASE_URL` — point it at wherever the
-backend is deployed. `vercel.json` is set up for zero-config Vercel deploys (set the Vercel
-project's Root Directory to `app`).
+Vite env files (`.env`, `.env.production`, at repo root) set `VITE_API_BASE_URL` — point it at
+wherever the backend is deployed; `app/vite.config.js` has `envDir` pointing up to the repo root.
+`vercel.json` (repo root) is set up for zero-config Vercel deploys — Root Directory stays the
+default (repo root); its `buildCommand`/`installCommand` `cd` into `app/` internally.
 
 ## `landing/` — marketing site
 
