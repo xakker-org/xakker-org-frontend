@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: ./app
+    container_name: xakker_app
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+
+  landing:
+    build:
+      context: ./landing
+    container_name: xakker_landing
+    restart: unless-stopped
+    ports:
+      - "5174:80"
