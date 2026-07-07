@@ -20,6 +20,7 @@ Deploy config (`.env`, `.env.example`, `.env.production`, `Dockerfile`, `nginx.c
 lives at the **repo root**, not inside `app/` — `app/` holds only the Vite/React source.
 
 ```bash
+cp .env.example .env              # repo root — copy once, then edit if needed
 cd app
 npm install
 npm run dev          # http://localhost:5173
@@ -27,23 +28,31 @@ npm run build        # -> app/dist/ (reads ../.env, ../.env.production)
 docker build -t xakker-app .   # run from repo root, not from app/
 ```
 
-Vite env files (`.env`, `.env.production`, at repo root) set `VITE_API_BASE_URL` — point it at
-wherever the backend is deployed; `app/vite.config.js` has `envDir` pointing up to the repo root.
-`vercel.json` (repo root) is set up for zero-config Vercel deploys — Root Directory stays the
-default (repo root); its `buildCommand`/`installCommand` `cd` into `app/` internally.
+`VITE_API_BASE_URL` (in `.env` / `.env.production` at repo root — copy from `.env.example`, these
+are gitignored) points at wherever the backend is deployed. On Vercel, set it as an Environment
+Variable in the project's Settings instead of committing a value.
 
 ## `landing/` — marketing site
 
-Deployed at `xakker.org`. Plain static HTML/CSS/JS, no build step.
+Deployed at `xakker.org`. Plain HTML/CSS/JS, but with **one build step**: it substitutes
+`PLATFORM_URL` (the "Başla" / "Daxil ol" button target) into `index.html`, so the same site works
+locally, on a temporary Vercel URL, and on the final domain — without editing HTML.
 
 ```bash
-npx serve landing
-docker build -t xakker-landing ./landing
+cd landing
+cp .env.example .env   # then edit PLATFORM_URL
+npm run build          # -> landing/dist/ (reads .env automatically)
+npx serve dist
+docker build --build-arg PLATFORM_URL=https://self-study.xakker.org -t xakker-landing ./landing
 ```
 
-Update the `https://self-study.xakker.org` links in `landing/index.html` if the app's domain changes.
-No `vercel.json` needed here — it's a static folder, so set the Vercel project's Root Directory to
-`landing` with no build command.
+`PLATFORM_URL` resolution order, same everywhere: an explicit value always wins, otherwise it
+falls back to `https://self-study.xakker.org` (hardcoded once, in `build.js`).
+- **Local**: `landing/.env` (gitignored; copy `.env.example`)
+- **Docker / docker-compose**: `--build-arg PLATFORM_URL=...` (see `docker-compose.yml`)
+- **Vercel**: Project Settings → Environment Variables → `PLATFORM_URL` (e.g. set it to the
+  Vercel-generated URL until the real domain is verified, then switch it to
+  `https://self-study.xakker.org` — no code change, just redeploy)
 
 ## Both together locally
 
