@@ -11,6 +11,8 @@ services:
   landing:
     build:
       context: ./landing
+      args:
+        PLATFORM_URL: http://self-study.xakker.org:5173
     container_name: xakker_landing
     restart: unless-stopped
     ports:

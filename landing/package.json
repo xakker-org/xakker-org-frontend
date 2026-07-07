@@ -1,0 +1,7 @@
+{
+  "name": "xakker-landing",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  }
+}
