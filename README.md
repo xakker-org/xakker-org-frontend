@@ -2,6 +2,17 @@
 
 Two independently deployed frontends for the Xakker platform. The API lives in a separate repo: [xakker-org-backend](https://github.com/xakker-org/xakker-org-backend).
 
+## Domains
+
+One repo, two Vercel projects, two custom domains — both point at this same GitHub repo, just with a different **Root Directory**:
+
+| Vercel project | Root Directory | Custom domain |
+|---|---|---|
+| xakker-landing | `landing` | `xakker.org`, `www.xakker.org` |
+| xakker-app | *(repo root)* | `self-study.xakker.org` |
+
+Set this up once in the Vercel dashboard: "Add New Project" → import `xakker-org-frontend` → set Root Directory → "Add Domain" on that project. Every push to `main` redeploys both independently. (Not using Vercel? Same idea with plain Docker: run the `landing` and `app` images from `docker-compose.yml` behind a reverse proxy — e.g. Caddy/nginx/Traefik — that routes by the `Host` header to the matching container, and point each domain's DNS at that proxy.)
+
 ## `app/` — React (Vite) SPA
 
 Deployed at `self-study.xakker.org`. Talks to the API via `VITE_API_BASE_URL`.
