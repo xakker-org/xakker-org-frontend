@@ -2,6 +2,10 @@ import api from "./api";
 
 export const endpoints = {
   me: () => api.get("/auth/me/"),
+  requestPasswordReset: (email) => api.post("/auth/password-reset/", { email }),
+  verifyPasswordResetCode: (email, code) => api.post("/auth/password-reset/verify/", { email, code }),
+  confirmPasswordReset: (email, code, newPassword) =>
+    api.post("/auth/password-reset/confirm/", { email, code, new_password: newPassword }),
   myProfile: () => api.get("/auth/profile/"),
   updateProfile: (payload) => api.patch("/auth/profile/", payload),
   publicProfile: (username) => api.get(`/auth/profile/${encodeURIComponent(username)}/`),

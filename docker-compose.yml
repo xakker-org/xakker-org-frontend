@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     container_name: xakker_app
     restart: unless-stopped
     ports:
@@ -11,9 +13,19 @@ services:
   landing:
     build:
       context: ./landing
-      args:
-        PLATFORM_URL: http://self-study.xakker.org:5173
     container_name: xakker_landing
     restart: unless-stopped
     ports:
       - "5174:80"
+
+  proxy:
+    image: nginx:alpine
+    container_name: xakker_proxy
+    restart: unless-stopped
+    depends_on:
+      - app
+      - landing
+    volumes:
+      - ./proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
