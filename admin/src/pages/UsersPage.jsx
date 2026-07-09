@@ -13,8 +13,14 @@ import { TileSkeleton } from "../components/ui/Skeleton";
 import EmptyState from "../components/ui/EmptyState";
 
 const T = {
-  az: { title: "İstifadəçilər", sub: "Platformadakı bütün istifadəçilər", search: "Axtar...", empty: "Nəticə yoxdur" },
-  en: { title: "Users", sub: "All platform users", search: "Search...", empty: "No results" },
+  az: {
+    title: "İstifadəçilər", sub: "Platformadakı bütün istifadəçilər", search: "Axtar...", empty: "Nəticə yoxdur",
+    roleAll: "Hamısı", roleAdmin: "Adminlər", roleStudent: "Tələbələr",
+  },
+  en: {
+    title: "Users", sub: "All platform users", search: "Search...", empty: "No results",
+    roleAll: "All", roleAdmin: "Admins", roleStudent: "Students",
+  },
 };
 
 export default function UsersPage() {
@@ -27,15 +33,16 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
   const [ordering, setOrdering] = useState("-date_joined");
 
   const load = useCallback(() => {
     setLoading(true);
     users
-      .list({ page, search, ordering, is_active: activeFilter })
+      .list({ page, search, ordering, is_active: activeFilter, is_staff: roleFilter })
       .then(({ data }) => setData(data))
       .finally(() => setLoading(false));
-  }, [page, search, ordering, activeFilter]);
+  }, [page, search, ordering, activeFilter, roleFilter]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -77,6 +84,15 @@ export default function UsersPage() {
         <div className="res-search">
           <Input placeholder={t.search} value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
+        <Segmented
+          value={roleFilter}
+          onChange={(v) => { setRoleFilter(v); setPage(1); }}
+          options={[
+            { value: "", label: t.roleAll },
+            { value: "false", label: t.roleStudent },
+            { value: "true", label: t.roleAdmin },
+          ]}
+        />
         <Segmented
           value={activeFilter}
           onChange={(v) => { setActiveFilter(v); setPage(1); }}
