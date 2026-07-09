@@ -13,11 +13,19 @@ import { TileSkeleton } from "../components/ui/Skeleton";
 import EmptyState from "../components/ui/EmptyState";
 
 const T = {
-  az: { title: "İstifadəçilər", sub: "Qeydiyyatdan keçən tələbələr — xal, rütbə və fəaliyyət", search: "Axtar...", empty: "Nəticə yoxdur" },
-  en: { title: "Users", sub: "Registered students — XP, rank and activity", search: "Search...", empty: "No results" },
+  az: {
+    title: "Adminlər", sub: "Staff və superuser hesabları — Django admin və bu paneldəki girişi olanlar",
+    search: "Axtar...", empty: "Admin hesabı tapılmadı",
+    roleAll: "Hamısı", roleStaff: "Staff", roleSuper: "Superuser",
+  },
+  en: {
+    title: "Admins", sub: "Staff and superuser accounts — Django admin and this panel's access",
+    search: "Search...", empty: "No admin accounts found",
+    roleAll: "All", roleStaff: "Staff", roleSuper: "Superuser",
+  },
 };
 
-export default function UsersPage() {
+export default function AdminsPage() {
   const { lang } = useLang();
   const t = T[lang] || T.az;
   const navigate = useNavigate();
@@ -26,23 +34,23 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState("");
+  const [superFilter, setSuperFilter] = useState("");
   const [ordering, setOrdering] = useState("-date_joined");
 
   const load = useCallback(() => {
     setLoading(true);
     users
-      .list({ page, search, ordering, is_active: activeFilter, is_staff: "false" })
+      .list({ page, search, ordering, is_staff: "true", is_superuser: superFilter })
       .then(({ data }) => setData(data))
       .finally(() => setLoading(false));
-  }, [page, search, ordering, activeFilter]);
+  }, [page, search, ordering, superFilter]);
 
   useEffect(() => { load(); }, [load]);
 
   const columns = [
     {
       key: "username",
-      header: lang === "az" ? "İstifadəçi" : "User",
+      header: lang === "az" ? "Admin" : "Admin",
       render: (row) => (
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Avatar user={row} size={28} rounded="md" />
@@ -53,15 +61,20 @@ export default function UsersPage() {
         </div>
       ),
     },
-    { key: "rank", header: lang === "az" ? "Rütbə" : "Rank" },
-    { key: "xp", header: "XP", align: "right", sortable: true },
-    { key: "streak_days", header: lang === "az" ? "Seriya" : "Streak", align: "right" },
+    {
+      key: "is_superuser",
+      header: lang === "az" ? "Rol" : "Role",
+      align: "center",
+      render: (row) => <Chip tone="accent">{row.is_superuser ? "SUPERUSER" : "STAFF"}</Chip>,
+    },
     {
       key: "is_active",
       header: lang === "az" ? "Vəziyyət" : "Status",
       align: "center",
       render: (row) => <Chip tone={row.is_active ? "mint" : "coral"}>{row.is_active ? "Active" : "Banned"}</Chip>,
     },
+    { key: "date_joined", header: lang === "az" ? "Qoşulma tarixi" : "Joined", sortable: true,
+      render: (row) => new Date(row.date_joined).toLocaleDateString(lang === "az" ? "az-AZ" : "en-US") },
   ];
 
   return (
@@ -73,12 +86,12 @@ export default function UsersPage() {
           <Input placeholder={t.search} value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
         <Segmented
-          value={activeFilter}
-          onChange={(v) => { setActiveFilter(v); setPage(1); }}
+          value={superFilter}
+          onChange={(v) => { setSuperFilter(v); setPage(1); }}
           options={[
-            { value: "", label: lang === "az" ? "Hamısı" : "All" },
-            { value: "true", label: lang === "az" ? "Aktiv" : "Active" },
-            { value: "false", label: lang === "az" ? "Bloklanıb" : "Banned" },
+            { value: "", label: t.roleAll },
+            { value: "false", label: t.roleStaff },
+            { value: "true", label: t.roleSuper },
           ]}
         />
         <div className="res-count">{data.count} {lang === "az" ? "nəticə" : "results"}</div>
@@ -87,7 +100,7 @@ export default function UsersPage() {
       {loading ? (
         <TileSkeleton height={280} />
       ) : data.results.length === 0 ? (
-        <EmptyState icon="◌" title={t.empty} />
+        <EmptyState icon="🛡️" title={t.empty} />
       ) : (
         <DataTable
           columns={columns}

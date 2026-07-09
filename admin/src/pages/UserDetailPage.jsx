@@ -14,7 +14,7 @@ import { TileSkeleton } from "../components/ui/Skeleton";
 
 const T = {
   az: {
-    back: "← İstifadəçilər", profile: "Profil", save: "Yadda saxla", saving: "Yadda saxlanılır...",
+    back: "← Geri", profile: "Profil", save: "Yadda saxla", saving: "Yadda saxlanılır...",
     fullName: "Ad Soyad", bio: "Bio", country: "Ölkə", city: "Şəhər",
     actions: "Əməliyyatlar", awardXp: "XP ver", amount: "Miqdar", give: "Ver",
     ban: "Blokla", unban: "Blokdan çıxar", makeStaff: "Staff et", removeStaff: "Staff-dan sil",
@@ -22,7 +22,7 @@ const T = {
     tasksCompleted: "Tamamlanan tasklar", roomsCompleted: "Tamamlanan otaqlar",
   },
   en: {
-    back: "← Users", profile: "Profile", save: "Save", saving: "Saving...",
+    back: "← Back", profile: "Profile", save: "Save", saving: "Saving...",
     fullName: "Full name", bio: "Bio", country: "Country", city: "City",
     actions: "Actions", awardXp: "Award XP", amount: "Amount", give: "Give",
     ban: "Ban", unban: "Unban", makeStaff: "Make staff", removeStaff: "Remove staff",
@@ -79,7 +79,7 @@ export default function UserDetailPage() {
     <div>
       <PageHeader
         title={record.full_name || record.username}
-        actions={<Button variant="ghost" onClick={() => navigate("/users")}>{t.back}</Button>}
+        actions={<Button variant="ghost" onClick={() => navigate(-1)}>{t.back}</Button>}
       />
 
       <div className="bento">

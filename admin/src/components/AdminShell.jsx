@@ -25,6 +25,7 @@ const NAV_SECTIONS = [
     ],
   },
   { type: "link", to: "/users", icon: "profile", label: { az: "İstifadəçilər", en: "Users" } },
+  { type: "link", to: "/admins", icon: "lock", label: { az: "Adminlər", en: "Admins" } },
   { type: "link", to: "/progress", icon: "check", label: { az: "İrəliləyiş", en: "Progress" } },
 ];
 

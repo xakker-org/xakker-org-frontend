@@ -6,6 +6,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import ResourceListPage from "./pages/ResourceListPage";
 import ResourceEditPage from "./pages/ResourceEditPage";
 import UsersPage from "./pages/UsersPage";
+import AdminsPage from "./pages/AdminsPage";
 import UserDetailPage from "./pages/UserDetailPage";
 import ProgressPage from "./pages/ProgressPage";
 
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/content/:type/new" element={<ResourceEditPage />} />
         <Route path="/content/:type/:id" element={<ResourceEditPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/admins" element={<AdminsPage />} />
         <Route path="/users/:id" element={<UserDetailPage />} />
         <Route path="/progress" element={<ProgressPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
