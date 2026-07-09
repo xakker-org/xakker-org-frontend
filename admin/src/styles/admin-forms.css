@@ -1,0 +1,167 @@
+/* ================================================================
+   Admin — drawer/modal, form grid, toggle
+   ================================================================ */
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  z-index: var(--z-overlay);
+  backdrop-filter: blur(4px);
+}
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(480px, 100vw);
+  background: var(--bg-card);
+  border-left: 1px solid var(--line);
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-pop);
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.drawer-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink-1); }
+.drawer-close {
+  background: none; border: none; color: var(--ink-3); cursor: pointer;
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color var(--dur-1), background var(--dur-1);
+}
+.drawer-close:hover { color: var(--ink-1); background: var(--bg-elev); }
+.drawer-body { flex: 1; overflow-y: auto; padding: 24px; }
+.drawer-footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid var(--line); flex-shrink: 0;
+}
+
+.form-grid { display: grid; gap: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 520px) { .form-row { grid-template-columns: 1fr; } }
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.toggle-switch {
+  position: relative;
+  width: 38px; height: 22px;
+  border-radius: 999px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line-2);
+  flex-shrink: 0;
+  transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
+}
+.toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  transition: transform var(--dur-2) var(--ease), background var(--dur-2) var(--ease);
+}
+.toggle-row.is-on .toggle-switch { background: var(--accent-soft); border-color: var(--accent-ring); }
+.toggle-row.is-on .toggle-switch::after { transform: translateX(16px); background: var(--accent); }
+
+.confirm-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.confirm-card {
+  width: min(380px, 100%);
+  background: var(--bg-card);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-card);
+  padding: 24px;
+  box-shadow: var(--shadow-pop);
+}
+.confirm-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--ink-1); margin-bottom: 8px; }
+.confirm-body { font-size: 13.5px; color: var(--ink-3); line-height: 1.5; margin-bottom: 20px; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+.auth-card {
+  max-width: 380px;
+  margin: 12vh auto 0;
+}
+.auth-logo { display: flex; justify-content: center; margin-bottom: 24px; }
+.auth-logo img { height: 40px; }
+
+/* ── Relation dropdown + "add another" quick-create ── */
+.relation-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.relation-row .select-wrap { flex: 1; min-width: 0; }
+.relation-add-btn {
+  flex-shrink: 0;
+  width: 38px;
+  border-radius: var(--r-inner);
+  border: 1px solid var(--line-2);
+  background: var(--bg-card-2);
+  color: var(--accent);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dur-1), border-color var(--dur-1), color var(--dur-1), transform var(--dur-1);
+}
+.relation-add-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-ring);
+  color: var(--accent-ink, var(--accent));
+}
+.relation-add-btn:active { transform: scale(0.94); }
+
+/* ── Quick-create popup (Django-admin "add another" pattern) ── */
+/* Rendered via portal, so it can float above an already-open Drawer. */
+.qc-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popover);
+  background: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.qc-modal {
+  width: min(460px, 100%);
+  max-height: min(600px, 90vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+.qc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.qc-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--ink-1); }
+.qc-body { padding: 22px; overflow-y: auto; }
