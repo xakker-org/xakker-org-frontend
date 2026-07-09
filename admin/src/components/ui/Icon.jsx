@@ -156,6 +156,19 @@ export default function Icon({ name, size = 16, className = "", style }) {
         <circle cx="9.5" cy="9.5" r="0.8" fill="currentColor" opacity=".5"/>
       </>
     ),
+    eye: (
+      <>
+        <path d="M1.5 8C1.5 8 4 3.5 8 3.5C12 3.5 14.5 8 14.5 8C14.5 8 12 12.5 8 12.5C4 12.5 1.5 8 1.5 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+        <circle cx="8" cy="8" r="2.15" stroke="currentColor" strokeWidth="1.5"/>
+      </>
+    ),
+    eyeOff: (
+      <>
+        <path d="M1.5 8C1.5 8 4 3.5 8 3.5C12 3.5 14.5 8 14.5 8C14.5 8 12 12.5 8 12.5C4 12.5 1.5 8 1.5 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" opacity=".5"/>
+        <circle cx="8" cy="8" r="2.15" stroke="currentColor" strokeWidth="1.5" opacity=".5"/>
+        <path d="M2.5 2.5L13.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </>
+    ),
   };
 
   return (

@@ -29,9 +29,9 @@ export function AuthProvider({ children }) {
   }, [loadMe]);
 
   const login = useCallback(
-    async (username, password) => {
+    async (username, password, remember = true) => {
       const { data } = await auth.login(username, password);
-      setTokens(data.access, data.refresh);
+      setTokens(data.access, data.refresh, remember);
       await loadMe();
       return data;
     },
