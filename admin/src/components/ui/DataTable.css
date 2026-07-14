@@ -4,7 +4,34 @@
   border: 1px solid var(--line);
   background: var(--bg-card);
   overflow: hidden;
+  animation: dt-reveal 0.3s var(--ease) both;
 }
+@keyframes dt-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+/* Row entrance stagger — first ~12 rows fade+rise in with a small
+   per-row delay (capped so long lists don't feel sluggish to scan). */
+.dt tbody tr {
+  animation: dt-row-in 0.28s var(--ease) both;
+}
+.dt tbody tr:nth-child(n+13) { animation-duration: 0.01ms; }
+@keyframes dt-row-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.dt tbody tr:nth-child(1)  { animation-delay: 0ms; }
+.dt tbody tr:nth-child(2)  { animation-delay: 18ms; }
+.dt tbody tr:nth-child(3)  { animation-delay: 36ms; }
+.dt tbody tr:nth-child(4)  { animation-delay: 54ms; }
+.dt tbody tr:nth-child(5)  { animation-delay: 72ms; }
+.dt tbody tr:nth-child(6)  { animation-delay: 90ms; }
+.dt tbody tr:nth-child(7)  { animation-delay: 108ms; }
+.dt tbody tr:nth-child(8)  { animation-delay: 126ms; }
+.dt tbody tr:nth-child(9)  { animation-delay: 144ms; }
+.dt tbody tr:nth-child(10) { animation-delay: 162ms; }
+.dt tbody tr:nth-child(11) { animation-delay: 180ms; }
+.dt tbody tr:nth-child(12) { animation-delay: 198ms; }
 .dt {
   width: 100%;
   border-collapse: collapse;
@@ -14,32 +41,38 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: 12px 16px;
+  padding: 13px 16px;
   background: var(--bg-card-2);
   border-bottom: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--ink-3);
   text-align: left;
   user-select: none;
 }
-.dt-sortable { cursor: pointer; transition: color var(--dur-1); }
+.dt-sortable { cursor: pointer; transition: color var(--dur-1); border-radius: 4px; }
 .dt-sortable:hover { color: var(--ink-1); }
+.dt-sortable:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: -2px; }
 .dt thead th.is-sorted { color: var(--accent); }
 .dt-th { display: inline-flex; align-items: center; gap: 4px; }
-.dt-sort-mark { opacity: 0.4; font-size: 9px; }
+.dt-sort-mark { opacity: 0.4; font-size: 9px; transition: opacity var(--dur-1), color var(--dur-1); }
 .dt thead th.is-sorted .dt-sort-mark { opacity: 1; color: var(--accent); }
 
 .dt tbody td {
-  padding: 12px 16px;
+  padding: 13px 16px;
   border-bottom: 1px solid var(--line);
   color: var(--ink-2);
+  transition: background var(--dur-1);
 }
 .dt tbody tr:last-child td { border-bottom: none; }
 .dt tbody tr:hover td { background: var(--bg-card-2); }
+.dt tbody tr:focus-visible { outline: none; }
+.dt tbody tr:focus-visible td {
+  box-shadow: inset 0 0 0 2px var(--accent-ring);
+}
 .dt tbody tr.is-me td {
   background: linear-gradient(90deg, var(--accent-soft), transparent 70%);
 }
@@ -48,7 +81,7 @@
 }
 .dt-empty {
   text-align: center;
-  padding: 48px 20px !important;
+  padding: 56px 20px !important;
   color: var(--ink-4);
-  font-style: italic;
+  font-size: 13px;
 }

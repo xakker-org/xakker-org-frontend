@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import Tile, { TileHead } from "../components/ui/Tile";
 import Button from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import Bar from "../components/ui/Bar";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import { endpoints } from "../services/endpoints";
+import { useLang } from "../contexts/LanguageContext";
+import Icon from "../components/ui/Icon";
 
 /* ── Timer ──────────────────────────────────────────────────────── */
 function Timer({ totalSeconds, onExpire }) {
@@ -43,7 +44,7 @@ function Timer({ totalSeconds, onExpire }) {
 }
 
 /* ── Question card — uses xk-q-* vocabulary ───────────────────── */
-function QuestionCard({ question, index, selectedChoices, answerText, onToggle, onTextChange, locked }) {
+function QuestionCard({ question, index, selectedChoices, answerText, onToggle, onTextChange, locked, lang }) {
   const isOpen   = question.question_type === "open";
   const answered = isOpen ? answerText.trim().length > 0 : selectedChoices.length > 0;
 
@@ -57,14 +58,14 @@ function QuestionCard({ question, index, selectedChoices, answerText, onToggle, 
       )}
 
       <div className="xk-card-head">
-        <span className="xk-card-eyebrow">Sual {index + 1}</span>
-        {answered && <span className="xk-badge xk-badge-accent">✓ Cavablandı</span>}
+        <span className="xk-card-eyebrow">{lang === "az" ? "Sual" : "Question"} {index + 1}</span>
+        {answered && <span className="xk-badge xk-badge-accent">✓ {lang === "az" ? "Cavablandı" : "Answered"}</span>}
       </div>
 
       <p className="xk-q-prompt">{question.question_text}</p>
 
       <div className="xk-card-eyebrow" style={{ marginBottom: 10 }}>
-        {isOpen ? "Açıq sual" : "Çoxseçimli test"}
+        {isOpen ? (lang === "az" ? "Açıq sual" : "Open question") : (lang === "az" ? "Çoxseçimli test" : "Multiple choice")}
       </div>
 
       {isOpen ? (
@@ -72,7 +73,7 @@ function QuestionCard({ question, index, selectedChoices, answerText, onToggle, 
           rows={5}
           value={answerText}
           onChange={e => !locked && onTextChange(question.id, e.target.value)}
-          placeholder="Cavabınızı yazın..."
+          placeholder={lang === "az" ? "Cavabınızı yazın..." : "Write your answer..."}
           disabled={locked}
           className="input"
           style={{ minHeight: 100, resize: "vertical", height: "auto", padding: "12px 14px" }}
@@ -101,7 +102,7 @@ function QuestionCard({ question, index, selectedChoices, answerText, onToggle, 
 }
 
 /* ── Result view ────────────────────────────────────────────────── */
-function ResultView({ result, exam, missionSlug, onRetry, canRetry }) {
+function ResultView({ result, exam, missionSlug, onRetry, canRetry, lang }) {
   const passed = result.passed;
   const score  = result.score ?? 0;
 
@@ -110,31 +111,35 @@ function ResultView({ result, exam, missionSlug, onRetry, canRetry }) {
       <div className="sc-exam-result">
         <div className="sc-exam-result-icon">{passed ? "🎉" : "😞"}</div>
         <div className="sc-exam-result-title" style={{ color: passed ? "var(--ok)" : "var(--accent)" }}>
-          {passed ? "Mission Tamamlandı!" : "Keçilmədi"}
+          {passed ? (lang === "az" ? "Mission Tamamlandı!" : "Mission Completed!") : (lang === "az" ? "Keçilmədi" : "Not passed")}
         </div>
         <div className="sc-exam-result-score" style={{ color: passed ? "var(--ok)" : "var(--accent)" }}>
           {score.toFixed(1)}%
         </div>
         <p className="sc-exam-result-sub">
           {passed
-            ? `${score.toFixed(1)}% — keçmə həddi ${exam?.passing_score}%-dən yüksəkdir. Mission XP verildi!`
-            : `${score.toFixed(1)}% qazandın. Keçmək üçün ən azı ${exam?.passing_score}% lazımdır.`}
+            ? (lang === "az"
+                ? `${score.toFixed(1)}% — keçmə həddi ${exam?.passing_score}%-dən yüksəkdir. Mission XP verildi!`
+                : `${score.toFixed(1)}% — above the passing threshold of ${exam?.passing_score}%. Mission XP awarded!`)
+            : (lang === "az"
+                ? `${score.toFixed(1)}% qazandın. Keçmək üçün ən azı ${exam?.passing_score}% lazımdır.`
+                : `You scored ${score.toFixed(1)}%. You need at least ${exam?.passing_score}% to pass.`)}
         </p>
         <Bar value={score} max={100} tone={passed ? "mint" : "accent"} />
         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
-          <Link to={`/missions/${missionSlug}`} className="xk-btn ghost">← Missiona qayıt</Link>
+          <Link to={`/missions/${missionSlug}`} className="xk-btn ghost">{lang === "az" ? "← Missiona qayıt" : "← Back to mission"}</Link>
           {!passed && canRetry && (
-            <button className="xk-btn primary" onClick={onRetry}>🔄 Yenidən cəhd et</button>
+            <button className="xk-btn primary" onClick={onRetry}>🔄 {lang === "az" ? "Yenidən cəhd et" : "Try again"}</button>
           )}
           {passed && (
-            <Link to="/missions" className="xk-btn primary">Növbəti Mission →</Link>
+            <Link to="/missions" className="xk-btn primary">{lang === "az" ? "Növbəti Mission →" : "Next Mission →"}</Link>
           )}
         </div>
       </div>
 
       {result.answers_detail?.length > 0 && (
         <Tile>
-          <TileHead eyebrow="Review" title="Cavabların nəzərdən keçirilməsi" />
+          <TileHead eyebrow="Review" title={lang === "az" ? "Cavabların nəzərdən keçirilməsi" : "Answer review"} />
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {result.answers_detail.map((a, i) => {
               const correct = a.is_correct;
@@ -154,7 +159,7 @@ function ResultView({ result, exam, missionSlug, onRetry, canRetry }) {
                       border: `1px solid ${correct ? "rgba(110,255,214,0.28)" : "rgba(255,122,138,0.28)"}`,
                       color: correct ? "var(--ok)" : "var(--bad)",
                     }}>
-                      {correct ? "✓" : "✗"}
+                      <Icon name={correct ? "check" : "close"} size={13} />
                     </span>
                     <div style={{ fontSize: 13, color: "var(--ink-1)", fontWeight: 500, lineHeight: 1.5, flex: 1 }}>
                       {i + 1}. {a.question_text}
@@ -165,13 +170,13 @@ function ResultView({ result, exam, missionSlug, onRetry, canRetry }) {
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, fontFamily: "var(--font-mono)" }}>
                       <div>
                         <span style={{ color: "var(--ink-4)", textTransform: "uppercase", fontSize: 10, letterSpacing: "0.1em" }}>
-                          Cavabınız:{" "}
+                          {lang === "az" ? "Cavabınız:" : "Your answer:"}{" "}
                         </span>
                         <span style={{ color: "var(--ink-3)" }}>{a.submitted_answer || "—"}</span>
                       </div>
                       <div>
                         <span style={{ color: "var(--ink-4)", textTransform: "uppercase", fontSize: 10, letterSpacing: "0.1em" }}>
-                          Düzgün:{" "}
+                          {lang === "az" ? "Düzgün:" : "Correct:"}{" "}
                         </span>
                         <span style={{ color: "var(--ok)" }}>{a.expected_answers?.join(" / ") || "—"}</span>
                       </div>
@@ -189,7 +194,9 @@ function ResultView({ result, exam, missionSlug, onRetry, canRetry }) {
                             display: "flex", alignItems: "center", gap: 8,
                             padding: "4px 0", color, fontSize: 13,
                           }}>
-                            <span>{isCorrect ? "✓" : wasSelected ? "✗" : "○"}</span>
+                            <span style={{ display: "inline-flex" }}>
+                              {isCorrect ? <Icon name="check" size={12} /> : wasSelected ? <Icon name="close" size={12} /> : "○"}
+                            </span>
                             <span>{c.choice_text}</span>
                           </div>
                         );
@@ -218,6 +225,7 @@ function ResultView({ result, exam, missionSlug, onRetry, canRetry }) {
 /* ── Main component ─────────────────────────────────────────────── */
 export default function MissionExamPage() {
   const { slug } = useParams();
+  const { lang } = useLang();
 
   const [exam, setExam]             = useState(null);
   const [mission, setMission]       = useState(null);
@@ -241,7 +249,7 @@ export default function MissionExamPage() {
         setExam(examRes.data);
         setMission(missionRes.data);
       })
-      .catch(() => setError("Exam tapılmadı və ya mövcud deyil."))
+      .catch(() => setError(lang === "az" ? "Exam tapılmadı və ya mövcud deyil." : "Exam not found or unavailable."))
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -253,7 +261,7 @@ export default function MissionExamPage() {
       setStarted(true);
       setAnswers({}); setOpenAnswers({});
     } catch (e) {
-      setError(e?.response?.data?.detail || "Exam başladıla bilmədi.");
+      setError(e?.response?.data?.detail || (lang === "az" ? "Exam başladıla bilmədi." : "The exam could not be started."));
     } finally {
       setStarting(false);
     }
@@ -289,7 +297,7 @@ export default function MissionExamPage() {
       const { data } = await endpoints.missionExamSubmit(slug, attemptId, payload);
       setResult(data); setStarted(false);
     } catch (e) {
-      setError(e?.response?.data?.detail || "Göndərilə bilmədi.");
+      setError(e?.response?.data?.detail || (lang === "az" ? "Göndərilə bilmədi." : "Could not be submitted."));
     } finally {
       setSubmitting(false);
     }
@@ -305,12 +313,12 @@ export default function MissionExamPage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <TileSkeleton height={110} />
           <TileSkeleton height={200} />
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -327,7 +335,7 @@ export default function MissionExamPage() {
   const canRetry     = maxAttempts === 0 || attemptsUsed < maxAttempts;
 
   return (
-    <AppShell>
+    <>
       {/* Breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         <Link to="/missions"
@@ -348,7 +356,7 @@ export default function MissionExamPage() {
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
         {result ? (
-          <ResultView result={result} exam={exam} missionSlug={slug} onRetry={handleRetry} canRetry={canRetry} />
+          <ResultView result={result} exam={exam} missionSlug={slug} onRetry={handleRetry} canRetry={canRetry} lang={lang} />
         ) : (
           <>
             {/* Exam header */}
@@ -362,7 +370,7 @@ export default function MissionExamPage() {
                   📋
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="page-eyebrow" style={{ marginBottom: 4 }}>Final Exam</div>
+                  <div className="page-eyebrow" style={{ marginBottom: 4 }}>{lang === "az" ? "Final İmtahan" : "Final Exam"}</div>
                   <h1 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 700, color: "var(--ink-1)" }}>
                     {exam?.title}
                   </h1>
@@ -372,13 +380,13 @@ export default function MissionExamPage() {
                     </p>
                   )}
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <Chip size="sm" tone="accent">{questions.length} sual</Chip>
-                    <Chip size="sm">Keç: {exam?.passing_score}%</Chip>
+                    <Chip size="sm" tone="accent">{questions.length} {lang === "az" ? "sual" : "questions"}</Chip>
+                    <Chip size="sm">{lang === "az" ? "Keç" : "Pass"}: {exam?.passing_score}%</Chip>
                     {exam?.time_limit_minutes > 0 && (
-                      <Chip size="sm">⏱ {exam.time_limit_minutes} dəq</Chip>
+                      <Chip size="sm">⏱ {exam.time_limit_minutes} {lang === "az" ? "dəq" : "min"}</Chip>
                     )}
                     {maxAttempts > 0 && (
-                      <Chip size="sm">Cəhd: {attemptsUsed + 1}/{maxAttempts}</Chip>
+                      <Chip size="sm">{lang === "az" ? "Cəhd" : "Attempt"}: {attemptsUsed + 1}/{maxAttempts}</Chip>
                     )}
                     {exam?.xp_reward > 0 && (
                       <Chip size="sm" tone="mint">+{exam.xp_reward} XP</Chip>
@@ -400,7 +408,9 @@ export default function MissionExamPage() {
                 color: "var(--warn)", fontSize: 13, fontWeight: 600,
               }}>
                 <span style={{ fontSize: 20 }}>🔒</span>
-                Bütün pass-ları tamamlayandan sonra final exam-a qatıla bilərsiniz.
+                {lang === "az"
+                  ? "Bütün pass-ları tamamlayandan sonra final exam-a qatıla bilərsiniz."
+                  : "You can take the final exam once you've completed all passes."}
               </div>
             )}
 
@@ -411,7 +421,9 @@ export default function MissionExamPage() {
                 background: "rgba(255,36,66,0.08)", border: "1px solid rgba(255,36,66,0.25)",
                 color: "var(--accent)", fontSize: 13, fontWeight: 600,
               }}>
-                ❌ Bu exam üçün {maxAttempts} cəhdinizi tükətdiniz.
+                ❌ {lang === "az"
+                  ? `Bu exam üçün ${maxAttempts} cəhdinizi tükətdiniz.`
+                  : `You've used all ${maxAttempts} attempts for this exam.`}
               </div>
             )}
 
@@ -430,12 +442,22 @@ export default function MissionExamPage() {
               <Tile style={{ textAlign: "center", padding: "48px 32px" }}>
                 <div style={{ fontSize: 52, marginBottom: 16 }}>📋</div>
                 <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700 }}>
-                  Final Exam-a hazırsınız?
+                  {lang === "az" ? "Final Exam-a hazırsınız?" : "Ready for the Final Exam?"}
                 </h2>
                 <p style={{ fontSize: 14, color: "var(--ink-3)", maxWidth: 420, margin: "0 auto 28px", lineHeight: 1.7 }}>
-                  {questions.length} sual · Keçmə həddi {exam?.passing_score}%
-                  {exam?.time_limit_minutes > 0 && ` · ${exam.time_limit_minutes} dəq limit`}
-                  {attemptsLeft !== null && ` · ${attemptsLeft} cəhd qalıb`}
+                  {lang === "az" ? (
+                    <>
+                      {questions.length} sual · Keçmə həddi {exam?.passing_score}%
+                      {exam?.time_limit_minutes > 0 && ` · ${exam.time_limit_minutes} dəq limit`}
+                      {attemptsLeft !== null && ` · ${attemptsLeft} cəhd qalıb`}
+                    </>
+                  ) : (
+                    <>
+                      {questions.length} questions · Passing score {exam?.passing_score}%
+                      {exam?.time_limit_minutes > 0 && ` · ${exam.time_limit_minutes} min limit`}
+                      {attemptsLeft !== null && ` · ${attemptsLeft} attempts left`}
+                    </>
+                  )}
                 </p>
                 <Button
                   variant="accent"
@@ -443,7 +465,7 @@ export default function MissionExamPage() {
                   disabled={starting}
                   style={{ padding: "12px 32px", fontSize: 15 }}
                 >
-                  {starting ? "Başlanır..." : "🚀 Exam-ı Başlat"}
+                  {starting ? (lang === "az" ? "Başlanır..." : "Starting...") : (lang === "az" ? "🚀 Exam-ı Başlat" : "🚀 Start Exam")}
                 </Button>
               </Tile>
             )}
@@ -463,6 +485,7 @@ export default function MissionExamPage() {
                       setOpenAnswers(prev => ({ ...prev, [qId]: val }))
                     }
                     locked={submitting}
+                    lang={lang}
                   />
                 ))}
 
@@ -480,11 +503,11 @@ export default function MissionExamPage() {
                   }}>
                     <div>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-3)" }}>
-                        {answeredCount}/{questions.length} cavablandı
+                        {answeredCount}/{questions.length} {lang === "az" ? "cavablandı" : "answered"}
                       </span>
                       {!allAnswered && (
                         <span style={{ color: "var(--warn)", marginLeft: 8, fontSize: 12 }}>
-                          — göndərməzdən əvvəl bütün suallara cavab verin
+                          {lang === "az" ? "— göndərməzdən əvvəl bütün suallara cavab verin" : "— answer all questions before submitting"}
                         </span>
                       )}
                     </div>
@@ -493,7 +516,7 @@ export default function MissionExamPage() {
                       onClick={handleSubmit}
                       disabled={!allAnswered || submitting}
                     >
-                      {submitting ? "Göndərilir..." : "Exam-ı göndər →"}
+                      {submitting ? (lang === "az" ? "Göndərilir..." : "Submitting...") : (lang === "az" ? "Exam-ı göndər →" : "Submit exam →")}
                     </Button>
                   </div>
                 </Tile>
@@ -502,6 +525,6 @@ export default function MissionExamPage() {
           </>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

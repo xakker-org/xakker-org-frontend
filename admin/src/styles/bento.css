@@ -86,12 +86,12 @@
   gap: 12px;
 }
 .tile-head-l { min-width: 0; flex: 1; }
-/* Eyebrow — matches .xk-card-eyebrow */
+/* Eyebrow — matches app's Round 3 quieter recipe (.xk-card-eyebrow) */
 .tile-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--ink-3);
   margin-bottom: 5px;

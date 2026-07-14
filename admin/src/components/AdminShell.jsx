@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LanguageContext";
 import Avatar from "./ui/Avatar";
 import { Chip } from "./ui/Chip";
 import Icon from "./ui/Icon";
+
+// Same spring as app/src/components/AppShell.jsx's sb-active-pill.
+const PILL_TRANSITION = { type: "spring", stiffness: 500, damping: 40 };
 
 const NAV_SECTIONS = [
   { type: "link", to: "/dashboard", icon: "dashboard", label: { az: "İdarə paneli", en: "Dashboard" } },
@@ -101,8 +105,19 @@ export default function AdminShell({ children }) {
                     onClick={() => setDrawer(false)}
                     title={collapsed ? (item.label[lang] || item.label.az) : undefined}
                   >
-                    <span className="sb-link-ico"><Icon name={item.icon} size={20} /></span>
-                    <span className="sb-link-label">{item.label[lang] || item.label.az}</span>
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <motion.span
+                            layoutId="sb-active-pill"
+                            className="sb-link-indicator"
+                            transition={PILL_TRANSITION}
+                          />
+                        )}
+                        <span className="sb-link-ico"><Icon name={item.icon} size={20} /></span>
+                        <span className="sb-link-label">{item.label[lang] || item.label.az}</span>
+                      </>
+                    )}
                   </NavLink>
                 );
               }
@@ -125,8 +140,19 @@ export default function AdminShell({ children }) {
                           onClick={() => setDrawer(false)}
                           title={collapsed ? (child.label[lang] || child.label.az) : undefined}
                         >
-                          <span className="sb-link-ico"><Icon name={child.icon} size={16} /></span>
-                          <span className="sb-link-label">{child.label[lang] || child.label.az}</span>
+                          {({ isActive }) => (
+                            <>
+                              {isActive && (
+                                <motion.span
+                                  layoutId="sb-active-pill"
+                                  className="sb-link-indicator"
+                                  transition={PILL_TRANSITION}
+                                />
+                              )}
+                              <span className="sb-link-ico"><Icon name={child.icon} size={16} /></span>
+                              <span className="sb-link-label">{child.label[lang] || child.label.az}</span>
+                            </>
+                          )}
                         </NavLink>
                       ))}
                     </div>

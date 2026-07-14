@@ -1,21 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { useLang } from "../contexts/LanguageContext";
 import { endpoints } from "../services/endpoints";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import { getMockRooms } from "../data/mockData";
 
-/* ── Difficulty config ─────────────────────────────────────────── */
-const DIFF = {
-  beginner:     { label: "Asan",    color: "#6effd6", bg: "rgba(110,255,214,0.08)", border: "rgba(110,255,214,0.2)"  },
-  easy:         { label: "Asan",    color: "#6effd6", bg: "rgba(110,255,214,0.08)", border: "rgba(110,255,214,0.2)"  },
-  intermediate: { label: "Orta",    color: "#ffb86b", bg: "rgba(255,184,107,0.08)", border: "rgba(255,184,107,0.2)"  },
-  medium:       { label: "Orta",    color: "#ffb86b", bg: "rgba(255,184,107,0.08)", border: "rgba(255,184,107,0.2)"  },
-  advanced:     { label: "Çətin",   color: "#ff7a8a", bg: "rgba(255,122,138,0.08)", border: "rgba(255,122,138,0.2)"  },
-  hard:         { label: "Çətin",   color: "#ff7a8a", bg: "rgba(255,122,138,0.08)", border: "rgba(255,122,138,0.2)"  },
-  expert:       { label: "Ekspert", color: "#c084fc", bg: "rgba(192,132,252,0.08)", border: "rgba(192,132,252,0.2)"  },
+/* ── Difficulty config (color/i18n label keyed by lang) ─────────── */
+const DIFF_LABEL = {
+  az: { beginner: "Asan", intermediate: "Orta", advanced: "Çətin", expert: "Ekspert" },
+  en: { beginner: "Easy", intermediate: "Medium", advanced: "Hard", expert: "Expert" },
 };
+
+const DIFF_COLOR = {
+  beginner:     { color: "#6effd6", bg: "rgba(110,255,214,0.08)", border: "rgba(110,255,214,0.2)" },
+  easy:         { color: "#6effd6", bg: "rgba(110,255,214,0.08)", border: "rgba(110,255,214,0.2)" },
+  intermediate: { color: "#ffb86b", bg: "rgba(255,184,107,0.08)", border: "rgba(255,184,107,0.2)" },
+  medium:       { color: "#ffb86b", bg: "rgba(255,184,107,0.08)", border: "rgba(255,184,107,0.2)" },
+  advanced:     { color: "#ff7a8a", bg: "rgba(255,122,138,0.08)", border: "rgba(255,122,138,0.2)" },
+  hard:         { color: "#ff7a8a", bg: "rgba(255,122,138,0.08)", border: "rgba(255,122,138,0.2)" },
+  expert:       { color: "#c084fc", bg: "rgba(192,132,252,0.08)", border: "rgba(192,132,252,0.2)" },
+};
+
+function diffFor(lvKey, lang) {
+  const norm  = lvKey === "easy" ? "beginner" : lvKey === "medium" ? "intermediate" : lvKey === "hard" ? "advanced" : lvKey;
+  const label = (DIFF_LABEL[lang] || DIFF_LABEL.az)[norm] || (DIFF_LABEL[lang] || DIFF_LABEL.az).beginner;
+  const color = DIFF_COLOR[lvKey] || DIFF_COLOR.beginner;
+  return { label, ...color };
+}
 
 const CAT_ICONS = {
   web: "🌐", network: "🔌", linux: "🐧", windows: "🪟",
@@ -26,19 +37,24 @@ const CAT_ICONS = {
 const DIFF_ORDER = ["beginner", "easy", "intermediate", "medium", "advanced", "hard", "expert"];
 
 const LEVEL_TABS = [
-  { key: "",             label: "Hamısı",  color: null },
-  { key: "beginner",    label: "Asan",    color: "#6effd6" },
-  { key: "intermediate",label: "Orta",    color: "#ffb86b" },
-  { key: "advanced",    label: "Çətin",   color: "#ff7a8a" },
-  { key: "expert",      label: "Ekspert", color: "#c084fc" },
+  { key: "",             color: null },
+  { key: "beginner",     color: "#6effd6" },
+  { key: "intermediate", color: "#ffb86b" },
+  { key: "advanced",     color: "#ff7a8a" },
+  { key: "expert",       color: "#c084fc" },
 ];
 
+const LEVEL_TAB_LABEL = {
+  az: { "": "Hamısı", beginner: "Asan", intermediate: "Orta", advanced: "Çətin", expert: "Ekspert" },
+  en: { "": "All",    beginner: "Easy", intermediate: "Medium", advanced: "Hard", expert: "Expert" },
+};
+
 /* ── Single lab card ───────────────────────────────────────────── */
-function LabCard({ room, idx }) {
+function LabCard({ room, idx, lang }) {
   const pct    = room.progress_percent || 0;
   const isDone = pct >= 100;
   const lvKey  = (room.level || "beginner").toLowerCase();
-  const diff   = DIFF[lvKey] || DIFF.beginner;
+  const diff   = diffFor(lvKey, lang);
   const catKey = (room.course?.category?.slug || room.category?.slug || "misc").toLowerCase();
   const icon   = room.icon || CAT_ICONS[catKey] || "🧪";
   const xp     = room.total_points || room.xp || 150;
@@ -49,7 +65,11 @@ function LabCard({ room, idx }) {
       className={`lab-card${isDone ? " done" : ""}`}
       style={{ animationDelay: `${70 + idx * 50}ms` }}
     >
-      {isDone && <div className="lab-card-done-badge">✓ TAMAMLANDI</div>}
+      {isDone && (
+        <div className="lab-card-done-badge">
+          ✓ {lang === "az" ? "TAMAMLANDI" : "COMPLETED"}
+        </div>
+      )}
 
       {/* Difficulty stripe */}
       <div className="lab-card-stripe" style={{ "--diff-color": diff.color }} />
@@ -99,7 +119,7 @@ function LabCard({ room, idx }) {
               <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
                 <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
               </svg>
-              {room.tasks_count} tapşırıq
+              {room.tasks_count} {lang === "az" ? "tapşırıq" : "tasks"}
             </span>
           )}
         </div>
@@ -107,7 +127,7 @@ function LabCard({ room, idx }) {
           className="fi-btn primary sm"
           style={{ pointerEvents: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
         >
-          {isDone ? "Bax" : "Başlat"}
+          {isDone ? (lang === "az" ? "Bax" : "View") : (lang === "az" ? "Başlat" : "Start")}
           <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
             <path d="M9 18l6-6-6-6" />
           </svg>
@@ -167,25 +187,27 @@ export default function RoomsPage() {
   const progress  = rooms.length > 0 ? Math.round((totalDone / rooms.length) * 100) : 0;
 
   return (
-    <AppShell>
+    <>
       <div className="xk-screen">
 
         {/* ── Page header ── */}
         <div className="fi-page-head xk-reveal">
           <div>
-            <p className="fi-page-section">Platforma</p>
-            <h1 className="fi-page-title">Laboratoriyalar</h1>
+            <p className="fi-page-section">{lang === "az" ? "Platforma" : "Platform"}</p>
+            <h1 className="fi-page-title">{lang === "az" ? "Laboratoriyalar" : "Labs"}</h1>
             <p className="fi-page-sub">
-              Real pentest mühitlərində port skanından privilege escalation-a kimi məşq et.
+              {lang === "az"
+                ? "Real pentest mühitlərində port skanından privilege escalation-a kimi məşq et."
+                : "Practice in real pentest environments, from port scanning to privilege escalation."}
             </p>
           </div>
 
           {rooms.length > 0 && (
             <div className="lab-header-stats">
               {[
-                { v: rooms.length, l: "Lab" },
-                { v: totalDone,    l: "Tamamlandı" },
-                { v: `${progress}%`, l: "İrəliləyiş" },
+                { v: rooms.length, l: lang === "az" ? "Lab" : "Labs" },
+                { v: totalDone,    l: lang === "az" ? "Tamamlandı" : "Completed" },
+                { v: `${progress}%`, l: lang === "az" ? "İrəliləyiş" : "Progress" },
               ].map(s => (
                 <div key={s.l} className="lab-stat-item">
                   <div className="lab-stat-value">{s.v}</div>
@@ -232,7 +254,7 @@ export default function RoomsPage() {
                     transition: "background 150ms",
                   }} />
                 )}
-                {tab.label}
+                {(LEVEL_TAB_LABEL[lang] || LEVEL_TAB_LABEL.az)[tab.key]}
               </button>
             ))}
           </div>
@@ -252,7 +274,7 @@ export default function RoomsPage() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Lab axtar..."
+              placeholder={lang === "az" ? "Lab axtar..." : "Search labs..."}
               style={{
                 background: "var(--bg-card)",
                 border: "1px solid var(--line-2)",
@@ -281,15 +303,15 @@ export default function RoomsPage() {
         ) : rooms.length === 0 ? (
           <div className="xk-empty-screen">
             <div className="xk-empty-ico">🧪</div>
-            <h3>Lab tapılmadı</h3>
-            <p>Filtrləri dəyiş və ya axtarışı sil.</p>
+            <h3>{lang === "az" ? "Lab tapılmadı" : "No labs found"}</h3>
+            <p>{lang === "az" ? "Filtrləri dəyiş və ya axtarışı sil." : "Change the filters or clear your search."}</p>
           </div>
         ) : (
           <>
             {sortedKeys.map(key => {
               const items = grouped[key];
               if (!items?.length) return null;
-              const d = DIFF[key] || DIFF.beginner;
+              const d = diffFor(key, lang);
               return (
                 <div key={key}>
                   {!activeTab && (
@@ -298,12 +320,12 @@ export default function RoomsPage() {
                         {d.label}
                       </span>
                       <div className="lab-section-line" />
-                      <span className="lab-section-count">{items.length} lab</span>
+                      <span className="lab-section-count">{items.length} {lang === "az" ? "lab" : "labs"}</span>
                     </div>
                   )}
                   <div className="lab-grid">
                     {items.map((r, i) => (
-                      <LabCard key={r.id} room={r} idx={i} />
+                      <LabCard key={r.id} room={r} idx={i} lang={lang} />
                     ))}
                   </div>
                 </div>
@@ -312,6 +334,6 @@ export default function RoomsPage() {
           </>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

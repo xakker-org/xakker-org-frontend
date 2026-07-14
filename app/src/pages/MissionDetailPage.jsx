@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import XKBar from "../components/ui/XKBar";
 import { endpoints } from "../services/endpoints";
@@ -51,7 +50,7 @@ export default function MissionDetailPage() {
     setLoading(true);
     endpoints.missionDetail(slug)
       .then(({ data }) => setMission(data))
-      .catch(() => setError("Mission tapılmadı"))
+      .catch(() => setError(lang === "az" ? "Mission tapılmadı" : "Mission not found"))
       .finally(() => setLoading(false));
   };
 
@@ -63,7 +62,7 @@ export default function MissionDetailPage() {
       await endpoints.missionStart(slug);
       fetchMission();
     } catch {
-      setError("Mission başladıla bilmədi.");
+      setError(lang === "az" ? "Mission başladıla bilmədi." : "The mission could not be started.");
     } finally {
       setStarting(false);
     }
@@ -71,28 +70,28 @@ export default function MissionDetailPage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <TileSkeleton height={40} />
           <TileSkeleton height={220} />
           <TileSkeleton height={400} />
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (error || !mission) {
     return (
-      <AppShell>
+      <>
         <div className="xk-back-row">
-          <Link to="/missions" className="xk-back">← Geri</Link>
+          <Link to="/missions" className="xk-back">← {lang === "az" ? "Geri" : "Back"}</Link>
         </div>
         <div className="xk-empty-screen">
           <div className="xk-empty-ico">◎</div>
-          <h3>Mission tapılmadı</h3>
-          <p>Bu mission mövcud deyil.</p>
+          <h3>{lang === "az" ? "Mission tapılmadı" : "Mission not found"}</h3>
+          <p>{lang === "az" ? "Bu mission mövcud deyil." : "This mission doesn't exist."}</p>
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -106,34 +105,44 @@ export default function MissionDetailPage() {
   const isCompleted  = prog?.is_completed;
   const started      = donePasses > 0;
   const color        = missionColor(mission);
-  const track        = mission.track || mission.category || "Missiya";
+  const track        = mission.track || mission.category || (lang === "az" ? "Missiya" : "Mission");
   const totalXp      = (mission.passes || []).reduce((s, p) => s + (p.xp_reward || 10), 0) || mission.xp_reward || 0;
 
   const LEARN_MAP = {
-    web: ["HTTP protokolu və başlıqlar", "XSS və SQL injection əsasları", "Brauzer təhlükəsizlik modeli"],
-    network: ["TCP/IP və portlar", "Nmap ilə skan", "Xidmət barmaq izləri"],
-    system: ["Linux icazə modeli", "Privilege escalation", "SUID/SGID istismarı"],
-    linux: ["Linux icazə modeli", "Privilege escalation", "SUID/SGID istismarı"],
-    crypto: ["Heş və şifrələmə", "Simmetrik/asimmetrik açarlar", "Parol qırma"],
-    recon: ["OSINT metodları", "DNS kəşfiyyatı", "Alt-domen tapma"],
+    az: {
+      web: ["HTTP protokolu və başlıqlar", "XSS və SQL injection əsasları", "Brauzer təhlükəsizlik modeli"],
+      network: ["TCP/IP və portlar", "Nmap ilə skan", "Xidmət barmaq izləri"],
+      system: ["Linux icazə modeli", "Privilege escalation", "SUID/SGID istismarı"],
+      linux: ["Linux icazə modeli", "Privilege escalation", "SUID/SGID istismarı"],
+      crypto: ["Heş və şifrələmə", "Simmetrik/asimmetrik açarlar", "Parol qırma"],
+      recon: ["OSINT metodları", "DNS kəşfiyyatı", "Alt-domen tapma"],
+    },
+    en: {
+      web: ["HTTP protocol and headers", "XSS and SQL injection basics", "Browser security model"],
+      network: ["TCP/IP and ports", "Scanning with Nmap", "Service fingerprinting"],
+      system: ["Linux permission model", "Privilege escalation", "SUID/SGID exploitation"],
+      linux: ["Linux permission model", "Privilege escalation", "SUID/SGID exploitation"],
+      crypto: ["Hashing and encryption", "Symmetric/asymmetric keys", "Password cracking"],
+      recon: ["OSINT methods", "DNS recon", "Subdomain discovery"],
+    },
   };
-  const learnItems = LEARN_MAP[(mission.track || "").toLowerCase()] || [];
+  const learnItems = LEARN_MAP[lang === "az" ? "az" : "en"][(mission.track || "").toLowerCase()] || [];
 
   const nextIdx = prog ? completedIds.length : 0;
   const firstPassId = mission.passes?.[nextIdx]?.id || mission.passes?.[0]?.id;
 
   return (
-    <AppShell>
+    <>
       {/* Back row */}
       <div className="xk-back-row xk-reveal">
         <Link to="/missions" className="xk-back">
           <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
             <path d="M15 6l-6 6 6 6" />
           </svg>
-          Geri
+          {lang === "az" ? "Geri" : "Back"}
         </Link>
         <div className="xk-crumbs">
-          <span>Missiyalar</span>
+          <span>{lang === "az" ? "Missiyalar" : "Missions"}</span>
           <span className="xk-crumb-sep">/</span>
           <span className="cur">{track}</span>
         </div>
@@ -146,7 +155,10 @@ export default function MissionDetailPage() {
           <div className="xk-hero-top">
             <span className="xk-feat-track">{track}</span>
             <span className="xk-badge tone-muted">
-              {{ easy:"Asan", beginner:"Asan", medium:"Orta", intermediate:"Orta", hard:"Çətin", advanced:"Çətin", expert:"Ekspert" }[mission.difficulty] || mission.difficulty || "Orta"}
+              {(lang === "az"
+                ? { easy:"Asan", beginner:"Asan", medium:"Orta", intermediate:"Orta", hard:"Çətin", advanced:"Çətin", expert:"Ekspert" }
+                : { easy:"Easy", beginner:"Easy", medium:"Medium", intermediate:"Medium", hard:"Hard", advanced:"Hard", expert:"Expert" }
+              )[mission.difficulty] || mission.difficulty || (lang === "az" ? "Orta" : "Medium")}
             </span>
           </div>
           <h1 className="xk-hero-title">{mission.title}</h1>
@@ -156,7 +168,7 @@ export default function MissionDetailPage() {
           <div className="xk-hero-meta">
             <span>
               <SvgIcon d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5" />
-              {totalPasses} dərs
+              {totalPasses} {lang === "az" ? "dərs" : "lessons"}
             </span>
             <span>
               <SvgIcon d="M13 2L4 14h7l-1 8 9-12h-7z" />
@@ -165,14 +177,14 @@ export default function MissionDetailPage() {
             {mission.estimated_hours > 0 && (
               <span>
                 <SvgIcon d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2" />
-                ~{mission.estimated_hours * 60} dəq
+                ~{mission.estimated_hours * 60} {lang === "az" ? "dəq" : "min"}
               </span>
             )}
           </div>
           <div className="xk-hero-actions">
             {!prog ? (
               <button className="xk-btn primary" onClick={handleStart} disabled={starting}>
-                {starting ? "Başlanır..." : "Missiyanı başlat"}
+                {starting ? (lang === "az" ? "Başlanır..." : "Starting...") : (lang === "az" ? "Missiyanı başlat" : "Start mission")}
                 <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </button>
             ) : (
@@ -180,7 +192,7 @@ export default function MissionDetailPage() {
                 to={firstPassId ? `/missions/${slug}/passes/${firstPassId}` : "#"}
                 className="xk-btn primary"
               >
-                {pct === 100 ? "Təkrar bax" : started ? "Davam et" : "Başla"}
+                {pct === 100 ? (lang === "az" ? "Təkrar bax" : "Review") : started ? (lang === "az" ? "Davam et" : "Continue") : (lang === "az" ? "Başla" : "Start")}
                 <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </Link>
             )}
@@ -189,7 +201,7 @@ export default function MissionDetailPage() {
                 <div className="xk-track" style={{ height: 5 }}>
                   <div className="xk-fill" style={{ width: `${pct}%`, background: color }} />
                 </div>
-                <span>{donePasses}/{totalPasses} tamamlandı</span>
+                <span>{donePasses}/{totalPasses} {lang === "az" ? "tamamlandı" : "completed"}</span>
               </div>
             )}
           </div>
@@ -201,11 +213,11 @@ export default function MissionDetailPage() {
 
         {/* Pass list */}
         <div className="xk-card xk-lessons-card xk-reveal" style={{ animationDelay: "140ms" }}>
-          <h3 className="xk-card-title">Dərslər</h3>
+          <h3 className="xk-card-title">{lang === "az" ? "Dərslər" : "Lessons"}</h3>
 
           {(!mission.passes || mission.passes.length === 0) ? (
             <div className="xk-empty-screen" style={{ padding: "32px 0" }}>
-              <p>Hələ heç bir pass yayımlanmayıb.</p>
+              <p>{lang === "az" ? "Hələ heç bir pass yayımlanmayıb." : "No lessons published yet."}</p>
             </div>
           ) : (
             <div className="xk-lesson-list">
@@ -244,8 +256,8 @@ export default function MissionDetailPage() {
                         <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
                           <path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-4 2zM4 19a2 2 0 012-2h13" />
                         </svg>
-                        Nəzəriyyə
-                        {p.estimated_minutes > 0 && ` · ${p.estimated_minutes} dəq`}
+                        {lang === "az" ? "Nəzəriyyə" : "Theory"}
+                        {p.estimated_minutes > 0 && ` · ${p.estimated_minutes} ${lang === "az" ? "dəq" : "min"}`}
                       </span>
                     </div>
                     <span className="xk-lesson-xp">+{p.xp_reward || 10}</span>
@@ -277,11 +289,11 @@ export default function MissionDetailPage() {
                   <div className="xk-lesson-meta">
                     <span className="xk-lesson-title">📋 {mission.exam.title}</span>
                     <span className="xk-lesson-type">
-                      Final Exam · Keç faizi: {mission.exam.passing_score}%
+                      {lang === "az" ? `Final Exam · Keç faizi: ${mission.exam.passing_score}%` : `Final Exam · Pass rate: ${mission.exam.passing_score}%`}
                     </span>
                   </div>
-                  {examUnlocked && <span className="xk-badge tone-accent">Exam ver →</span>}
-                  {isCompleted && prog?.exam_passed && <span className="xk-badge tone-ok">✓ Keçildi</span>}
+                  {examUnlocked && <span className="xk-badge tone-accent">{lang === "az" ? "Exam ver →" : "Take exam →"}</span>}
+                  {isCompleted && prog?.exam_passed && <span className="xk-badge tone-ok">✓ {lang === "az" ? "Keçildi" : "Passed"}</span>}
                 </Link>
               )}
             </div>
@@ -291,7 +303,7 @@ export default function MissionDetailPage() {
           {!prog && (
             <div style={{ marginTop: 18, paddingTop: 18, borderTop: "1px solid var(--border)" }}>
               <button className="xk-btn primary block" onClick={handleStart} disabled={starting}>
-                {starting ? "Başlanır..." : "🚀 Missiyanı başlat"}
+                {starting ? (lang === "az" ? "Başlanır..." : "Starting...") : `🚀 ${lang === "az" ? "Missiyanı başlat" : "Start mission"}`}
               </button>
             </div>
           )}
@@ -302,14 +314,14 @@ export default function MissionDetailPage() {
           {/* Progress */}
           {prog && (
             <div className="xk-card xk-reveal" style={{ animationDelay: "200ms" }}>
-              <div className="xk-card-eyebrow">İrəliləyişiniz</div>
+              <div className="xk-card-eyebrow">{lang === "az" ? "İrəliləyişiniz" : "Your progress"}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>
                     {donePasses}/{totalPasses}
                   </div>
                   <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
-                    {isCompleted ? "✓ Tamamlandı" : "Davam edir"}
+                    {isCompleted ? (lang === "az" ? "✓ Tamamlandı" : "✓ Completed") : (lang === "az" ? "Davam edir" : "In progress")}
                   </div>
                 </div>
                 <div style={{
@@ -328,9 +340,9 @@ export default function MissionDetailPage() {
               </div>
               {mission.exam && (
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 12.5 }}>
-                  <span style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Final Exam</span>
+                  <span style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>{lang === "az" ? "Final İmtahan" : "Final Exam"}</span>
                   <span style={{ color: prog?.exam_passed ? "#19c37d" : allPassesDone ? "var(--accent)" : "var(--muted)", fontWeight: 600 }}>
-                    {prog?.exam_passed ? "✓ Keçildi" : allPassesDone ? "Açıldı" : "Kilidli"}
+                    {prog?.exam_passed ? (lang === "az" ? "✓ Keçildi" : "✓ Passed") : allPassesDone ? (lang === "az" ? "Açıldı" : "Unlocked") : (lang === "az" ? "Kilidli" : "Locked")}
                   </span>
                 </div>
               )}
@@ -340,7 +352,7 @@ export default function MissionDetailPage() {
           {/* What you'll learn */}
           {learnItems.length > 0 && (
             <div className="xk-card xk-aside-card xk-reveal" style={{ animationDelay: "260ms" }}>
-              <div className="xk-card-eyebrow">Nə öyrənəcəksən</div>
+              <div className="xk-card-eyebrow">{lang === "az" ? "Nə öyrənəcəksən" : "What you'll learn"}</div>
               <ul className="xk-learn-list">
                 {learnItems.map((x, i) => (
                   <li key={i}>
@@ -356,7 +368,7 @@ export default function MissionDetailPage() {
 
           {/* Reward */}
           <div className="xk-card xk-aside-card xk-reveal" style={{ animationDelay: "320ms" }}>
-            <div className="xk-card-eyebrow">Mükafat</div>
+            <div className="xk-card-eyebrow">{lang === "az" ? "Mükafat" : "Reward"}</div>
             <div className="xk-reward-row">
               <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" style={{ color: "var(--accent)" }}>
                 <path d="M13 2L4 14h7l-1 8 9-12h-7z" />
@@ -367,11 +379,11 @@ export default function MissionDetailPage() {
               <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" style={{ color: "var(--accent)" }}>
                 <path d="M12 13a5 5 0 100-10 5 5 0 000 10zM8.5 11.5L7 21l5-3 5 3-1.5-9.5" />
               </svg>
-              "{track} Başlanğıc" nişanı
+              {lang === "az" ? `"${track} Başlanğıc" nişanı` : `"${track} Starter" badge`}
             </div>
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

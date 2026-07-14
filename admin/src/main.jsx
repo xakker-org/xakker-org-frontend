@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 
 import "./styles/tokens.css";
 import "./styles/base.css";
@@ -16,11 +17,16 @@ import App from "./App";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <LanguageProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </LanguageProvider>
+      {/* reducedMotion="user" collapses every framer-motion animation
+          (route transition, nav pill) to instant under
+          prefers-reduced-motion — matches app/src/main.jsx. */}
+      <MotionConfig reducedMotion="user">
+        <LanguageProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </LanguageProvider>
+      </MotionConfig>
     </BrowserRouter>
   </StrictMode>
 );

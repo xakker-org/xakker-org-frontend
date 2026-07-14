@@ -1,30 +1,36 @@
 /* ================================================================
    XAKKER — Bento-Analytics Design Tokens
    Single source of truth. No magic numbers in components.
+
+   Theme model: [data-theme="dark"] is the default surface (also the
+   fallback if the attribute is absent). [data-theme="light"] overrides
+   the same variable names — components never branch on theme, they
+   just consume the token.
    ================================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
-:root {
-  /* ── Surfaces ── */
+:root,
+[data-theme="dark"] {
+  /* ── Surfaces — visible 4-step staircase, not a flat gray band ── */
   --bg:        #08080a;
-  --bg-card:   #0f0f13;
-  --bg-card-2: #15151b;
-  --bg-elev:   #1d1d24;
+  --bg-card:   #111114;
+  --bg-card-2: #19191f;
+  --bg-elev:   #24242c;
   --bg-overlay: rgba(4, 4, 6, 0.85);
 
   /* ── Lines ── */
   --line:    rgba(255, 255, 255, 0.07);
-  --line-2:  rgba(255, 255, 255, 0.10);
-  --line-3:  rgba(255, 255, 255, 0.15);
+  --line-2:  rgba(255, 255, 255, 0.11);
+  --line-3:  rgba(255, 255, 255, 0.17);
 
   /* ── Ink ── */
-  --ink-1: #f4f4f6;
-  --ink-2: #b3b3bd;
-  --ink-3: #74747f;
-  --ink-4: #4a4a55;
+  --ink-1: #f6f6f8;
+  --ink-2: #b7b7c2;
+  --ink-3: #7c7c88;
+  --ink-4: #4d4d59;
 
-  /* ── Single signature accent ── */
+  /* ── Single signature accent (do not rebrand) ── */
   --accent:      #ff3b3b;
   --accent-rgb:  255, 59, 59;
   --accent-soft: rgba(255, 59, 59, 0.12);
@@ -32,7 +38,7 @@
   --accent-glow: rgba(255, 59, 59, 0.18);
   --accent-ink:  #ffffff;
 
-  /* ── Chart palette ── */
+  /* ── Chart palette — decorative six, used per the usage rules below ── */
   --c-1: #6effd6;     /* mint */
   --c-2: #9eff6e;     /* lime */
   --c-3: #ffb86b;     /* amber */
@@ -51,19 +57,7 @@
   --warn:  #ffb86b;
   --bad:   #ff7a8a;
 
-  /* ── Typography ── */
-  --font-display: "Space Grotesk", system-ui, sans-serif;
-  --font-body:    "Manrope", system-ui, sans-serif;
-  --font-text:    "Manrope", system-ui, sans-serif;
-  --font-mono:    "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
-
-  /* ── Radii ── */
-  --r-tile:  16px;
-  --r-card:  14px;
-  --r-inner: 10px;
-  --r-pill:  999px;
-
-  /* ── Elevation ── */
+  /* ── Elevation — tuned per-theme so shadows read correctly on light bg too ── */
   --shadow-tile:
     0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
     0 1px 2px rgba(0, 0, 0, 0.55),
@@ -76,6 +70,125 @@
     0 1px 0 0 rgba(255, 255, 255, 0.07) inset,
     0 24px 60px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(255, 255, 255, 0.04);
+
+  /* ── Overlay/hover tint — direction-aware. In dark theme it LIGHTENS
+     (white tint), in light theme it DARKENS (ink tint), so hover fills,
+     row highlights, progress-bar tracks and low-alpha borders read
+     correctly on both backgrounds. Use rgba(var(--overlay-rgb), <alpha>)
+     to keep a component's own alpha tuning, or the two convenience
+     tokens below for the two most common fill strengths. ── */
+  --overlay-rgb: 255, 255, 255;
+  --hover:       rgba(255, 255, 255, 0.06);
+  --hover-strong: rgba(255, 255, 255, 0.10);
+}
+
+/* ── Light theme — same names, recalibrated values ──
+   Not a naive invert: surfaces step down from a warm-neutral white
+   rather than up from black, ink flips to dark-on-light, accent red
+   is deepened slightly so it still meets AA on white, chart hues are
+   darkened to hold contrast on a light card. */
+[data-theme="light"] {
+  --bg:        #f4f4f6;
+  --bg-card:   #ffffff;
+  --bg-card-2: #f0f0f3;
+  --bg-elev:   #e7e7ec;
+  --bg-overlay: rgba(20, 20, 24, 0.45);
+
+  --line:    rgba(15, 15, 20, 0.08);
+  --line-2:  rgba(15, 15, 20, 0.12);
+  --line-3:  rgba(15, 15, 20, 0.18);
+
+  --ink-1: #14141a;
+  --ink-2: #46464f;
+  --ink-3: #78788a;
+  --ink-4: #9c9caa;
+
+  --accent:      #e0271f;
+  --accent-rgb:  224, 39, 31;
+  --accent-soft: rgba(224, 39, 31, 0.09);
+  --accent-ring: rgba(224, 39, 31, 0.24);
+  --accent-glow: rgba(224, 39, 31, 0.14);
+  --accent-ink:  #ffffff;
+
+  --c-1: #0f9d70;
+  --c-2: #5c9a1f;
+  --c-3: #b5720f;
+  --c-4: #d6425a;
+  --c-5: #8b3fd1;
+  --c-6: #1f6fd6;
+
+  --d-easy:   #0f9d70;
+  --d-med:    #b5720f;
+  --d-hard:   #d6425a;
+  --d-expert: #8b3fd1;
+
+  --ok:    #0f9d5f;
+  --warn:  #b5720f;
+  --bad:   #d6425a;
+
+  --shadow-tile:
+    0 1px 0 0 rgba(255, 255, 255, 0.6) inset,
+    0 1px 2px rgba(20, 20, 30, 0.06),
+    0 8px 24px rgba(20, 20, 30, 0.06);
+  --shadow-tile-hover:
+    0 1px 0 0 rgba(255, 255, 255, 0.7) inset,
+    0 2px 4px rgba(20, 20, 30, 0.07),
+    0 16px 36px rgba(20, 20, 30, 0.10);
+  --shadow-pop:
+    0 1px 0 0 rgba(255, 255, 255, 0.8) inset,
+    0 24px 48px rgba(20, 20, 30, 0.14),
+    0 0 0 1px rgba(15, 15, 20, 0.05);
+
+  --overlay-rgb: 15, 15, 20;
+  --hover:       rgba(15, 15, 20, 0.045);
+  --hover-strong: rgba(15, 15, 20, 0.08);
+}
+
+:root {
+  /* ── Typography ──
+     Display face swapped Round 2: Bricolage Grotesque (variable, opsz axis)
+     replaces Space Grotesk — more character at large sizes (headings, stat
+     numbers) while Manrope/JetBrains Mono stay untouched for body/code. */
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body:    "Manrope", system-ui, sans-serif;
+  --font-text:    "Manrope", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  /* ── Type scale — every component should reach for these, not raw px ── */
+  --text-xs:   11px;
+  --text-sm:   12.5px;
+  --text-base: 14px;
+  --text-md:   15px;
+  --text-lg:   17px;
+  --text-xl:   20px;
+  --text-2xl:  25px;
+  --text-3xl:  32px;
+  --text-4xl:  42px;
+
+  --leading-tight:  1.15;
+  --leading-snug:   1.3;
+  --leading-normal: 1.5;
+  --leading-loose:  1.7;
+
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.03em;
+  --tracking-snug:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:  0.05em;
+  --tracking-widest: 0.08em;
+  /* ── Label/eyebrow recipe (Round 3 — replaces the old "loud" pattern
+     of JetBrains Mono + 700 weight + 0.14–0.18em tracking). Every
+     .xk-*-eyebrow / *-label / *-cat class now uses the BODY face at
+     600 weight with tracking in the 0.03–0.09em range and a size bump
+     of ~1px — still reads as a distinct small-caps "tag", just quieter
+     and less "terminal/shouty". Kept for any new label components. ── */
+  --tracking-label: 0.06em;
+
+  /* ── Radii — one scale, applied consistently (Tile > Card > Inner > Pill) ── */
+  --r-tile:  16px;
+  --r-card:  14px;
+  --r-inner: 10px;
+  --r-pill:  999px;
 
   /* ── Spacing (4px grid) ── */
   --s1: 4px;
@@ -107,3 +220,20 @@
   --z-modal:   60;
   --z-popover: 70;
 }
+
+/*
+  ── Color usage rules (semantic, not arbitrary) ──
+  --accent          the ONE signature color. CTAs, active nav, current-user
+                     highlight, primary progress fill. Never used decoratively
+                     on more than one focal element per screen.
+  --c-1 (mint)       XP / positive-metric series (earned XP, completion rate).
+  --c-2 (lime)       secondary positive / growth series (streak momentum).
+  --c-3 (amber)      medium difficulty AND warning/attention state — these
+                     share a hue on purpose (both mean "caution").
+  --c-4 (coral)      hard difficulty AND negative/regression metric.
+  --c-5 (violet)     expert difficulty AND "special/rare" badges (achievements).
+  --c-6 (sky)        neutral informational series (time spent, pace).
+  --d-easy/med/hard/expert  ALWAYS map 1:1 to c-1/c-3/c-4/c-5 — difficulty
+                     color is deterministic by level, never picked per-component.
+  --ok/--warn/--bad  system status only (save success, form error) — not chart data.
+*/

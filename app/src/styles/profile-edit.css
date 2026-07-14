@@ -169,9 +169,9 @@
 }
 
 .edit-section-label {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.16em;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-4);
   margin-bottom: 2px;
@@ -285,7 +285,7 @@
   backdrop-filter: blur(2px);
 }
 .edit-avatar-dropzone.drag-over .drop-hint {
-  background: rgba(255, 59, 59, 0.45);
+  background: rgba(var(--accent-rgb), 0.45);
   color: white;
   backdrop-filter: blur(4px);
 }
@@ -335,7 +335,7 @@
 .edit-hue-swatch.selected {
   border-color: var(--ink-1);
   transform: scale(1.12);
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 16px rgba(var(--overlay-rgb), 0.1);
 }
 .edit-hue-swatch.selected::after {
   content: "✓";

@@ -3,7 +3,7 @@
    Single source of truth. No magic numbers in components.
    ================================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 :root {
   /* ── Surfaces ── */
@@ -51,11 +51,25 @@
   --warn:  #ffb86b;
   --bad:   #ff7a8a;
 
-  /* ── Typography ── */
-  --font-display: "Space Grotesk", system-ui, sans-serif;
+  /* ── Typography ──
+     Display face matches app/src/styles/tokens.css Round 2: Bricolage
+     Grotesque (variable, opsz axis) instead of Space Grotesk. */
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
   --font-body:    "Manrope", system-ui, sans-serif;
   --font-text:    "Manrope", system-ui, sans-serif;
   --font-mono:    "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.03em;
+  --tracking-snug:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:  0.05em;
+  --tracking-widest: 0.08em;
+  /* ── Label/eyebrow recipe — matches app's Round 3 pattern. Every
+     admin eyebrow/section-label selector below now uses this instead of
+     JetBrains Mono + 700 + 0.14–0.18em tracking (which read as loud/
+     terminal-shouty next to the rest of the panel). ── */
+  --tracking-label: 0.06em;
 
   /* ── Radii ── */
   --r-tile:  16px;

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import Tile, { TileHead } from "../components/ui/Tile";
 import Button from "../components/ui/Button";
 import { Chip, DiffBadge } from "../components/ui/Chip";
@@ -11,6 +10,7 @@ import { getStoredStudyLanguage, pickByLanguage, setStoredStudyLanguage } from "
 import { useLang } from "../contexts/LanguageContext";
 import { getMockQuestions } from "../data/mockData";
 import TerminalQuestion from "../components/TerminalQuestion";
+import Icon from "../components/ui/Icon";
 
 const OPTION_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -150,23 +150,23 @@ export default function QuestionDetailPage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div className="bento">
           <div className="span-8"><TileSkeleton height={420} /></div>
           <div className="span-4"><TileSkeleton height={280} /></div>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (!question && !loading) {
     return (
-      <AppShell>
+      <>
         <Tile>
-          <EmptyState icon="◌" title={t.notFound} description=""
+          <EmptyState icon="search" title={t.notFound} description=""
             action={<Button as={Link} to="/self-study" variant="accent">{t.backToList}</Button>} />
         </Tile>
-      </AppShell>
+      </>
     );
   }
 
@@ -174,7 +174,7 @@ export default function QuestionDetailPage() {
   const typeTone = { closed: "sky", open: "mint", terminal: "violet" };
 
   return (
-    <AppShell>
+    <>
       {/* Back + lang */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <Button variant="ghost" size="sm" onClick={() => navigate("/self-study")}>{t.back}</Button>
@@ -367,7 +367,7 @@ export default function QuestionDetailPage() {
                   display: "grid", placeItems: "center", fontSize: 20,
                   color: result.is_correct ? "var(--ok)" : "var(--accent)",
                 }}>
-                  {result.is_correct ? "✓" : "✗"}
+                  <Icon name={result.is_correct ? "check" : "close"} size={18} />
                 </span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 15, fontWeight: 700, color: result.is_correct ? "var(--ok)" : "var(--accent)", marginBottom: 4 }}>
@@ -411,7 +411,7 @@ export default function QuestionDetailPage() {
         <Tile span={4} style={{ position: "sticky", top: 76 }}>
           <TileHead eyebrow={t.attemptHistorySub} title={t.attemptHistory} />
           {attempts.length === 0 ? (
-            <EmptyState icon="◌" title={t.noAttempts} description="" />
+            <EmptyState icon="search" title={t.noAttempts} description="" />
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {attempts.map((a) => (
@@ -444,6 +444,6 @@ export default function QuestionDetailPage() {
           )}
         </Tile>
       </div>
-    </AppShell>
+    </>
   );
 }

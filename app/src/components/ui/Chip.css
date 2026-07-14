@@ -11,7 +11,7 @@
   background: var(--bg-card-2);
   color: var(--ink-2);
   border: 1px solid var(--line-2);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset;
+  box-shadow: 0 1px 0 rgba(var(--overlay-rgb), 0.03) inset;
   white-space: nowrap;
   line-height: 1;
 }
@@ -24,16 +24,19 @@
   background: var(--accent-soft);
   color: var(--accent);
   border-color: var(--accent-ring);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 0 8px rgba(255,59,59,0.08);
+  box-shadow: 0 1px 0 rgba(var(--overlay-rgb), 0.03) inset, 0 0 8px rgba(var(--accent-rgb),0.08);
 }
-.chip-easy   { background: rgba(110,255,214,0.09); color: var(--d-easy); border-color: rgba(110,255,214,0.22); }
-.chip-med    { background: rgba(255,184,107,0.09); color: var(--d-med);  border-color: rgba(255,184,107,0.22); }
-.chip-hard   { background: rgba(255,122,138,0.09); color: var(--d-hard); border-color: rgba(255,122,138,0.22); }
-.chip-expert { background: rgba(192,132,252,0.09); color: var(--d-expert); border-color: rgba(192,132,252,0.22); }
-.chip-mint   { background: rgba(110,255,214,0.09); color: var(--c-1); border-color: rgba(110,255,214,0.22); }
-.chip-amber  { background: rgba(255,184,107,0.09); color: var(--c-3); border-color: rgba(255,184,107,0.22); }
-.chip-coral  { background: rgba(255,122,138,0.09); color: var(--c-4); border-color: rgba(255,122,138,0.22); }
-.chip-violet { background: rgba(192,132,252,0.09); color: var(--c-5); border-color: rgba(192,132,252,0.22); }
-.chip-sky    { background: rgba(108,179,255,0.09); color: var(--c-6); border-color: rgba(108,179,255,0.22); }
+/* Tint/border derived from the theme's own semantic color via color-mix,
+   so chips stay correctly saturated in both dark and light theme instead
+   of freezing a dark-theme-only RGB triplet at low alpha. */
+.chip-easy   { background: color-mix(in srgb, var(--d-easy) 12%, transparent); color: var(--d-easy); border-color: color-mix(in srgb, var(--d-easy) 28%, transparent); }
+.chip-med    { background: color-mix(in srgb, var(--d-med) 12%, transparent); color: var(--d-med);  border-color: color-mix(in srgb, var(--d-med) 28%, transparent); }
+.chip-hard   { background: color-mix(in srgb, var(--d-hard) 12%, transparent); color: var(--d-hard); border-color: color-mix(in srgb, var(--d-hard) 28%, transparent); }
+.chip-expert { background: color-mix(in srgb, var(--d-expert) 12%, transparent); color: var(--d-expert); border-color: color-mix(in srgb, var(--d-expert) 28%, transparent); }
+.chip-mint   { background: color-mix(in srgb, var(--c-1) 12%, transparent); color: var(--c-1); border-color: color-mix(in srgb, var(--c-1) 28%, transparent); }
+.chip-amber  { background: color-mix(in srgb, var(--c-3) 12%, transparent); color: var(--c-3); border-color: color-mix(in srgb, var(--c-3) 28%, transparent); }
+.chip-coral  { background: color-mix(in srgb, var(--c-4) 12%, transparent); color: var(--c-4); border-color: color-mix(in srgb, var(--c-4) 28%, transparent); }
+.chip-violet { background: color-mix(in srgb, var(--c-5) 12%, transparent); color: var(--c-5); border-color: color-mix(in srgb, var(--c-5) 28%, transparent); }
+.chip-sky    { background: color-mix(in srgb, var(--c-6) 12%, transparent); color: var(--c-6); border-color: color-mix(in srgb, var(--c-6) 28%, transparent); }
 
 .chip-ico { display: inline-flex; }

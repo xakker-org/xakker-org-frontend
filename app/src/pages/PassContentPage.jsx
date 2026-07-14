@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import { endpoints } from "../services/endpoints";
+import { useLang } from "../contexts/LanguageContext";
 
 function ChevronIcon() {
   return (
@@ -22,6 +22,7 @@ function ArrowIcon({ size = 16 }) {
 export default function PassContentPage() {
   const { slug, passId } = useParams();
   const navigate         = useNavigate();
+  const { lang }         = useLang();
 
   const [pass, setPass]             = useState(null);
   const [mission, setMission]       = useState(null);
@@ -40,7 +41,7 @@ export default function PassContentPage() {
         setPass(passRes.data);
         setMission(missionRes.data);
       })
-      .catch(() => setError("Pass tapılmadı."))
+      .catch(() => setError(lang === "az" ? "Pass tapılmadı." : "Pass not found."))
       .finally(() => setLoading(false));
   }, [slug, passId]);
 
@@ -52,7 +53,7 @@ export default function PassContentPage() {
       setResult(data);
       setPass(prev => ({ ...prev, is_completed: true }));
     } catch {
-      setError("Pass tamamlana bilmədi.");
+      setError(lang === "az" ? "Pass tamamlana bilmədi." : "The pass could not be completed.");
     } finally {
       setCompleting(false);
     }
@@ -76,24 +77,24 @@ export default function PassContentPage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <TileSkeleton height={40} />
         <TileSkeleton height={60} style={{ marginTop: 16 }} />
         <TileSkeleton height={400} style={{ marginTop: 16 }} />
-      </AppShell>
+      </>
     );
   }
 
   if (error && !pass) {
     return (
-      <AppShell>
+      <>
         <div className="xk-back-row">
           <Link to={`/missions/${slug}`} className="xk-back"><ChevronIcon /> Mission</Link>
         </div>
         <div className="xk-empty-screen">
-          <h3>Pass tapılmadı</h3><p>{error}</p>
+          <h3>{lang === "az" ? "Pass tapılmadı" : "Pass not found"}</h3><p>{error}</p>
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -106,10 +107,10 @@ export default function PassContentPage() {
   const justCompleted = result !== null;
 
   return (
-    <AppShell>
+    <>
       {/* Back */}
       <div className="xk-back-row xk-reveal">
-        <Link to="/missions" className="xk-back"><ChevronIcon /> Geri</Link>
+        <Link to="/missions" className="xk-back"><ChevronIcon /> {lang === "az" ? "Geri" : "Back"}</Link>
         <div className="xk-crumbs">
           <span>{mission?.title}</span>
           <span className="xk-crumb-sep">/</span>
@@ -124,7 +125,7 @@ export default function PassContentPage() {
             <div className="xk-lp-track">
               <div className="xk-lp-fill" style={{ width: `${passes.length > 0 ? ((currentIndex + 1) / passes.length) * 100 : 0}%` }} />
             </div>
-            <span className="xk-lp-label">Dərs {currentIndex + 1} / {passes.length}</span>
+            <span className="xk-lp-label">{lang === "az" ? "Dərs" : "Lesson"} {currentIndex + 1} / {passes.length}</span>
           </div>
           <div className="xk-lesson-dots">
             {passes.map((p, i) => (
@@ -144,8 +145,8 @@ export default function PassContentPage() {
             <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-4 2zM4 19a2 2 0 012-2h13" />
             </svg>
-            Nəzəriyyə · +{pass?.xp_reward || 10} XP
-            {alreadyDone && " · ✓ Tamamlandı"}
+            {lang === "az" ? "Nəzəriyyə" : "Theory"} · +{pass?.xp_reward || 10} XP
+            {alreadyDone && ` · ✓ ${lang === "az" ? "Tamamlandı" : "Completed"}`}
           </div>
 
           <h1 className="xk-lesson-h1">{pass?.title}</h1>
@@ -154,20 +155,20 @@ export default function PassContentPage() {
           <div
             className="rich-content"
             style={{ color: "var(--text-2)", fontSize: 15, lineHeight: 1.65 }}
-            dangerouslySetInnerHTML={{ __html: pass?.content || "<p>Məzmun yükləmək mümkün olmadı.</p>" }}
+            dangerouslySetInnerHTML={{ __html: pass?.content || (lang === "az" ? "<p>Məzmun yükləmək mümkün olmadı.</p>" : "<p>The content could not be loaded.</p>") }}
           />
 
           {/* Success banner */}
           {justCompleted && (
             <div className="xk-explain ok" style={{ marginTop: 20 }}>
-              <b>✓ Pass tamamlandı!</b>
+              <b>✓ {lang === "az" ? "Pass tamamlandı!" : "Pass completed!"}</b>
               {result?.all_passes_done && mission?.exam && (
                 <span style={{ color: "var(--text-2)", marginLeft: 8 }}>
-                  🎉 Bütün pass-lar bitdi — Final Exam açıldı!
+                  🎉 {lang === "az" ? "Bütün pass-lar bitdi — Final Exam açıldı!" : "All passes done — the Final Exam is unlocked!"}
                 </span>
               )}
               {result?.all_passes_done && !mission?.exam && (
-                <span style={{ marginLeft: 8 }}>🎉 Mission tamamlandı!</span>
+                <span style={{ marginLeft: 8 }}>🎉 {lang === "az" ? "Mission tamamlandı!" : "Mission completed!"}</span>
               )}
             </div>
           )}
@@ -181,16 +182,16 @@ export default function PassContentPage() {
           {/* Footer nav */}
           <div className="xk-lesson-foot">
             <button className="xk-btn ghost" onClick={() => prevPass ? navigate(`/missions/${slug}/passes/${prevPass.id}`) : navigate(`/missions/${slug}`)}>
-              Əvvəlki
+              {lang === "az" ? "Əvvəlki" : "Previous"}
             </button>
             <div style={{ display: "flex", gap: 8 }}>
               {!alreadyDone && !justCompleted ? (
                 <button className="xk-btn primary" onClick={handleComplete} disabled={completing}>
-                  {completing ? "Saxlanır..." : "✓ Tamamlandı kimi işarələ"}
+                  {completing ? (lang === "az" ? "Saxlanır..." : "Saving...") : (lang === "az" ? "✓ Tamamlandı kimi işarələ" : "✓ Mark as completed")}
                 </button>
               ) : (
                 <span className="xk-badge" style={{ background: "rgba(25,195,125,.14)", color: "#19c37d", border: "1px solid rgba(25,195,125,.3)", padding: "8px 14px", borderRadius: 9 }}>
-                  ✓ Tamamlandı
+                  ✓ {lang === "az" ? "Tamamlandı" : "Completed"}
                 </span>
               )}
               {(alreadyDone || justCompleted) && (
@@ -200,7 +201,7 @@ export default function PassContentPage() {
                     : <Link to={`/missions/${slug}`} className="xk-btn ghost">← Mission</Link>
                 ) : (
                   <button className="xk-btn primary" onClick={handleNext}>
-                    Növbəti dərs <ArrowIcon />
+                    {lang === "az" ? "Növbəti dərs" : "Next lesson"} <ArrowIcon />
                   </button>
                 )
               )}
@@ -208,6 +209,6 @@ export default function PassContentPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

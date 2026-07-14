@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { useLang } from "../contexts/LanguageContext";
 import ProgressRing from "../components/ui/ProgressRing";
 import Avatar from "../components/ui/Avatar";
 import AnimatedNumber from "../components/ui/AnimatedNumber";
 import XKBar from "../components/ui/XKBar";
+import Icon from "../components/ui/Icon";
 import { endpoints } from "../services/endpoints";
 import { clearTokens, getAccessToken } from "../utils/tokens";
+import { localizeRank } from "../utils/rankLabels";
 
 /* ─── Translations ──────────────────────────────────────────── */
 const T = {
@@ -45,6 +46,15 @@ const T = {
     startLearning: "Sual cavablamaqla başla.",
     noLeader: "Reytinq yoxdur",
     xpThisWeek: "XP bu həftə",
+    noActiveMission: "Aktiv missiya yoxdur",
+    chooseMission: "Missiya seç",
+    completedPct: "tamamlandı",
+    loading: "Yüklənir…",
+    you: "sən",
+    loadError: "Sualı yükləmək mümkün olmadı.",
+    goToQuestion: "Suala keç →",
+    viewQuestions: "Suallara bax →",
+    dowShort: ["B","Ç","Ç","C","C","Ş","B"],
   },
   en: {
     greet: ["Good morning", "Good afternoon", "Good evening"],
@@ -80,6 +90,15 @@ const T = {
     startLearning: "Start by answering questions.",
     noLeader: "No leaderboard yet",
     xpThisWeek: "XP this week",
+    noActiveMission: "No active mission",
+    chooseMission: "Choose a mission",
+    completedPct: "complete",
+    loading: "Loading…",
+    you: "you",
+    loadError: "The question could not be loaded.",
+    goToQuestion: "Go to question →",
+    viewQuestions: "Browse questions →",
+    dowShort: ["S","M","T","W","T","F","S"],
   },
 };
 
@@ -103,7 +122,7 @@ function StatXP({ xp, weekXP, t }) {
 }
 
 function StatStreak({ streak, last7, t }) {
-  const days = ["B","Ç","Ç","C","C","Ş","B"];
+  const days = t.dowShort;
   return (
     <div className="xk-card xk-card-int xk-stat" style={{ animationDelay: "150ms" }}>
       <div className="xk-stat-head">
@@ -145,7 +164,7 @@ function StatAccuracy({ accuracy, correct, total, t }) {
   );
 }
 
-function StatRank({ rank, rankPct, xpToNext, nextRank, globalRank, t }) {
+function StatRank({ rank, rankPct, xpToNext, nextRank, globalRank, t, lang }) {
   return (
     <div className="xk-card xk-card-int xk-stat" style={{ animationDelay: "290ms" }}>
       <div className="xk-stat-head">
@@ -154,8 +173,8 @@ function StatRank({ rank, rankPct, xpToNext, nextRank, globalRank, t }) {
           <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>
         </svg>
       </div>
-      <div className="xk-rank-name">{rank.replace("_"," ")}</div>
-      {nextRank && <div className="xk-rank-next">+{xpToNext} XP → {nextRank.replace("_"," ")}</div>}
+      <div className="xk-rank-name">{localizeRank(rank, lang)}</div>
+      {nextRank && <div className="xk-rank-next">+{xpToNext} XP → {localizeRank(nextRank, lang)}</div>}
       <div className="xk-rank-prog">
         <XKBar value={rankPct} max={100} height={5} />
         <span className="xk-rank-pct"><AnimatedNumber value={rankPct} />%</span>
@@ -182,7 +201,7 @@ function ContinueCard({ rooms, t }) {
       <div className="xk-card xk-continue" style={{ animationDelay: "430ms" }}>
         <div className="xk-card-head">
           <div>
-            <div className="xk-card-eyebrow">Davam et</div>
+            <div className="xk-card-eyebrow">{t.cont}</div>
             <h3 className="xk-card-title">{t.recommended}</h3>
           </div>
           <Link to="/missions" className="xk-link">{t.allMissions} →</Link>
@@ -191,8 +210,8 @@ function ContinueCard({ rooms, t }) {
           <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" opacity={0.4}>
             <path d="M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v4l3 2"/>
           </svg>
-          <span>Aktiv missiya yoxdur</span>
-          <Link to="/missions" className="xk-btn primary sm">Missiya seç →</Link>
+          <span>{t.noActiveMission}</span>
+          <Link to="/missions" className="xk-btn primary sm">{t.chooseMission} →</Link>
         </div>
       </div>
     );
@@ -221,11 +240,11 @@ function ContinueCard({ rooms, t }) {
         <div className="xk-feat-meta">
           <span>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5"/></svg>
-            {featured.progress_percent || 0}% tamamlandı
+            {featured.progress_percent || 0}% {t.completedPct}
           </span>
         </div>
         <Link to={`/rooms/${featured.slug}`} className="xk-btn primary block">
-          {(featured.progress_percent || 0) > 0 ? "Davam et" : t.start} →
+          {(featured.progress_percent || 0) > 0 ? t.cont : t.start} →
         </Link>
       </div>
 
@@ -250,7 +269,7 @@ function RecentCard({ activity, t }) {
     <div className="xk-card" style={{ animationDelay: "500ms" }}>
       <div className="xk-card-head">
         <div>
-          <div className="xk-card-eyebrow">Recent</div>
+          <div className="xk-card-eyebrow">{t.recentActivity}</div>
           <h3 className="xk-card-title">{t.yourAnswers}</h3>
         </div>
         <Link to="/self-study" className="xk-link">{t.allMissions} →</Link>
@@ -266,7 +285,7 @@ function RecentCard({ activity, t }) {
           {activity.slice(0, 5).map((it, i) => (
             <div key={i} className="xk-recent-row" style={{ animationDelay: `${520 + i * 70}ms` }}>
               <span className={`xk-recent-check ${it.is_correct ? "ok" : "no"}`}>
-                {it.is_correct ? "✓" : "✗"}
+                <Icon name={it.is_correct ? "check" : "close"} size={12} />
               </span>
               <div className="xk-recent-meta">
                 <span className="xk-recent-title">{it.question_title || it.title || "Sual"}</span>
@@ -309,7 +328,7 @@ function LeaderCard({ leaderboard, currentUser, t }) {
                 <Avatar user={p} size={28} rounded="sm" />
                 <span className="xk-leader-name">
                   {p.username}
-                  {isYou && <span className="xk-you-tag">sən</span>}
+                  {isYou && <span className="xk-you-tag">{t.you}</span>}
                 </span>
                 <span className="xk-leader-pts">{(p.xp || 0).toLocaleString()}</span>
               </div>
@@ -362,7 +381,7 @@ function QuestionCard({ t }) {
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "24px 0", color: "var(--ink-3)", fontSize: 13, textAlign: "center" }}>
           <span>{t.noQuestions}</span>
-          <Link to="/self-study" className="xk-btn outline sm">Suallara bax →</Link>
+          <Link to="/self-study" className="xk-btn outline sm">{t.viewQuestions}</Link>
         </div>
       </div>
     );
@@ -383,7 +402,7 @@ function QuestionCard({ t }) {
         <span className="xk-q-xp">+10 XP</span>
       </div>
       <p className="xk-q-prompt">
-        {question.text || question.title || question.question || "Sualı yükləmək mümkün olmadı."}
+        {question.text || question.title || question.question || t.loadError}
       </p>
       {options.length > 0 ? (
         <>
@@ -408,7 +427,7 @@ function QuestionCard({ t }) {
         </>
       ) : (
         <Link to={`/self-study/question/${question.id}`} className="xk-btn primary block" style={{ marginTop: "auto" }}>
-          Suala keç →
+          {t.goToQuestion}
         </Link>
       )}
     </div>
@@ -463,7 +482,7 @@ export default function DashboardPage() {
   const xp       = stats.total_points_earned ?? profile.xp ?? 0;
   const accuracy = stats.accuracy_rate ?? stats.accuracy_percent ?? 0;
   const streak   = profile.streak_days ?? stats.streak ?? 0;
-  const rank     = profile.rank || "Recruit";
+  const rank     = profile.rank || "recruit";
   const rankPct  = profile.rank_progress ?? 0;
   const nextRank = profile.next_rank;
   const xpToNext = profile.xp_to_next ?? 0;
@@ -500,11 +519,11 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div className="xk-greet">
           <div>
             <div className="xk-greet-eyebrow">{greet}</div>
-            <h1 className="xk-greet-name" style={{ opacity: 0.4 }}>Yüklənir…</h1>
+            <h1 className="xk-greet-name" style={{ opacity: 0.4 }}>{T[lang]?.loading || T.az.loading}</h1>
           </div>
         </div>
         <div className="xk-stats-grid">
@@ -512,19 +531,19 @@ export default function DashboardPage() {
             <div key={i} className="xk-card" style={{ minHeight: 148, opacity: 0.4, animationDelay: `${i*70}ms` }} />
           ))}
         </div>
-      </AppShell>
+      </>
     );
   }
 
   return (
-    <AppShell>
+    <>
       {/* ── Greeting ── */}
       <div className="xk-greet xk-reveal">
         <div>
           <div className="xk-greet-eyebrow">{greet}</div>
           <div className="xk-greet-row">
             <h1 className="xk-greet-name">{fullName}</h1>
-            {rank && <span className="xk-rank-badge">{rank.replace("_"," ").toUpperCase()}</span>}
+            {rank && <span className="xk-rank-badge">{localizeRank(rank, lang).toUpperCase()}</span>}
           </div>
           <p className="xk-greet-sub">{t.sub}</p>
         </div>
@@ -539,7 +558,7 @@ export default function DashboardPage() {
         <StatXP xp={xp} weekXP={weekXP} t={t} />
         <StatStreak streak={streak} last7={last7} t={t} />
         <StatAccuracy accuracy={accuracy} correct={correct} total={total} t={t} />
-        <StatRank rank={rank} rankPct={rankPct} xpToNext={xpToNext} nextRank={nextRank} globalRank={globalRank} t={t} />
+        <StatRank rank={rank} rankPct={rankPct} xpToNext={xpToNext} nextRank={nextRank} globalRank={globalRank} t={t} lang={lang} />
       </div>
 
       {/* ── Mid: continue ── */}
@@ -553,6 +572,6 @@ export default function DashboardPage() {
         <LeaderCard leaderboard={data.leaderboard} currentUser={currentUser} t={t} />
         <QuestionCard t={t} />
       </div>
-    </AppShell>
+    </>
   );
 }

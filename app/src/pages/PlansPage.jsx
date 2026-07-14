@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { endpoints } from "../services/endpoints";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import { getMockPlans, getMockPlanRoadmap } from "../data/mockData";
+import { useLang } from "../contexts/LanguageContext";
 
 const PATH_EMOJI = {
   "bug-bounty-hunter":   "🎯",
@@ -14,11 +14,20 @@ const PATH_EMOJI = {
 };
 
 const DIFFICULTY_LABEL = {
-  "bug-bounty-hunter":   { label: "Orta",        color: "#f59e0b" },
-  "penetration-tester":  { label: "Çətin",        color: "#ff3b3b" },
-  "soc-analyst":         { label: "Başlanğıc",    color: "#22c55e" },
-  "crypto-expert":       { label: "Orta",         color: "#f59e0b" },
-  "red-team-specialist": { label: "Ekspert",       color: "#c084fc" },
+  az: {
+    "bug-bounty-hunter":   { label: "Orta",        color: "#f59e0b" },
+    "penetration-tester":  { label: "Çətin",        color: "#ff3b3b" },
+    "soc-analyst":         { label: "Başlanğıc",    color: "#22c55e" },
+    "crypto-expert":       { label: "Orta",         color: "#f59e0b" },
+    "red-team-specialist": { label: "Ekspert",       color: "#c084fc" },
+  },
+  en: {
+    "bug-bounty-hunter":   { label: "Medium",       color: "#f59e0b" },
+    "penetration-tester":  { label: "Hard",         color: "#ff3b3b" },
+    "soc-analyst":         { label: "Beginner",     color: "#22c55e" },
+    "crypto-expert":       { label: "Medium",       color: "#f59e0b" },
+    "red-team-specialist": { label: "Expert",       color: "#c084fc" },
+  },
 };
 
 function countStepTypes(slug) {
@@ -34,6 +43,7 @@ function estimateHours(counts) {
 
 export default function PlansPage() {
   const navigate = useNavigate();
+  const { lang } = useLang();
   const [plans, setPlans]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [hovered, setHovered] = useState(null);
@@ -51,16 +61,18 @@ export default function PlansPage() {
   }, []);
 
   return (
-    <AppShell>
+    <>
       <div className="xk-screen">
 
         {/* Page header */}
         <div className="xk-screen-head xk-reveal" style={{ marginBottom: 8 }}>
           <div>
-            <div className="xk-greet-eyebrow">Platforma</div>
-            <h1 className="xk-screen-title">Öyrənmə Yolları</h1>
+            <div className="xk-greet-eyebrow">{lang === "az" ? "Platforma" : "Platform"}</div>
+            <h1 className="xk-screen-title">{lang === "az" ? "Öyrənmə Yolları" : "Learning Paths"}</h1>
             <p className="xk-greet-sub" style={{ maxWidth: 520 }}>
-              Sıfırdan mütəxəssisə — hər karyera yolu üçün strukturlu marşrut. Bir yol seç, addım-addım irəlilə.
+              {lang === "az"
+                ? "Sıfırdan mütəxəssisə — hər karyera yolu üçün strukturlu marşrut. Bir yol seç, addım-addım irəlilə."
+                : "From zero to expert — a structured route for every career path. Pick a path and progress step by step."}
             </p>
           </div>
         </div>
@@ -70,12 +82,17 @@ export default function PlansPage() {
           display: "flex", gap: 8, marginBottom: 32, flexWrap: "wrap",
           animationDelay: "60ms",
         }}>
-          {[
+          {(lang === "az" ? [
             { label: "Karyera yolu", value: "5" },
             { label: "Ümumi addım", value: "41" },
             { label: "Mütəxəssislik sahəsi", value: "6" },
             { label: "Sertifikat", value: "Tezliklə" },
-          ].map(s => (
+          ] : [
+            { label: "Career paths", value: "5" },
+            { label: "Total steps", value: "41" },
+            { label: "Specializations", value: "6" },
+            { label: "Certificate", value: "Coming soon" },
+          ]).map(s => (
             <div key={s.label} style={{
               padding: "10px 18px", borderRadius: "var(--r-inner)",
               background: "var(--bg-card)", border: "1px solid var(--line)",
@@ -94,7 +111,7 @@ export default function PlansPage() {
         ) : plans.length === 0 ? (
           <div className="xk-empty-screen">
             <div className="xk-empty-ico">🗺️</div>
-            <h3>Plan tapılmadı</h3>
+            <h3>{lang === "az" ? "Plan tapılmadı" : "No plans found"}</h3>
           </div>
         ) : (
           <div style={{
@@ -105,7 +122,8 @@ export default function PlansPage() {
             {plans.map((p, i) => {
               const color    = p.color || "var(--accent)";
               const emoji    = PATH_EMOJI[p.slug] || "🔒";
-              const diff     = DIFFICULTY_LABEL[p.slug] || { label: "Orta", color: "#f59e0b" };
+              const diff     = (DIFFICULTY_LABEL[lang] || DIFFICULTY_LABEL.az)[p.slug]
+                || { label: lang === "az" ? "Orta" : "Medium", color: "#f59e0b" };
               const counts   = countStepTypes(p.slug);
               const hours    = estimateHours(counts);
               const done     = p.user_progress?.completed || 0;
@@ -188,7 +206,7 @@ export default function PlansPage() {
                             fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600,
                             color: color,
                           }}>
-                            {counts.mission} missiya
+                            {counts.mission} {lang === "az" ? "missiya" : "missions"}
                           </span>
                         )}
                         {counts.course > 0 && (
@@ -198,7 +216,7 @@ export default function PlansPage() {
                             fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600,
                             color: "#3b82f6",
                           }}>
-                            {counts.course} kurs
+                            {counts.course} {lang === "az" ? "kurs" : "courses"}
                           </span>
                         )}
                         {counts.room > 0 && (
@@ -208,7 +226,7 @@ export default function PlansPage() {
                             fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600,
                             color: "#14b8a6",
                           }}>
-                            {counts.room} lab
+                            {counts.room} {lang === "az" ? "lab" : "labs"}
                           </span>
                         )}
                         {counts.exam > 0 && (
@@ -218,7 +236,7 @@ export default function PlansPage() {
                             fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 600,
                             color: "#c084fc",
                           }}>
-                            {counts.exam} sınaq
+                            {counts.exam} {lang === "az" ? "sınaq" : "exams"}
                           </span>
                         )}
                       </div>
@@ -231,14 +249,16 @@ export default function PlansPage() {
                         <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                           <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                         </svg>
-                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>~{hours} saat · {counts.total} addım</span>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>
+                          {lang === "az" ? `~${hours} saat · ${counts.total} addım` : `~${hours}h · ${counts.total} steps`}
+                        </span>
                       </div>
 
                       {/* Progress bar */}
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                            İrəliləyiş
+                            {lang === "az" ? "İrəliləyiş" : "Progress"}
                           </span>
                           <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: pct > 0 ? color : "var(--ink-4)" }}>
                             {pct}%
@@ -273,7 +293,7 @@ export default function PlansPage() {
                         }}
                         tabIndex={-1}
                       >
-                        {pct > 0 ? "Davam et" : "Yola başla"}
+                        {pct > 0 ? (lang === "az" ? "Davam et" : "Continue") : (lang === "az" ? "Yola başla" : "Start path")}
                         <span style={{ fontSize: 14 }}>→</span>
                       </button>
                     </div>
@@ -284,6 +304,6 @@ export default function PlansPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

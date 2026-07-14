@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import { useLang } from "../../contexts/LanguageContext";
+
+const AB_T = {
+  az: { activeDays: "aktiv gün", best: "ən yaxşı", noActivity: "Fəaliyyət yoxdur" },
+  en: { activeDays: "active days", best: "best", noActivity: "No activity" },
+};
 
 const DOW_SHORT = ["M","T","W","T","F","S","S"];
 const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -24,6 +30,8 @@ function fmt(iso) {
 }
 
 export default function ActivityBars({ days = [], weeks = 5 }) {
+  const { lang } = useLang();
+  const t = AB_T[lang] || AB_T.az;
   const [hover, setHover] = useState(null);
   const [pos, setPos]     = useState({ x: 0, y: 0 });
 
@@ -177,9 +185,9 @@ export default function ActivityBars({ days = [], weeks = 5 }) {
         <span style={{ color: totalXP > 0 ? "rgba(57,211,83,0.75)" : undefined }}>
           {totalXP > 0 ? `${totalXP.toLocaleString()} XP` : "0 XP"}
         </span>
-        <span>{active} aktiv gün / {weeks * 7}</span>
+        <span>{active} {t.activeDays} / {weeks * 7}</span>
         {best.value > 0 && (
-          <span>ən yaxşı: {best.value} XP · {best.date}</span>
+          <span>{t.best}: {best.value} XP · {best.date}</span>
         )}
       </div>
 
@@ -223,7 +231,7 @@ export default function ActivityBars({ days = [], weeks = 5 }) {
             </div>
           ) : (
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
-              Fəaliyyət yoxdur
+              {t.noActivity}
             </div>
           )}
         </div>

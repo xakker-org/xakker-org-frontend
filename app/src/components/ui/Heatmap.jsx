@@ -1,5 +1,11 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLang } from "../../contexts/LanguageContext";
 import "./Heatmap.css";
+
+const HM_T = {
+  az: { activeDays: "aktiv gün", earned: "qazanıldı", noActivity: "Fəaliyyət yoxdur", less: "Az", more: "Çox" },
+  en: { activeDays: "active days", earned: "earned", noActivity: "No activity", less: "Less", more: "More" },
+};
 
 const MONTHS   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DAY_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -38,6 +44,8 @@ export default function Heatmap({
   onYearChange = null,
   getTone = defaultTone,
 }) {
+  const { lang } = useLang();
+  const t = HM_T[lang] || HM_T.az;
   const [hover,  setHover ] = useState(null);
   const [tip,    setTip   ] = useState({ x: 0, y: 0 });
   const [cellPx, setCellPx] = useState(MIN_C);
@@ -134,7 +142,7 @@ export default function Heatmap({
       {/* ── Header ── */}
       <div className="gh-head">
         <span className="gh-count">
-          {activeDays} aktiv gün &nbsp;·&nbsp; {totalXP.toLocaleString()} XP
+          {activeDays} {t.activeDays} &nbsp;·&nbsp; {totalXP.toLocaleString()} XP
           {year && <span className="gh-count-year"> {year}</span>}
         </span>
 
@@ -200,11 +208,11 @@ export default function Heatmap({
       {/* ── Footer ── */}
       <div className="gh-foot">
         <div className="gh-legend">
-          <span>Az</span>
-          {[0, 1, 2, 3, 4].map(t => (
-            <div key={t} className={`gh-cell gh-t${t}`} style={{ pointerEvents: "none" }} />
+          <span>{t.less}</span>
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} className={`gh-cell gh-t${i}`} style={{ pointerEvents: "none" }} />
           ))}
-          <span>Çox</span>
+          <span>{t.more}</span>
         </div>
       </div>
 
@@ -212,9 +220,9 @@ export default function Heatmap({
       {hover && (
         <div className="gh-tip" style={{ left: tipX, top: tipY }} aria-hidden>
           {hover.rec?.value ? (
-            <span className="gh-tip-val"><strong>{hover.rec.value} XP</strong> qazanıldı</span>
+            <span className="gh-tip-val"><strong>{hover.rec.value} XP</strong> {t.earned}</span>
           ) : (
-            <span className="gh-tip-empty">Fəaliyyət yoxdur</span>
+            <span className="gh-tip-empty">{t.noActivity}</span>
           )}
           <span className="gh-tip-date">{fmtDate(hover.date)}</span>
         </div>

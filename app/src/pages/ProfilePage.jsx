@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import AppShell from "../components/AppShell";
+import Icon from "../components/ui/Icon";
 import Tile, { TileHead } from "../components/ui/Tile";
 import Stat from "../components/ui/Stat";
 import Bar from "../components/ui/Bar";
@@ -12,13 +12,9 @@ import Field, { Input, Textarea } from "../components/ui/Field";
 import EmptyState from "../components/ui/EmptyState";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import { endpoints } from "../services/endpoints";
+import { useLang } from "../contexts/LanguageContext";
+import { RANK_ICONS, localizeRank } from "../utils/rankLabels";
 import "../styles/profile-edit.css";
-
-const RANK_LABELS = {
-  recruit: "Recruit", script_kiddie: "Script Kiddie", operative: "Operative",
-  hunter: "Hunter", specialist: "Specialist", analyst: "Analyst",
-  architect: "Architect", operator: "Operator", ghost: "Ghost",
-};
 
 const COVER_PRESETS = {
   default: {
@@ -68,10 +64,6 @@ const COVER_PRESETS = {
   },
 };
 
-const RANK_ICONS = {
-  recruit: "◌", script_kiddie: "◎", operative: "◉", hunter: "⊕",
-  specialist: "⊗", analyst: "⊘", architect: "⊙", operator: "⊛", ghost: "✦",
-};
 
 const EMPTY_PROFILE = {
   username: "", email: "", full_name: "", bio: "", country: "", city: "",
@@ -89,6 +81,7 @@ function recentSum(days, n) {
 }
 
 export default function ProfilePage() {
+  const { lang } = useLang();
   const [profile, setProfile] = useState(EMPTY_PROFILE);
   const [stats, setStats]     = useState(EMPTY_STATS);
   const [days, setDays]       = useState([]);
@@ -122,7 +115,7 @@ export default function ProfilePage() {
       setYear(g?.data?.selected_year || THIS_YEAR);
       setActivity(a?.data || []);
     } catch (err) {
-      setError(err?.response?.data?.detail || "Profil yüklənmədi");
+      setError(err?.response?.data?.detail || (lang === "az" ? "Profil yüklənmədi" : "Profile could not be loaded"));
     } finally {
       setLoading(false);
     }
@@ -147,7 +140,7 @@ export default function ProfilePage() {
 
   const xp       = stats.total_points_earned || profile.xp || 0;
   const accuracy = stats.accuracy_rate || 0;
-  const rankDisp = RANK_LABELS[profile.rank] || profile.rank || "Recruit";
+  const rankDisp = localizeRank(profile.rank, lang);
   const rankIcon = RANK_ICONS[profile.rank] || "◌";
 
   const showToast = (msg, type = "ok") => {
@@ -157,29 +150,29 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div className="bento">
           <div className="span-12"><TileSkeleton height={300} /></div>
           {[3,3,3,3].map((_, i) => <div key={i} className="span-3"><TileSkeleton height={120} /></div>)}
           <div className="span-12"><TileSkeleton height={280} /></div>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (error) {
     return (
-      <AppShell>
+      <>
         <Tile>
-          <EmptyState icon="⚠" title="Xəta" description={error}
-            action={<Button variant="accent" onClick={() => load()}>Yenidən cəhd et</Button>} />
+          <EmptyState icon="alert" title={lang === "az" ? "Xəta" : "Error"} description={error}
+            action={<Button variant="accent" onClick={() => load()}>{lang === "az" ? "Yenidən cəhd et" : "Try again"}</Button>} />
         </Tile>
-      </AppShell>
+      </>
     );
   }
 
   return (
-    <AppShell>
+    <>
       {/* Toast */}
       {toast && (
         <div style={{
@@ -194,7 +187,7 @@ export default function ProfilePage() {
           display: "flex", alignItems: "center", gap: 8,
           animation: "fadeInUp 0.2s ease",
         }}>
-          <span>{toast.type === "ok" ? "✓" : "✗"}</span>
+          <span style={{ display: "inline-flex" }}><Icon name={toast.type === "ok" ? "check" : "close"} size={14} /></span>
           {toast.msg}
         </div>
       )}
@@ -259,11 +252,11 @@ export default function ProfilePage() {
             </div>
 
             <div style={{ display: "flex", gap: 8, paddingBottom: 4 }}>
-              <Button variant="ghost" onClick={() => load()} size="sm" title="Yenilə">
+              <Button variant="ghost" onClick={() => load()} size="sm" title={lang === "az" ? "Yenilə" : "Refresh"}>
                 ↻
               </Button>
               <Button variant="accent" onClick={() => setEdit(true)} size="sm">
-                Redaktə et
+                {lang === "az" ? "Redaktə et" : "Edit"}
               </Button>
             </div>
           </div>
@@ -272,7 +265,7 @@ export default function ProfilePage() {
           <div style={{ marginTop: 16 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
               <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
-                {profile.full_name || profile.username || "İsimsiz"}
+                {profile.full_name || profile.username || (lang === "az" ? "İsimsiz" : "Unnamed")}
               </h1>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--ink-4)" }}>
                 @{profile.username}
@@ -292,7 +285,7 @@ export default function ProfilePage() {
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }}>
               <Chip tone="accent">{rankIcon} {rankDisp}</Chip>
               {stats.leaderboard_rank > 0 && (
-                <Chip tone="amber">#{stats.leaderboard_rank} qlobal</Chip>
+                <Chip tone="amber">#{stats.leaderboard_rank} {lang === "az" ? "qlobal" : "global"}</Chip>
               )}
               {(profile.country || profile.city) && (
                 <Chip>
@@ -307,7 +300,7 @@ export default function ProfilePage() {
                 </Chip>
               )}
               {profile.streak_days > 0 && (
-                <Chip tone="amber">🔥 {profile.streak_days} gün streak</Chip>
+                <Chip tone="amber">🔥 {profile.streak_days} {lang === "az" ? "gün streak" : "day streak"}</Chip>
               )}
             </div>
 
@@ -316,13 +309,19 @@ export default function ProfilePage() {
               display: "flex", gap: 24, marginTop: 20, flexWrap: "wrap",
               paddingTop: 20, borderTop: "1px solid var(--line)",
             }}>
-              {[
+              {(lang === "az" ? [
                 { label: "Ümumi XP", value: xp.toLocaleString() },
                 { label: "Həll edildi", value: stats.total_questions_solved || 0 },
                 { label: "Dəqiqlik", value: `${Math.round(accuracy)}%` },
                 { label: "Aktiv gün", value: activeDaysCount },
                 { label: "Streak", value: `🔥 ${profile.streak_days || 0}` },
-              ].map(({ label, value }) => (
+              ] : [
+                { label: "Total XP", value: xp.toLocaleString() },
+                { label: "Solved", value: stats.total_questions_solved || 0 },
+                { label: "Accuracy", value: `${Math.round(accuracy)}%` },
+                { label: "Active days", value: activeDaysCount },
+                { label: "Streak", value: `🔥 ${profile.streak_days || 0}` },
+              ]).map(({ label, value }) => (
                 <div key={label}>
                   <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 2 }}>
                     {label}
@@ -340,22 +339,22 @@ export default function ProfilePage() {
       {/* ── Stats row ── */}
       <div className="bento" style={{ marginBottom: 20 }}>
         <Tile span={3} style={{ background: "linear-gradient(135deg, var(--bg-card) 0%, rgba(255,36,66,0.06) 100%)" }}>
-          <Stat label="Total XP" value={xp.toLocaleString()} size="lg" hint={`+${last30} son 30 gün`} />
+          <Stat label="Total XP" value={xp.toLocaleString()} size="lg" hint={lang === "az" ? `+${last30} son 30 gün` : `+${last30} last 30 days`} />
         </Tile>
         <Tile span={3}>
-          <Stat label="Həll edildi" value={stats.total_questions_solved || 0} size="lg"
-            hint={`${stats.total_attempts || 0} cəhd`} />
+          <Stat label={lang === "az" ? "Həll edildi" : "Solved"} value={stats.total_questions_solved || 0} size="lg"
+            hint={lang === "az" ? `${stats.total_attempts || 0} cəhd` : `${stats.total_attempts || 0} attempts`} />
         </Tile>
         <Tile span={3}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-            <Stat label="Dəqiqlik" value={Math.round(accuracy)} unit="%" size="lg"
-              hint={`${stats.correct_answers || 0} doğru`} />
+            <Stat label={lang === "az" ? "Dəqiqlik" : "Accuracy"} value={Math.round(accuracy)} unit="%" size="lg"
+              hint={lang === "az" ? `${stats.correct_answers || 0} doğru` : `${stats.correct_answers || 0} correct`} />
             <ProgressRing value={accuracy} size={60} strokeWidth={6} tone="accent" />
           </div>
         </Tile>
         <Tile span={3}>
-          <Stat label="Ən yaxşı gün" value={`${stats.best_day_points || 0}`} unit="XP" size="lg"
-            hint={stats.best_day_date || "Hələ yoxdur"} />
+          <Stat label={lang === "az" ? "Ən yaxşı gün" : "Best day"} value={`${stats.best_day_points || 0}`} unit="XP" size="lg"
+            hint={stats.best_day_date || (lang === "az" ? "Hələ yoxdur" : "None yet")} />
         </Tile>
       </div>
 
@@ -372,17 +371,17 @@ export default function ProfilePage() {
           />
           <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-4)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4 }}>
-              Rank irəliləyişi
+              {lang === "az" ? "Rank irəliləyişi" : "Rank progress"}
             </div>
             <div style={{ fontSize: 20, fontWeight: 700, color: "var(--ink-1)", marginBottom: 2 }}>
               {rankDisp}
             </div>
             {profile.next_rank && (
               <div style={{ fontSize: 12, color: "var(--ink-3)", marginBottom: 10 }}>
-                → {RANK_LABELS[profile.next_rank] || profile.next_rank}
+                → {localizeRank(profile.next_rank, lang)}
                 {profile.xp_to_next > 0 && (
                   <span className="mono tnum" style={{ color: "var(--accent)", marginLeft: 8, fontWeight: 700 }}>
-                    +{profile.xp_to_next.toLocaleString()} XP lazımdır
+                    {lang === "az" ? `+${profile.xp_to_next.toLocaleString()} XP lazımdır` : `+${profile.xp_to_next.toLocaleString()} XP needed`}
                   </span>
                 )}
               </div>
@@ -390,12 +389,17 @@ export default function ProfilePage() {
             <Bar value={profile.rank_progress || 0} tone="accent" />
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, minWidth: 200 }}>
-            {[
+            {(lang === "az" ? [
               { label: "Son 7 gün", value: `${last7.toLocaleString()} XP` },
               { label: "Son 30 gün", value: `${last30.toLocaleString()} XP` },
               { label: "Doğru", value: stats.correct_answers || 0, color: "var(--ok)" },
               { label: "Yanlış", value: stats.wrong_answers || 0, color: "var(--bad)" },
-            ].map(({ label, value, color }) => (
+            ] : [
+              { label: "Last 7 days", value: `${last7.toLocaleString()} XP` },
+              { label: "Last 30 days", value: `${last30.toLocaleString()} XP` },
+              { label: "Correct", value: stats.correct_answers || 0, color: "var(--ok)" },
+              { label: "Wrong", value: stats.wrong_answers || 0, color: "var(--bad)" },
+            ]).map(({ label, value, color }) => (
               <div key={label}>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-4)", marginBottom: 3 }}>{label}</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: color || "var(--ink-1)" }}>{value}</div>
@@ -418,9 +422,9 @@ export default function ProfilePage() {
       {/* ── Recent activity + performance ── */}
       <div className="bento">
         <Tile span={8}>
-          <TileHead eyebrow="Recent" title="Son fəaliyyət" />
+          <TileHead eyebrow="Recent" title={lang === "az" ? "Son fəaliyyət" : "Recent activity"} />
           {activity.length === 0 ? (
-            <EmptyState icon="◍" title="Hələ fəaliyyət yoxdur" description="Sual cavablamaqla başla." />
+            <EmptyState icon="clock" title={lang === "az" ? "Hələ fəaliyyət yoxdur" : "No activity yet"} description={lang === "az" ? "Sual cavablamaqla başla." : "Start by answering a question."} />
           ) : (
             <div style={{ display: "flex", flexDirection: "column" }}>
               {activity.slice(0, 12).map((it, i) => (
@@ -435,7 +439,7 @@ export default function ProfilePage() {
                     border: `1px solid ${it.is_correct ? "rgba(110,255,214,0.25)" : "rgba(255,122,138,0.25)"}`,
                     color: it.is_correct ? "var(--ok)" : "var(--bad)",
                     display: "grid", placeItems: "center", fontSize: 13, fontWeight: 700,
-                  }}>{it.is_correct ? "✓" : "✗"}</span>
+                  }}><Icon name={it.is_correct ? "check" : "close"} size={13} /></span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ink-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {it.question_title || it.title}
@@ -456,13 +460,17 @@ export default function ProfilePage() {
         </Tile>
 
         <Tile span={4}>
-          <TileHead eyebrow="Performance" title="Xülasə" />
+          <TileHead eyebrow="Performance" title={lang === "az" ? "Xülasə" : "Summary"} />
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {[
+            {(lang === "az" ? [
               { label: "Son 7 gün", value: last7, max: Math.max(last30, 1), tone: "accent", caption: `${last7} XP` },
               { label: "Son 30 gün", value: last30, max: Math.max(overall, 1), tone: "accent", caption: `${last30} XP` },
               { label: "Ümumi", value: overall, max: Math.max(overall, 1), tone: "mint", caption: `${overall.toLocaleString()} XP` },
-            ].map(({ label, value, max, tone, caption }) => (
+            ] : [
+              { label: "Last 7 days", value: last7, max: Math.max(last30, 1), tone: "accent", caption: `${last7} XP` },
+              { label: "Last 30 days", value: last30, max: Math.max(overall, 1), tone: "accent", caption: `${last30} XP` },
+              { label: "Overall", value: overall, max: Math.max(overall, 1), tone: "mint", caption: `${overall.toLocaleString()} XP` },
+            ]).map(({ label, value, max, tone, caption }) => (
               <div key={label}>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-3)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>
                   {label}
@@ -472,12 +480,17 @@ export default function ProfilePage() {
             ))}
 
             <div style={{ paddingTop: 12, borderTop: "1px solid var(--line)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              {[
+              {(lang === "az" ? [
                 { label: "Cəhd", value: stats.total_attempts || 0, color: "var(--ink-1)" },
                 { label: "Streak", value: `🔥 ${profile.streak_days || 0}`, color: "var(--warn)" },
                 { label: "Aktiv gün", value: activeDaysCount, color: "var(--c-5)" },
                 { label: "Ən yaxşı", value: `${stats.best_day_points || 0} XP`, color: "var(--c-3)" },
-              ].map(({ label, value, color }) => (
+              ] : [
+                { label: "Attempts", value: stats.total_attempts || 0, color: "var(--ink-1)" },
+                { label: "Streak", value: `🔥 ${profile.streak_days || 0}`, color: "var(--warn)" },
+                { label: "Active days", value: activeDaysCount, color: "var(--c-5)" },
+                { label: "Best day", value: `${stats.best_day_points || 0} XP`, color: "var(--c-3)" },
+              ]).map(({ label, value, color }) => (
                 <div key={label}>
                   <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ink-4)", marginBottom: 2 }}>{label}</div>
                   <div style={{ fontSize: 17, fontWeight: 700, color }}>{value}</div>
@@ -500,9 +513,10 @@ export default function ProfilePage() {
             showToast(msg, "ok");
           }}
           onError={(msg) => showToast(msg, "error")}
+          lang={lang}
         />
       )}
-    </AppShell>
+    </>
   );
 }
 
@@ -516,7 +530,7 @@ const HUE_PRESETS = [0, 30, 60, 120, 160, 200, 240, 280, 320];
 /*  Edit Profile Panel — full-height slide-over   */
 /* ─────────────────────────────────────────────── */
 
-function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, onSaved, onError }) {
+function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, onSaved, onError, lang }) {
   const [draft, setDraft] = useState({
     full_name:      profile.full_name || "",
     email:          profile.email || "",
@@ -613,9 +627,9 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
         };
       }
       await endpoints.updateProfile(payload);
-      onSaved("Profil uğurla yeniləndi");
+      onSaved(lang === "az" ? "Profil uğurla yeniləndi" : "Profile updated successfully");
     } catch (e) {
-      const msg = e?.response?.data?.detail || "Saxlamaq mümkün olmadı";
+      const msg = e?.response?.data?.detail || (lang === "az" ? "Saxlamaq mümkün olmadı" : "Could not save changes");
       setErr(msg);
       onError?.(msg);
     } finally {
@@ -629,26 +643,30 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
 
   const bioLen = (draft.bio || "").length;
 
-  const TABS = [
+  const TABS = lang === "az" ? [
     { key: "info",   label: "Məlumat",  icon: "◈" },
     { key: "avatar", label: "Avatar",    icon: "◎" },
     { key: "look",   label: "Görünüş",  icon: "✦" },
+  ] : [
+    { key: "info",   label: "Info",      icon: "◈" },
+    { key: "avatar", label: "Avatar",    icon: "◎" },
+    { key: "look",   label: "Look",      icon: "✦" },
   ];
 
   const coverKeys = Object.keys(COVER_PRESETS);
 
   return (
     <div className="edit-panel-overlay edit-overlay-fade" onClick={onClose}
-      role="dialog" aria-modal="true" aria-label="Profili redaktə et">
+      role="dialog" aria-modal="true" aria-label={lang === "az" ? "Profili redaktə et" : "Edit profile"}>
       <div className="edit-panel" onClick={(e) => e.stopPropagation()}>
 
         {/* ── Header ── */}
         <div className="edit-header">
           <div>
-            <h2>Profili redaktə et</h2>
+            <h2>{lang === "az" ? "Profili redaktə et" : "Edit profile"}</h2>
             <div className="edit-username">@{profile.username}</div>
           </div>
-          <button className="edit-close" type="button" onClick={onClose} aria-label="Bağla">✕</button>
+          <button className="edit-close" type="button" onClick={onClose} aria-label={lang === "az" ? "Bağla" : "Close"}>✕</button>
         </div>
 
         {/* ── Tabs ── */}
@@ -684,7 +702,7 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                     <Avatar user={previewUser} size={72} rounded="xl" />
                   </div>
                   <div className="edit-qp-info">
-                    <div className="edit-qp-name">{draft.full_name || profile.username || "İsimsiz"}</div>
+                    <div className="edit-qp-name">{draft.full_name || profile.username || (lang === "az" ? "İsimsiz" : "Unnamed")}</div>
                     <div className="edit-qp-handle">@{profile.username}</div>
                   </div>
                   <Button variant="ghost" size="sm" type="button" onClick={() => switchTab("avatar")}>
@@ -694,9 +712,9 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
 
                 {/* Full name + email */}
                 <div className="edit-form-row">
-                  <Field label="Tam ad">
+                  <Field label={lang === "az" ? "Tam ad" : "Full name"}>
                     <Input value={draft.full_name} onChange={set("full_name")}
-                      placeholder="Ad Soyad" maxLength={150} />
+                      placeholder={lang === "az" ? "Ad Soyad" : "First Last"} maxLength={150} />
                   </Field>
                   <Field label="Email">
                     <Input type="email" value={draft.email}
@@ -707,7 +725,7 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                 {/* Bio */}
                 <Field label="Bio">
                   <Textarea value={draft.bio} onChange={set("bio")}
-                    maxLength={240} rows={4} placeholder="Özün haqqında bir neçə söz..." />
+                    maxLength={240} rows={4} placeholder={lang === "az" ? "Özün haqqında bir neçə söz..." : "A few words about yourself..."} />
                   <div className={`edit-bio-count${bioLen > 200 ? " near" : ""}${bioLen >= 240 ? " full" : ""}`}>
                     {bioLen} / 240
                   </div>
@@ -715,16 +733,16 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
 
                 {/* Country + city */}
                 <div className="edit-form-row">
-                  <Field label="Ölkə">
-                    <Input value={draft.country} onChange={set("country")} placeholder="Azərbaycan" />
+                  <Field label={lang === "az" ? "Ölkə" : "Country"}>
+                    <Input value={draft.country} onChange={set("country")} placeholder={lang === "az" ? "Azərbaycan" : "Azerbaijan"} />
                   </Field>
-                  <Field label="Şəhər">
-                    <Input value={draft.city} onChange={set("city")} placeholder="Bakı" />
+                  <Field label={lang === "az" ? "Şəhər" : "City"}>
+                    <Input value={draft.city} onChange={set("city")} placeholder={lang === "az" ? "Bakı" : "Baku"} />
                   </Field>
                 </div>
 
                 {/* Username (readonly) */}
-                <Field label="İstifadəçi adı" hint="Dəyişdirilə bilməz">
+                <Field label={lang === "az" ? "İstifadəçi adı" : "Username"} hint={lang === "az" ? "Dəyişdirilə bilməz" : "Cannot be changed"}>
                   <Input value={profile.username} readOnly style={{ opacity: 0.5, cursor: "not-allowed" }} />
                 </Field>
               </>
@@ -742,7 +760,7 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                   <Avatar user={previewUser} size={140} rounded="xl" />
                   <div className="drop-hint">
                     <span className="drop-icon">{dragOver ? "⊕" : "↻"}</span>
-                    {dragOver ? "Buraxın" : "Şəkil yüklə"}
+                    {dragOver ? (lang === "az" ? "Buraxın" : "Drop it") : (lang === "az" ? "Şəkil yüklə" : "Upload image")}
                   </div>
                 </div>
 
@@ -753,16 +771,16 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                 <div className="edit-avatar-actions">
                   <Button variant="ghost" size="sm" type="button"
                     onClick={() => fileRef.current?.click()}>
-                    Şəkil seç
+                    {lang === "az" ? "Şəkil seç" : "Choose image"}
                   </Button>
                   {draft.avatar_file && (
                     <Button variant="ghost" size="sm" type="button" onClick={removeAvatar}>
-                      Avatarı sil
+                      {lang === "az" ? "Avatarı sil" : "Remove avatar"}
                     </Button>
                   )}
                   {draft.avatar_preview && !draft.avatar_file && (
                     <Button variant="ghost" size="sm" type="button" onClick={removeAvatar}>
-                      Avatarı sil
+                      {lang === "az" ? "Avatarı sil" : "Remove avatar"}
                     </Button>
                   )}
                 </div>
@@ -774,12 +792,12 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                 )}
 
                 <div style={{ fontSize: 11, color: "var(--ink-4)", textAlign: "center", marginTop: -8 }}>
-                  PNG, JPG, WEBP · Maks 2MB
+                  {lang === "az" ? "PNG, JPG, WEBP · Maks 2MB" : "PNG, JPG, WEBP · Max 2MB"}
                 </div>
 
                 {/* Hue */}
                 <div className="edit-hue-section">
-                  <div className="edit-section-label">Avatar rəng tonu</div>
+                  <div className="edit-section-label">{lang === "az" ? "Avatar rəng tonu" : "Avatar color hue"}</div>
 
                   <div className="edit-hue-presets">
                     {HUE_PRESETS.map(h => (
@@ -832,7 +850,7 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                 {/* Avatar hue quick preview */}
                 <div className="edit-hue-section">
                   <div className="edit-section-label" style={{ marginBottom: 12 }}>
-                    Profil rəng tonu
+                    {lang === "az" ? "Profil rəng tonu" : "Profile color hue"}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 16,
                     padding: "14px 18px", background: "var(--bg-card-2)",
@@ -840,7 +858,7 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                     <Avatar user={previewUser} size={48} rounded="md" />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-1)" }}>
-                        {draft.full_name || profile.username || "İsimsiz"}
+                        {draft.full_name || profile.username || (lang === "az" ? "İsimsiz" : "Unnamed")}
                       </div>
                       <div style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--ink-4)", marginTop: 1 }}>
                         {draft.avatar_hue}° hue
@@ -848,7 +866,7 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                     </div>
                     <Button variant="ghost" size="sm" type="button"
                       onClick={() => switchTab("avatar")}>
-                      Dəyiş
+                      {lang === "az" ? "Dəyiş" : "Change"}
                     </Button>
                   </div>
                 </div>
@@ -859,8 +877,9 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
                   background: "rgba(255,255,255,0.03)", border: "1px solid var(--line)",
                   fontSize: 12, color: "var(--ink-4)", lineHeight: 1.6,
                 }}>
-                  Cover gradient and accent changes are saved locally
-                  and will appear on your profile page.
+                  {lang === "az"
+                    ? "Cover gradient və rəng dəyişiklikləri lokal saxlanılır və profil səhifəndə görünəcək."
+                    : "Cover gradient and accent changes are saved locally and will appear on your profile page."}
                 </div>
               </div>
             )}
@@ -875,10 +894,10 @@ function EditProfilePanel({ profile, coverPreset: cp, onCoverChange, onClose, on
             <span style={{ marginLeft: 8 }}><kbd>{navigator.platform?.includes("Mac") ? "⌘" : "Ctrl"}+↵</kbd> to save</span>
           </div>
           <Button variant="ghost" type="button" onClick={onClose} disabled={saving}>
-            Ləğv et
+            {lang === "az" ? "Ləğv et" : "Cancel"}
           </Button>
           <Button variant="accent" type="button" onClick={submit} disabled={saving}>
-            {saving ? "Saxlanır..." : "Dəyişiklikləri saxla"}
+            {saving ? (lang === "az" ? "Saxlanır..." : "Saving...") : (lang === "az" ? "Dəyişiklikləri saxla" : "Save changes")}
           </Button>
         </div>
       </div>

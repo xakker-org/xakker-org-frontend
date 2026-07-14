@@ -1,105 +1,22 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { endpoints } from "../services/endpoints";
 import { clearTokens, getAccessToken } from "../utils/tokens";
 import { useCommand } from "../contexts/CommandContext";
 import { useLang } from "../contexts/LanguageContext";
+import { useTheme } from "../contexts/ThemeContext";
 import Avatar from "./ui/Avatar";
 import { Chip } from "./ui/Chip";
 import Kbd from "./ui/Kbd";
 import CommandPalette from "./ui/CommandPalette";
-
-function Icon({ name, size = 16 }) {
-  const icons = {
-    dashboard: (
-      <>
-        <rect x="2" y="2" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity=".9"/>
-        <rect x="8.5" y="2" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity=".9"/>
-        <rect x="2" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity=".9"/>
-        <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity=".9"/>
-      </>
-    ),
-    missions: (
-      <>
-        <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5"/>
-        <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5"/>
-        <circle cx="8" cy="8" r="1.2" fill="currentColor"/>
-      </>
-    ),
-    labs: (
-      <>
-        <rect x="2.5" y="5" width="11" height="8.5" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M5.5 5V3.5C5.5 3.22 5.72 3 6 3H10C10.28 3 10.5 3.22 10.5 3.5V5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M2.5 8.5H13.5" stroke="currentColor" strokeWidth="1.5"/>
-      </>
-    ),
-    study: (
-      <>
-        <rect x="2.5" y="2.5" width="11" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M5 6.5H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M5 9H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </>
-    ),
-    paths: (
-      <>
-        <circle cx="3.5" cy="12.5" r="1.8" fill="currentColor"/>
-        <circle cx="8" cy="8" r="1.8" fill="currentColor"/>
-        <circle cx="12.5" cy="3.5" r="1.8" fill="currentColor"/>
-        <path d="M5 11L7 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M9 7L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </>
-    ),
-    courses: (
-      <>
-        <path d="M2 5L8 2L14 5L8 8L2 5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-        <path d="M2 9L8 12L14 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M14 5V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </>
-    ),
-    leaderboard: (
-      <>
-        <rect x="2" y="8" width="3.5" height="7" rx="1" stroke="currentColor" strokeWidth="1.5"/>
-        <rect x="6.25" y="5" width="3.5" height="10" rx="1" stroke="currentColor" strokeWidth="1.5"/>
-        <rect x="10.5" y="2" width="3.5" height="13" rx="1" stroke="currentColor" strokeWidth="1.5"/>
-      </>
-    ),
-    profile: (
-      <>
-        <circle cx="8" cy="5.5" r="2.75" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M2.5 14C2.5 11.5 5.01 9.5 8 9.5C10.99 9.5 13.5 11.5 13.5 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </>
-    ),
-    chevronLeft: (
-      <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    ),
-    chevronRight: (
-      <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    ),
-    logout: (
-      <>
-        <path d="M10 11L13 8L10 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M13 8H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M7 2.5H3.5C3.22 2.5 3 2.72 3 3V13C3 13.28 3.22 13.5 3.5 13.5H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </>
-    ),
-    search: (
-      <>
-        <circle cx="7" cy="7" r="4" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M10 10L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </>
-    ),
-  };
-
-  return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={{ display: "block", flexShrink: 0 }}>
-      {icons[name]}
-    </svg>
-  );
-}
+import Icon from "./ui/Icon";
+import AnimatedBackground from "./AnimatedBackground";
+import { localizeRank } from "../utils/rankLabels";
 
 const NAV_MAIN = [
   { to: "/dashboard",   label: { az: "Dashboard",       en: "Dashboard"      }, icon: "dashboard" },
-  { to: "/missions",    label: { az: "Missions",        en: "Missions"       }, icon: "missions",  badge: "New" },
+  { to: "/missions",    label: { az: "Missions",        en: "Missions"       }, icon: "missions",  badge: { az: "Yeni", en: "New" } },
   { to: "/rooms",       label: { az: "Labs",            en: "Labs"           }, icon: "labs" },
   { to: "/self-study",  label: { az: "Sərbəst Tədris",  en: "Self-Study"     }, icon: "study" },
   { to: "/plans",       label: { az: "Öyrənmə Yolları", en: "Learning Paths" }, icon: "paths" },
@@ -113,10 +30,12 @@ const NAV_COMM = [
 
 const COLLAPSED_KEY = "xk_sb_collapsed";
 
-export default function AppShell({ children }) {
+export default function AppShell() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setOpen } = useCommand();
   const { lang, setLang } = useLang();
+  const { theme, toggleTheme } = useTheme();
   const [profile, setProfile] = useState(null);
   const [drawer, setDrawer]   = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
@@ -145,11 +64,12 @@ export default function AppShell({ children }) {
   const xp       = profile?.xp ?? 0;
   const streak   = profile?.streak_days ?? 0;
   const rank     = profile?.rank || "recruit";
-  const rankDisp = rank.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase());
+  const rankDisp = localizeRank(rank, lang);
   const isMac    = typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
 
   return (
     <div className={`shell${collapsed ? " sb-collapsed" : ""}`}>
+      <AnimatedBackground />
       {drawer && (
         <div className="sb-overlay" onClick={() => setDrawer(false)} aria-hidden="true" />
       )}
@@ -192,9 +112,20 @@ export default function AppShell({ children }) {
                 onClick={() => setDrawer(false)}
                 title={collapsed ? (item.label[lang] || item.label.az) : undefined}
               >
-                <span className="sb-link-ico"><Icon name={item.icon} size={22} /></span>
-                <span className="sb-link-label">{item.label[lang] || item.label.az}</span>
-                {item.badge && <span className="sb-link-badge">{item.badge}</span>}
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <motion.span
+                        layoutId="sb-active-pill"
+                        className="sb-link-indicator"
+                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                      />
+                    )}
+                    <span className="sb-link-ico"><Icon name={item.icon} size={22} /></span>
+                    <span className="sb-link-label">{item.label[lang] || item.label.az}</span>
+                    {item.badge && <span className="sb-link-badge">{item.badge[lang] || item.badge.az}</span>}
+                  </>
+                )}
               </NavLink>
             ))}
           </div>
@@ -209,8 +140,19 @@ export default function AppShell({ children }) {
                 onClick={() => setDrawer(false)}
                 title={collapsed ? (item.label[lang] || item.label.az) : undefined}
               >
-                <span className="sb-link-ico"><Icon name={item.icon} size={22} /></span>
-                <span className="sb-link-label">{item.label[lang] || item.label.az}</span>
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <motion.span
+                        layoutId="sb-active-pill"
+                        className="sb-link-indicator"
+                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                      />
+                    )}
+                    <span className="sb-link-ico"><Icon name={item.icon} size={22} /></span>
+                    <span className="sb-link-label">{item.label[lang] || item.label.az}</span>
+                  </>
+                )}
               </NavLink>
             ))}
           </div>
@@ -241,17 +183,17 @@ export default function AppShell({ children }) {
           <button
             className="tb-burger"
             type="button"
-            aria-label="Menyu"
+            aria-label={lang === "az" ? "Menyu" : "Menu"}
             onClick={() => setDrawer(d => !d)}
           >
-            ☰
+            <Icon name="menu" size={18} />
           </button>
 
           <button
             className="tb-cmd"
             type="button"
             onClick={() => setOpen(true)}
-            aria-label="Axtar"
+            aria-label={lang === "az" ? "Axtar" : "Search"}
           >
             <Icon name="search" size={14} />
             <span className="tb-cmd-label">
@@ -262,8 +204,21 @@ export default function AppShell({ children }) {
           </button>
 
           <div className="tb-right">
-            {streak > 0 && <Chip tone="amber">🔥 {streak}d</Chip>}
-            <Chip tone="accent">★ <strong className="tnum">{xp.toLocaleString()}</strong></Chip>
+            {streak > 0 && (
+              <Chip tone="amber" icon={<Icon name="flame" size={11} />}>{streak}d</Chip>
+            )}
+            <Chip tone="accent" icon={<Icon name="star" size={11} />}>
+              <strong className="tnum">{xp.toLocaleString()}</strong>
+            </Chip>
+            <button
+              type="button"
+              className="tb-theme-btn"
+              onClick={toggleTheme}
+              aria-label={lang === "az" ? "Tema" : "Theme"}
+              title={theme === "dark" ? (lang === "az" ? "İşıqlı tema" : "Light mode") : (lang === "az" ? "Qaranlıq tema" : "Dark mode")}
+            >
+              <Icon name={theme === "dark" ? "sun" : "moon"} size={15} />
+            </button>
             <div className="tb-lang">
               <button
                 type="button"
@@ -283,7 +238,19 @@ export default function AppShell({ children }) {
           </div>
         </header>
 
-        <main className="content">{children}</main>
+        <main className="content">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
 
       <CommandPalette />

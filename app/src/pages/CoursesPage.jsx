@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { useLang } from "../contexts/LanguageContext";
 import { endpoints } from "../services/endpoints";
 import { TileSkeleton } from "../components/ui/Skeleton";
+import Icon from "../components/ui/Icon";
 import { getMockCourses } from "../data/mockData";
+import { localizeCategory } from "../utils/categoryLabels";
 
 const T = {
   az: {
@@ -14,6 +15,7 @@ const T = {
     crypto: "Kripto", recon: "Kəşfiyyat",
     lessons: "dərs", hours: "saat", cont: "Davam edir", new: "Yeni",
     notFound: "Kurs tapılmadı",
+    levels: { beginner: "Başlanğıc", intermediate: "Orta", advanced: "Çətin", easy: "Asan", medium: "Orta", hard: "Çətin" },
   },
   en: {
     eyebrow: "Platform", title: "Courses",
@@ -22,6 +24,7 @@ const T = {
     crypto: "Crypto", recon: "Recon",
     lessons: "lessons", hours: "hours", cont: "Active", new: "New",
     notFound: "No courses found",
+    levels: { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced", easy: "Easy", medium: "Intermediate", hard: "Advanced" },
   },
 };
 
@@ -38,10 +41,9 @@ function catHue(c) {
   return 215;
 }
 
-const FILTERS = ["Hamısı", "Web", "Network", "Sistem", "Kripto", "Kəşfiyyat"];
-const FILTER_KEYS = {
-  "Web": "web", "Network": "network", "Sistem": "linux", "Kripto": "crypto", "Kəşfiyyat": "osint",
-};
+const FILTER_KEYS = ["all", "web", "network", "system", "crypto", "recon"];
+const FILTER_LOOKUP = { web: "web", network: "network", system: "linux", crypto: "crypto", recon: "osint" };
+
 
 export default function CoursesPage() {
   const { lang } = useLang();
@@ -49,7 +51,7 @@ export default function CoursesPage() {
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter]   = useState("Hamısı");
+  const [filter, setFilter]   = useState("all");
 
   useEffect(() => {
     let ok = true;
@@ -65,8 +67,8 @@ export default function CoursesPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (filter === "Hamısı") return courses;
-    const key = FILTER_KEYS[filter] || filter.toLowerCase();
+    if (filter === "all") return courses;
+    const key = FILTER_LOOKUP[filter] || filter;
     return courses.filter(c => {
       const cat = (c.category || c.category_name || "").toLowerCase();
       return cat.includes(key);
@@ -74,7 +76,7 @@ export default function CoursesPage() {
   }, [courses, filter]);
 
   return (
-    <AppShell>
+    <>
       <div className="xk-screen">
         <div className="xk-screen-head xk-reveal">
           <div>
@@ -85,11 +87,11 @@ export default function CoursesPage() {
         </div>
 
         <div className="xk-filters xk-reveal" style={{ animationDelay: "60ms" }}>
-          {FILTERS.map(f => (
+          {FILTER_KEYS.map(f => (
             <button key={f} type="button"
               className={`xk-filter${filter === f ? " on" : ""}`}
               onClick={() => setFilter(f)}>
-              {f}
+              {t[f]}
             </button>
           ))}
         </div>
@@ -109,7 +111,7 @@ export default function CoursesPage() {
               const hue    = catHue(c);
               const pct    = c.progress_percent || 0;
               const done   = pct >= 100;
-              const catName = c.category || c.category_name || "";
+              const catName = localizeCategory(c.category || c.category_name || "", lang);
               const authorInitial = (c.author_name || c.instructor || "X").charAt(0).toUpperCase();
 
               return (
@@ -134,12 +136,12 @@ export default function CoursesPage() {
                   <div className="xk-course-body">
                     <div className="xk-course-top">
                       <span className="xk-badge tone-muted">
-                        {{ beginner:"Başlanğıc", intermediate:"Orta", advanced:"Çətin", easy:"Asan", medium:"Orta", hard:"Çətin" }[c.level] || c.level || "Orta"}
+                        {t.levels[c.level] || c.level || t.levels.intermediate}
                       </span>
                       {pct > 0 && !done && (
                         <span className="xk-course-cont">
                           <svg width={8} height={8} viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-                          Davam edir
+                          {t.cont}
                         </span>
                       )}
                     </div>
@@ -174,10 +176,10 @@ export default function CoursesPage() {
                         {c.author_name || c.instructor || "Xakker"}
                       </div>
                       {done
-                        ? <span className="xk-badge tone-ok">✓</span>
+                        ? <span className="xk-badge tone-ok"><Icon name="check" size={11} /></span>
                         : pct > 0
                         ? <span className="xk-course-pct">{pct}%</span>
-                        : <span className="xk-course-new">Yeni</span>}
+                        : <span className="xk-course-new">{t.new}</span>}
                     </div>
 
                     {pct > 0 && (
@@ -192,6 +194,6 @@ export default function CoursesPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

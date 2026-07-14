@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import AppShell from "./components/AppShell";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import MissionDetailPage from "./pages/MissionDetailPage";
@@ -29,16 +30,16 @@ export default function App() {
   }, [location.pathname]);
 
   return (
-    <>
-      <Routes>
-        {/* Root */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    <Routes location={location}>
+      {/* Root */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Auth */}
-        <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
-        <Route path="/auth/:mode" element={<AuthPage />} />
+      {/* Auth (no shell) */}
+      <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/auth/:mode" element={<AuthPage />} />
 
-        {/* Dashboard */}
+      {/* Authenticated app — persistent shell, only the Outlet content transitions */}
+      <Route element={<AppShell />}>
         <Route path="/dashboard" element={<DashboardPage />} />
 
         {/* ── Missions ── */}
@@ -63,10 +64,10 @@ export default function App() {
         {/* Labs */}
         <Route path="/self-study" element={<SelfStudyPage />} />
         <Route path="/self-study/question/:id" element={<QuestionDetailPage />} />
+      </Route>
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </>
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 }

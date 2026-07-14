@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import Tile, { TileHead } from "../components/ui/Tile";
 import Stat from "../components/ui/Stat";
 import Bar from "../components/ui/Bar";
@@ -11,6 +10,7 @@ import Button from "../components/ui/Button";
 import { Chip, DiffBadge } from "../components/ui/Chip";
 import EmptyState from "../components/ui/EmptyState";
 import { TileSkeleton } from "../components/ui/Skeleton";
+import Icon from "../components/ui/Icon";
 import { endpoints } from "../services/endpoints";
 import { getStoredStudyLanguage, pickByLanguage, setStoredStudyLanguage } from "../utils/selfStudyI18n";
 import { useLang } from "../contexts/LanguageContext";
@@ -27,6 +27,11 @@ const T = {
     all: "Hamısı", reset: "Sıfırla",
     empty: "Sual tapılmadı", emptySub: "Filtrləri sıfırla.",
     progress: "İrəliləyişim", answered: "Cavablandı", attempts: "Cəhd",
+    platform: "Platforma", continuing: "Davam etdiyin material", continueBtn: "Davam et",
+    questionsLabel: "Suallar", filters: "Filtrlər", searchPlaceholder: "Sual axtar...",
+    questionsCount: n => `${n} sual`,
+    lvlAll: "Hamısı", lvlEasy: "Asan", lvlMed: "Orta", lvlHard: "Çətin",
+    typeAll: "Hamısı", typeMcq: "Çoxseçimli", typeOpen: "Açıq", typeTerm: "Termin.",
   },
   en: {
     eyebrow: "Self-Study", title: "Practice questions",
@@ -36,6 +41,11 @@ const T = {
     all: "All", reset: "Reset",
     empty: "No questions found", emptySub: "Reset filters and try again.",
     progress: "My Progress", answered: "Answered", attempts: "Attempts",
+    platform: "Platform", continuing: "Material you're continuing", continueBtn: "Continue",
+    questionsLabel: "Questions", filters: "Filters", searchPlaceholder: "Search questions...",
+    questionsCount: n => `${n} questions`,
+    lvlAll: "All", lvlEasy: "Easy", lvlMed: "Med", lvlHard: "Hard",
+    typeAll: "All", typeMcq: "MCQ", typeOpen: "Open", typeTerm: "Term",
   },
 };
 
@@ -134,12 +144,12 @@ export default function SelfStudyPage() {
   }, []);
 
   return (
-    <AppShell>
+    <>
       <div className="xk-screen">
       {/* Head */}
       <div className="xk-screen-head xk-reveal">
         <div>
-          <div className="xk-greet-eyebrow">Platforma</div>
+          <div className="xk-greet-eyebrow">{t.platform}</div>
           <h1 className="xk-screen-title">{t.title}</h1>
           <p className="xk-greet-sub">{t.sub}</p>
         </div>
@@ -159,8 +169,8 @@ export default function SelfStudyPage() {
           </svg>
         </div>
         <div className="xk-reading-meta">
-          <div className="xk-card-eyebrow">Davam etdiyin material</div>
-          <h3 className="xk-reading-title">Praktiki suallar — {pct}% tamamlandı</h3>
+          <div className="xk-card-eyebrow">{t.continuing}</div>
+          <h3 className="xk-reading-title">{t.title} — {pct}% {lang === "az" ? "tamamlandı" : "complete"}</h3>
           <div className="xk-reading-prog">
             <div className="xk-track" style={{ height: 5 }}>
               <div className="xk-fill" style={{ width: `${pct}%` }} />
@@ -169,14 +179,14 @@ export default function SelfStudyPage() {
           </div>
         </div>
         <button className="xk-btn primary" onClick={reset}>
-          Davam et
+          {t.continueBtn}
           <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
             <path d="M5 12h14M13 6l6 6-6 6" />
           </svg>
         </button>
       </div>
 
-      <div className="xk-section-label xk-reveal" style={{ animationDelay: "120ms" }}>Suallar</div>
+      <div className="xk-section-label xk-reveal" style={{ animationDelay: "120ms" }}>{t.questionsLabel}</div>
 
       {/* Filters + Questions */}
       <div className="bento" style={{ alignItems: "start" }}>
@@ -184,9 +194,9 @@ export default function SelfStudyPage() {
         {/* Filter sidebar */}
         <Tile span={3} pad="sm" style={{ position: "sticky", top: 76 }}>
           <TileHead
-            title="Filtrlər"
+            title={t.filters}
             action={hasFilter
-              ? <Button variant="ghost" size="sm" onClick={reset}>✕ Sıfırla</Button>
+              ? <Button variant="ghost" size="sm" onClick={reset}>{`✕ ${t.reset}`}</Button>
               : null}
           />
 
@@ -195,10 +205,10 @@ export default function SelfStudyPage() {
               label: t.level,
               node: (
                 <Segmented value={level} onChange={setLevel} block size="sm" options={[
-                  { value: "",             label: "All"  },
-                  { value: "beginner",     label: "Easy" },
-                  { value: "intermediate", label: "Med"  },
-                  { value: "advanced",     label: "Hard" },
+                  { value: "",             label: t.lvlAll  },
+                  { value: "beginner",     label: t.lvlEasy },
+                  { value: "intermediate", label: t.lvlMed  },
+                  { value: "advanced",     label: t.lvlHard },
                 ]} />
               ),
             },
@@ -206,10 +216,10 @@ export default function SelfStudyPage() {
               label: t.type,
               node: (
                 <Segmented value={qtype} onChange={setQtype} block size="sm" options={[
-                  { value: "",         label: "All"  },
-                  { value: "closed",   label: "MCQ"  },
-                  { value: "open",     label: "Open" },
-                  { value: "terminal", label: "Term" },
+                  { value: "",         label: t.typeAll  },
+                  { value: "closed",   label: t.typeMcq  },
+                  { value: "open",     label: t.typeOpen },
+                  { value: "terminal", label: t.typeTerm },
                 ]} />
               ),
             },
@@ -218,8 +228,8 @@ export default function SelfStudyPage() {
               node: (
                 <Segmented value={statusF} onChange={setStatusF} block size="sm" options={[
                   { value: "",        label: t.all },
-                  { value: "correct", label: "✓"   },
-                  { value: "wrong",   label: "✗"   },
+                  { value: "correct", label: <Icon name="check" size={12} /> },
+                  { value: "wrong",   label: <Icon name="close" size={12} /> },
                   { value: "pending", label: "○"   },
                 ]} />
               ),
@@ -250,13 +260,13 @@ export default function SelfStudyPage() {
         <div className="span-9" style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Input
-              placeholder="Sual axtar..."
+              placeholder={t.searchPlaceholder}
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{ flex: 1 }}
             />
             <Chip tone={filtered.length > 0 ? "accent" : "neutral"} size="sm">
-              {filtered.length} sual
+              {t.questionsCount(filtered.length)}
             </Chip>
           </div>
 
@@ -273,7 +283,7 @@ export default function SelfStudyPage() {
           ) : filtered.length === 0 ? (
             <Tile>
               <EmptyState
-                icon="◌"
+                icon="search"
                 title={t.empty}
                 description={t.emptySub}
                 action={hasFilter ? <Button variant="ghost" onClick={reset}>{t.reset}</Button> : null}
@@ -296,7 +306,7 @@ export default function SelfStudyPage() {
                       style={{ animationDelay: `${qi * 30}ms`, gridColumn: "span 1" }}
                     >
                       <div className="fi-cs-ico" style={{ background: ss.bg !== "transparent" ? ss.bg : undefined, borderColor: us !== "pending" ? ss.border : undefined }}>
-                        {us === "correct" ? "✓" : us === "wrong" ? "✗" : qIcon}
+                        {us === "correct" ? <Icon name="check" size={14} /> : us === "wrong" ? <Icon name="close" size={14} /> : qIcon}
                       </div>
                       <div className="fi-cs-body">
                         <div className="fi-cs-name">{q.title}</div>
@@ -337,6 +347,6 @@ export default function SelfStudyPage() {
         </div>
       </div>
       </div>{/* xk-screen */}
-    </AppShell>
+    </>
   );
 }

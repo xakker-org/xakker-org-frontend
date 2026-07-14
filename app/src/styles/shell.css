@@ -16,7 +16,15 @@
   width: var(--sidebar-w);
   display: flex;
   flex-direction: column;
-  background: var(--bg);
+  /* Translucent, not opaque — lets the animated background layer read
+     continuously behind the sidebar instead of being clipped by it.
+     Round 8 left this at 72% opaque (too dense against a low-alpha bg
+     layer) — dropped to 52% and the blur/saturate raised so nav
+     labels/icons stay fully legible while the field genuinely shows
+     through (see Round 9 background rework, animated-background.css). */
+  background: color-mix(in srgb, var(--bg) 52%, transparent);
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
   border-right: 1px solid var(--line);
   overflow: hidden;
   z-index: var(--z-sticky);
@@ -35,14 +43,14 @@
   align-items: center;
   border-bottom: 1px solid var(--line);
   flex-shrink: 0;
-  min-height: 64px;
+  height: var(--topbar-h);
 }
 
 .sb-brand {
   display: flex;
   align-items: center;
   flex: 1;
-  padding: 14px 56px 14px 16px;
+  padding: 9px 56px 9px 16px;
   text-decoration: none;
   color: var(--ink-1);
   overflow: hidden;
@@ -97,10 +105,10 @@
 }
 
 .sb-label {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ink-4);
   padding: 16px 10px 8px;
@@ -127,19 +135,22 @@
   font-weight: 500;
   text-decoration: none;
   position: relative;
-  transition: background var(--dur-1), color var(--dur-1), padding var(--dur-3) var(--ease);
+  transition: background var(--dur-1), color var(--dur-1), padding var(--dur-3) var(--ease), gap var(--dur-3) var(--ease);
   overflow: hidden;
 }
 .sb-link:hover {
-  background: rgba(255,255,255,0.055);
+  background: rgba(var(--overlay-rgb), 0.055);
   color: var(--ink-1);
 }
 .sb-link.is-active {
-  background: rgba(255,59,59,0.1);
+  background: rgba(var(--accent-rgb),0.1);
   color: var(--ink-1);
 }
-.sb-link.is-active::before {
-  content: "";
+/* Sliding active indicator — a single motion.span (layoutId="sb-active-pill"
+   in AppShell.jsx) is rendered inside whichever NavLink is active; framer-
+   motion animates its position/size between nav items on route change so
+   it reads as one indicator sliding, not an instant class swap. */
+.sb-link-indicator {
   position: absolute;
   left: 0; top: 8px; bottom: 8px;
   width: 3px;
@@ -147,19 +158,50 @@
   background: var(--accent);
 }
 .shell.sb-collapsed .sb-link {
-  justify-content: center;
-  padding: 13px;
+  /* Note: no justify-content switch here on purpose — justify-content is a
+     discrete (non-interpolable) CSS property, so transitioning it causes a
+     mid-animation snap instead of a smooth move ("icons jump" bug). Keeping
+     flex-start and letting width/padding/opacity/max-width do the work
+     (all real animatable properties) makes the collapse read as one
+     continuous motion instead of a layout pop.
+     Horizontal padding here is a deliberate calculation, not a round
+     number: collapsed sidebar content width for a nav link is 43px
+     (64px sidebar − 1px border − 10px×2 .sb-nav padding), and the icon
+     is a fixed 26px box, so (43 − 26) / 2 = 8.5px of padding on each
+     side centers the icon exactly instead of leaving it flush-left with
+     the old 13px padding (which left only 17px for a 26px icon — the
+     icon and its indicator overflowed the pill and got clipped, reading
+     as "squished"/uneven). `gap` also collapses to 0 here (see .sb-link
+     transition list) so the invisible 12px icon↔label gap doesn't keep
+     pushing the icon off-center even after the label's width hits 0. */
+  padding: 13px 8.5px;
+  gap: 0;
 }
 
 .sb-link-ico {
-  width: 24px; height: 24px;
+  width: 26px; height: 26px;
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   color: var(--ink-3);
-  transition: color var(--dur-1);
+  background: transparent;
+  transform: scale(1);
+  transition: color var(--dur-1) var(--ease), background var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
 }
-.sb-link:hover .sb-link-ico { color: var(--ink-1); }
-.sb-link.is-active .sb-link-ico { color: var(--accent); }
+.sb-link:hover .sb-link-ico {
+  color: var(--ink-1);
+  transform: scale(1.08);
+}
+/* Duotone active state: soft accent-tinted fill behind the stroke icon,
+   not just a color swap — this is the "feels modern" nav treatment. */
+.sb-link.is-active .sb-link-ico {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.16);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sb-link-ico { transition: color var(--dur-1); }
+  .sb-link:hover .sb-link-ico { transform: none; }
+}
 
 .sb-link-label {
   flex: 1;
@@ -206,7 +248,7 @@
 }
 .sb-toggle:hover {
   color: var(--ink-2);
-  background: rgba(255,255,255,0.04);
+  background: rgba(var(--overlay-rgb), 0.04);
 }
 .shell.sb-collapsed .sb-toggle {
   position: static;
@@ -229,9 +271,29 @@
   border: 1px solid var(--line);
   flex-shrink: 0;
   overflow: hidden;
-  transition: padding var(--dur-3) var(--ease), justify-content var(--dur-3) var(--ease);
+  transition: padding var(--dur-3) var(--ease), margin var(--dur-3) var(--ease), gap var(--dur-3) var(--ease);
 }
-.shell.sb-collapsed .sb-user { justify-content: center; padding: 12px; }
+/* No justify-content switch on collapse — see .sb-link note above for why;
+   flex-start plus sb-user-info's max-width/opacity collapse already reads
+   as smooth, centered-looking motion once the label has faded out.
+   Numbers below are calculated, not eyeballed: collapsed sidebar is 64px;
+   with 10px×2 side margin and the 1px card border that leaves a 42px
+   box, and 3px×2 padding leaves exactly 36px — the Avatar's own size —
+   so it lands dead-center instead of flush-left. `gap` drops to 0 so the
+   (now hidden) logout button doesn't leave a phantom 10px offset. */
+.shell.sb-collapsed .sb-user {
+  padding: 9px 3px;
+  margin: 4px 10px 10px;
+  gap: 0;
+}
+.shell.sb-collapsed .sb-user-logout {
+  opacity: 0;
+  width: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
 
 .sb-user-info {
   min-width: 0; flex: 1;
@@ -265,7 +327,11 @@
 /* ── Main column ── */
 .main {
   display: flex; flex-direction: column; min-height: 100vh;
-  background: var(--bg);
+  /* No opaque fill here — the fixed .xk-bg layer (mounted at the AppShell
+     root, behind .shell's grid children) shows straight through. Cards/
+     panels inside .content stay opaque on their own (--bg-card), so the
+     effect never bleeds onto foreground UI. */
+  background: transparent;
   min-width: 0;
 }
 
@@ -274,11 +340,16 @@
   position: sticky; top: 0; height: var(--topbar-h);
   display: flex; align-items: center; gap: 12px;
   padding: 0 28px;
-  background: rgba(8, 8, 10, 0.94);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  /* Round 9 fix: this was 94% opaque (Round 8 left it "untouched"),
+     which meant near-zero light from the .xk-bg layer could ever reach
+     the topbar regardless of how the effect itself was authored. Bring
+     it in line with .sb's translucency; blur/saturate compensate so
+     controls stay legible. */
+  background: color-mix(in srgb, var(--bg) 52%, transparent);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   border-bottom: 1px solid var(--line);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.03);
+  box-shadow: 0 1px 0 rgba(var(--overlay-rgb), 0.03);
   z-index: var(--z-sticky);
 }
 .tb-burger {
@@ -296,9 +367,9 @@
   display: inline-flex; align-items: center; gap: 10px;
   padding: 0 10px 0 12px;
   border-radius: 10px;
-  background: linear-gradient(180deg, var(--bg-card-2) 0%, rgba(15,15,19,0.95) 100%);
+  background: linear-gradient(180deg, var(--bg-card-2) 0%, var(--bg-card) 100%);
   border: 1px solid var(--line-2);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 3px rgba(0,0,0,0.35);
+  box-shadow: 0 1px 0 rgba(var(--overlay-rgb), 0.04) inset, 0 1px 3px rgba(0,0,0,0.35);
   color: var(--ink-3); cursor: pointer;
   min-width: 260px; height: 36px; font-size: 13px;
   font-family: var(--font-body);
@@ -306,7 +377,7 @@
 }
 .tb-cmd:hover {
   border-color: var(--line-3);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 1px 4px rgba(0,0,0,0.45);
+  box-shadow: 0 1px 0 rgba(var(--overlay-rgb), 0.06) inset, 0 1px 4px rgba(0,0,0,0.45);
   color: var(--ink-2);
 }
 .tb-cmd-label { flex: 1; text-align: left; font-size: 12.5px; color: var(--ink-4); }
@@ -339,9 +410,28 @@
 .tb-lang-btn:hover { color: var(--ink-2); }
 .tb-lang-btn.active {
   background: var(--accent);
-  color: #fff;
-  box-shadow: 0 1px 4px rgba(255,59,59,0.35);
+  color: var(--accent-ink);
+  box-shadow: 0 1px 4px rgba(var(--accent-rgb), 0.35);
 }
+
+/* ── Theme toggle ── */
+.tb-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-2);
+  background: var(--bg-card-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),
+    background var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.tb-theme-btn:hover { color: var(--ink-1); border-color: var(--line-3); }
+.tb-theme-btn:active { transform: scale(0.92); }
+.tb-theme-btn:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
 
 /* ── Content ── */
 .content {
@@ -361,10 +451,10 @@
   animation: xk-reveal 0.4s cubic-bezier(0.22,1,0.36,1) both;
 }
 .page-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--ink-3);
   margin-bottom: 6px;

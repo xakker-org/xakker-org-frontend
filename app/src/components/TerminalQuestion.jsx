@@ -6,12 +6,13 @@
  * When correct: shows XAKKER.org ASCII success banner inside terminal output.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLang } from "../contexts/LanguageContext";
 
 /* ── Command simulation engine ─────────────────────────────────── */
 const SIM = [
   {
     test: c => c === "help",
-    run: () => [
+    run: (_c, lang) => (lang === "az" ? [
       { t: "info",  v: "Mövcud əmrlər:" },
       { t: "",      v: "  nmap  -sV <ip>            — Port skanı" },
       { t: "",      v: "  gobuster dir -u <url>     — Dir brute-force" },
@@ -26,11 +27,26 @@ const SIM = [
       { t: "",      v: "  sqlmap -u <url>            — SQL injection" },
       { t: "",      v: "  hydra  -l user -P wl <t>  — Brute-force" },
       { t: "",      v: "  clear                     — Ekranı təmizlə" },
-    ],
+    ] : [
+      { t: "info",  v: "Available commands:" },
+      { t: "",      v: "  nmap  -sV <ip>            — Port scan" },
+      { t: "",      v: "  gobuster dir -u <url>     — Dir brute-force" },
+      { t: "",      v: "  curl  <url>               — HTTP request" },
+      { t: "",      v: "  cat   <file>              — Read file" },
+      { t: "",      v: "  ls    [-la] [folder]      — List files" },
+      { t: "",      v: "  find  / -name <name>      — Find file" },
+      { t: "",      v: "  grep  <pattern> <file>    — Search text" },
+      { t: "",      v: "  whoami / id               — Current user" },
+      { t: "",      v: "  base64 -d <<< <string>    — Base64 decode" },
+      { t: "",      v: "  echo   <text>             — Print text" },
+      { t: "",      v: "  sqlmap -u <url>            — SQL injection" },
+      { t: "",      v: "  hydra  -l user -P wl <t>  — Brute-force" },
+      { t: "",      v: "  clear                     — Clear screen" },
+    ]),
   },
   {
     test: c => c.startsWith("nmap"),
-    run: c => {
+    run: (c, lang) => {
       const hasV = c.includes("-sv") || c.includes("-sc") || c.includes("-a");
       const ip   = c.match(/\d{1,3}(?:\.\d{1,3}){3}/)?.[0] || "TARGET";
       return [
@@ -43,23 +59,23 @@ const SIM = [
         { t: "success", v: "80/tcp   open  http"  + (hasV ? "    Apache httpd 2.4.52" : "") },
         { t: "",      v: "3306/tcp open  mysql" + (hasV ? "   MySQL 8.0.32" : "") },
         { t: "",      v: "" },
-        { t: "success", v: "[ ✓ HTTP servisi 80-ci portda tapıldı ]" },
+        { t: "success", v: lang === "az" ? "[ ✓ HTTP servisi 80-ci portda tapıldı ]" : "[ ✓ HTTP service found on port 80 ]" },
       ];
     },
   },
   {
     test: c => c.startsWith("gobuster"),
-    run: () => [
+    run: (_c, lang) => [
       { t: "muted",   v: "Gobuster v3.6 — directory enumeration" },
       { t: "",        v: "/index.php       (Status: 200)" },
-      { t: "success", v: "/admin/login.php (Status: 200)  ← TAPILDI" },
+      { t: "success", v: "/admin/login.php (Status: 200)  ← " + (lang === "az" ? "TAPILDI" : "FOUND") },
       { t: "",        v: "/uploads         (Status: 403)" },
-      { t: "success", v: "/backup/db.sql   (Status: 200)  ← AÇIQ DB!" },
+      { t: "success", v: "/backup/db.sql   (Status: 200)  ← " + (lang === "az" ? "AÇIQ DB!" : "OPEN DB!") },
     ],
   },
   {
     test: c => c.startsWith("curl"),
-    run: c => {
+    run: (c, lang) => {
       const url = c.split(" ").pop() || "";
       if (url.includes("flag") || url.includes("secret")) {
         return [{ t: "muted", v: "< HTTP/1.1 200 OK" }, { t: "", v: "" }, { t: "success", v: "xkr{curl_m4st3r_2024}" }];
@@ -71,7 +87,7 @@ const SIM = [
           { t: "",        v: "<form action='/admin/login.php' method='POST'>" },
           { t: "",        v: "  <input name='username'/><input name='password' type='password'/>" },
           { t: "",        v: "</form>" },
-          { t: "success", v: "[ ✓ Admin login forması tapıldı ]" },
+          { t: "success", v: lang === "az" ? "[ ✓ Admin login forması tapıldı ]" : "[ ✓ Admin login form found ]" },
         ];
       }
       return [{ t: "muted", v: "< HTTP/1.1 200 OK  X-Powered-By: PHP/8.1" }, { t: "", v: "<html><body>Xakker CTF</body></html>" }];
@@ -79,7 +95,7 @@ const SIM = [
   },
   {
     test: c => c.startsWith("cat"),
-    run: c => {
+    run: (c, lang) => {
       const path = c.split(" ").pop() || "";
       if (path.includes("passwd")) {
         return [
@@ -94,28 +110,30 @@ const SIM = [
       if (path.includes("shadow")) {
         return [{ t: "err", v: "cat: /etc/shadow: Permission denied" }];
       }
-      return [{ t: "", v: "# Bu fayl mövcuddur" }, { t: "", v: "HINT=Düzgün əmri tap" }];
+      return lang === "az"
+        ? [{ t: "", v: "# Bu fayl mövcuddur" }, { t: "", v: "HINT=Düzgün əmri tap" }]
+        : [{ t: "", v: "# This file exists" }, { t: "", v: "HINT=Find the right command" }];
     },
   },
   {
     test: c => c.startsWith("ls"),
-    run: c => c.includes("-la") || c.includes("-l") ? [
+    run: (c, lang) => c.includes("-la") || c.includes("-l") ? [
       { t: "muted",   v: "total 48" },
       { t: "",        v: "drwxr-xr-x  www-data  index.php" },
-      { t: "success", v: "-rw-r--r--  root      .secret_flag  ← GİZLİ!" },
+      { t: "success", v: "-rw-r--r--  root      .secret_flag  ← " + (lang === "az" ? "GİZLİ!" : "HIDDEN!") },
       { t: "",        v: "drwxr-xr-x  www-data  uploads/" },
     ] : [
       { t: "",      v: "index.php  config.php  uploads/" },
-      { t: "muted", v: "İpucu: 'ls -la' ilə gizli faylları gör" },
+      { t: "muted", v: lang === "az" ? "İpucu: 'ls -la' ilə gizli faylları gör" : "Hint: use 'ls -la' to see hidden files" },
     ],
   },
   {
     test: c => c.startsWith("find"),
-    run: () => [
+    run: (_c, lang) => [
       { t: "",        v: "./index.php" },
-      { t: "success", v: "./.hidden/flag.txt  ← TAPILDI" },
+      { t: "success", v: "./.hidden/flag.txt  ← " + (lang === "az" ? "TAPILDI" : "FOUND") },
       { t: "",        v: "./uploads/img.png" },
-      { t: "success", v: "[ ✓ Gizli fayl tapıldı: ./.hidden/flag.txt ]" },
+      { t: "success", v: lang === "az" ? "[ ✓ Gizli fayl tapıldı: ./.hidden/flag.txt ]" : "[ ✓ Hidden file found: ./.hidden/flag.txt ]" },
     ],
   },
   {
@@ -185,31 +203,31 @@ const TAB_WORDS = [
 /* Commands that are purely navigational — skip API check */
 const SKIP_CHECK = new Set(["help","clear","whoami","id","ls"]);
 
-function runSim(raw) {
+function runSim(raw, lang) {
   const c = raw.trim().toLowerCase();
   if (!c) return null;
   if (c === "clear") return { clear: true };
   for (const e of SIM) {
-    if (e.test(c)) return { lines: e.run(c) };
+    if (e.test(c)) return { lines: e.run(c, lang) };
   }
   return {
     lines: [
       { t: "err",   v: `zsh: command not found: ${raw.split(" ")[0]}` },
-      { t: "muted", v: "Kömək üçün 'help' yaz." },
+      { t: "muted", v: lang === "az" ? "Kömək üçün 'help' yaz." : "Type 'help' for help." },
     ],
   };
 }
 
 /* ── XAKKER.org ASCII success banner ──────────────────────────── */
-function buildSuccessBanner(points) {
+function buildSuccessBanner(points, lang) {
   const W = 52;
   const pad = s => s + " ".repeat(Math.max(0, W - s.length - 2));
   return [
     { t: "success", v: "" },
     { t: "success", v: "╔" + "═".repeat(W) + "╗" },
     { t: "success", v: "║" + pad("  ✓  XAKKER.org") + "║" },
-    { t: "success", v: "║" + pad("  Bu suali düzgün cavablandırdın!") + "║" },
-    { t: "success", v: "║" + pad(`  +${points} XP qazandın`) + "║" },
+    { t: "success", v: "║" + pad(lang === "az" ? "  Bu suali düzgün cavablandırdın!" : "  You answered this question correctly!") + "║" },
+    { t: "success", v: "║" + pad(lang === "az" ? `  +${points} XP qazandın` : `  +${points} XP earned`) + "║" },
     { t: "success", v: "╚" + "═".repeat(W) + "╝" },
     { t: "success", v: "" },
   ];
@@ -254,6 +272,7 @@ export default function TerminalQuestion({
   prevCorrect,
   onAttempt,
 }) {
+  const { lang } = useLang();
   const points = question?.points || 10;
 
   const makeInit = useCallback(() => [
@@ -267,7 +286,7 @@ export default function TerminalQuestion({
         { t: "banner", v: "  ██╔╝ ██╗██║  ██║██║  ██╗██║  ██╗███████╗██║  ██║" },
         { t: "banner", v: "  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝" },
         { t: "muted",  v: "" },
-        { t: "info",   v: "  Terminal Sualı  |  'help' — köməklik  |  ↑↓ tarixçə" },
+        { t: "info",   v: lang === "az" ? "  Terminal Sualı  |  'help' — köməklik  |  ↑↓ tarixçə" : "  Terminal Question  |  'help' for help  |  ↑↓ history" },
         { t: "muted",  v: "  ─────────────────────────────────────────────────────" },
         { t: "muted",  v: "" },
       ],
@@ -275,13 +294,13 @@ export default function TerminalQuestion({
     {
       type: "context",
       lines: [
-        { t: "muted",  v: "┌─[ SUAL ]" + "─".repeat(42) },
+        { t: "muted",  v: (lang === "az" ? "┌─[ SUAL ]" : "┌─[ QUESTION ]") + "─".repeat(42) },
         { t: "info",   v: `│  ${question?.prompt || ""}` },
         { t: "muted",  v: "└" + "─".repeat(50) },
         { t: "muted",  v: "" },
       ],
     },
-  ], [question?.prompt]);
+  ], [question?.prompt, lang]);
 
   const [blocks,     setBlocks]     = useState(makeInit);
   const [cmd,        setCmd]        = useState("");
@@ -300,7 +319,7 @@ export default function TerminalQuestion({
   useEffect(() => {
     const sc = question?.starter_code?.trim();
     if (!sc) return;
-    const result = runSim(sc);
+    const result = runSim(sc, lang);
     if (!result || result.clear) return;
     setBlocks(prev => [...prev, { type: "cmd", cmd: sc, lines: result.lines || [] }]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -311,13 +330,13 @@ export default function TerminalQuestion({
     if (!locked || !prevAnswer || lockedReplayed.current) return;
     lockedReplayed.current = true;
 
-    const result = runSim(prevAnswer);
+    const result = runSim(prevAnswer, lang);
     const simLines = (!result?.clear && result?.lines) ? result.lines : [];
     const suffix = prevCorrect
-      ? buildSuccessBanner(points)
+      ? buildSuccessBanner(points, lang)
       : [
           { t: "err",   v: "╔══════════════════════════════════════════════════════╗" },
-          { t: "err",   v: "║  ✗  Bu cavab yanlış idi.                             ║" },
+          { t: "err",   v: lang === "az" ? "║  ✗  Bu cavab yanlış idi.                             ║" : "║  ✗  This answer was wrong.                           ║" },
           { t: "err",   v: "╚══════════════════════════════════════════════════════╝" },
           { t: "muted", v: "" },
         ];
@@ -342,7 +361,7 @@ export default function TerminalQuestion({
     setSavedCmd("");
     setCmd("");
 
-    const result = runSim(c);
+    const result = runSim(c, lang);
     if (!result) return;
 
     if (result.clear) {
@@ -374,7 +393,7 @@ export default function TerminalQuestion({
           setSolved(true);
           setBlocks(prev => [
             ...prev,
-            { type: "success", lines: buildSuccessBanner(points) },
+            { type: "success", lines: buildSuccessBanner(points, lang) },
           ]);
         } else {
           setTimeout(() => inputRef.current?.focus(), 0);
@@ -388,7 +407,7 @@ export default function TerminalQuestion({
     } else {
       setTimeout(() => inputRef.current?.focus(), 0);
     }
-  }, [cmd, solved, checking, makeInit, onAttempt, points]);
+  }, [cmd, solved, checking, makeInit, onAttempt, points, lang]);
 
   /* ── Keyboard handler ────────────────────────────────────────── */
   const handleKeyDown = useCallback(e => {
@@ -442,7 +461,7 @@ export default function TerminalQuestion({
         </div>
         <span className="lab-tab active" style={{ cursor: "default", pointerEvents: "none" }}>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, opacity: 0.6 }}>&gt;_</span>
-          Terminal Sualı
+          {lang === "az" ? "Terminal Sualı" : "Terminal Question"}
         </span>
 
         {/* Checking indicator */}
@@ -456,13 +475,13 @@ export default function TerminalQuestion({
               borderRadius: "50%", background: "var(--accent)",
               animation: "lab-blink 0.8s ease-in-out infinite",
             }} />
-            yoxlanılır…
+            {lang === "az" ? "yoxlanılır…" : "checking…"}
           </span>
         )}
 
         {solved && (
           <span className="fi-badge fi-badge-ok" style={{ marginLeft: 8, fontSize: 11 }}>
-            ✓ Həll edildi
+            {lang === "az" ? "✓ Həll edildi" : "✓ Solved"}
           </span>
         )}
 
@@ -483,7 +502,7 @@ export default function TerminalQuestion({
           onMouseOver={e => { e.currentTarget.style.color = "var(--ink-1)"; e.currentTarget.style.borderColor = "var(--line-3)"; }}
           onMouseOut={e =>  { e.currentTarget.style.color = "var(--ink-4)"; e.currentTarget.style.borderColor = "var(--line-2)"; }}
         >
-          ↺ Sıfırla
+          {lang === "az" ? "↺ Sıfırla" : "↺ Reset"}
         </button>
       </div>
 
@@ -560,7 +579,7 @@ export default function TerminalQuestion({
               <span className="kali-bracket">└─</span>
               <span className="kali-dollar">$ </span>
               <span style={{ color: "var(--ok)", fontFamily: "var(--font-mono)", fontSize: 12 }}>
-                # Sual həll edildi — terminal kilidləndi ✓
+                {lang === "az" ? "# Sual həll edildi — terminal kilidləndi ✓" : "# Question solved — terminal locked ✓"}
               </span>
             </div>
           </div>
@@ -583,7 +602,7 @@ export default function TerminalQuestion({
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
-            placeholder="əmri yaz… (↑↓ tarixçə, Tab tamamla)"
+            placeholder={lang === "az" ? "əmri yaz… (↑↓ tarixçə, Tab tamamla)" : "type a command… (↑↓ history, Tab to complete)"}
             onChange={e => setCmd(e.target.value)}
             onKeyDown={handleKeyDown}
           />
@@ -613,7 +632,9 @@ export default function TerminalQuestion({
             fontFamily: "var(--font-mono)", fontSize: 12,
             color: "var(--ok)", fontWeight: 700,
           }}>
-            XAKKER.org — Bu suali düzgün cavablandırdın! +{points} XP
+            {lang === "az"
+              ? `XAKKER.org — Bu suali düzgün cavablandırdın! +${points} XP`
+              : `XAKKER.org — You answered this question correctly! +${points} XP`}
           </span>
         </div>
       )}

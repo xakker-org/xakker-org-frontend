@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { getMockPlans, getMockPlanRoadmap } from "../data/mockData";
 import { useLang } from "../contexts/LanguageContext";
+import Icon from "../components/ui/Icon";
 
 const TYPE_META = {
   course:  { label: { az: "Kurs",    en: "Course"  }, color: "#3b82f6", icon: "▤", hours: 6 },
@@ -34,15 +34,15 @@ export default function PlanDetailPage() {
 
   if (!plan) {
     return (
-      <AppShell>
+      <>
         <div className="xk-screen">
           <div className="xk-empty-screen">
             <div className="xk-empty-ico">🗺️</div>
-            <h3>Plan tapılmadı</h3>
-            <button className="xk-btn primary" onClick={() => navigate("/plans")}>← Geri</button>
+            <h3>{lang === "az" ? "Plan tapılmadı" : "Plan not found"}</h3>
+            <button className="xk-btn primary" onClick={() => navigate("/plans")}>{lang === "az" ? "← Geri" : "← Back"}</button>
           </div>
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -77,7 +77,7 @@ export default function PlanDetailPage() {
   const emoji = PATH_EMOJI[slug] || "🔒";
 
   return (
-    <AppShell>
+    <>
       <div className="xk-screen">
 
         {/* Back button */}
@@ -199,7 +199,7 @@ export default function PlanDetailPage() {
           letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-4)",
           marginBottom: 20,
         }}>
-          {lang === "az" ? "Yol xəritəsi" : "Roadmap"} · {roadmap.length} addım
+          {lang === "az" ? "Yol xəritəsi" : "Roadmap"} · {roadmap.length} {lang === "az" ? "addım" : "steps"}
         </div>
 
         {/* Roadmap timeline */}
@@ -261,7 +261,7 @@ export default function PlanDetailPage() {
                       flexShrink: 0,
                       boxShadow: isHov ? `0 0 0 4px ${typeColor}18` : "none",
                     }}>
-                      {step.done ? "✓" : zeroPad(i + 1)}
+                      {step.done ? <Icon name="check" size={14} /> : zeroPad(i + 1)}
                     </div>
 
                     {/* Step card */}
@@ -304,7 +304,7 @@ export default function PlanDetailPage() {
                               fontFamily: "var(--font-mono)", fontSize: 9.5, fontWeight: 700,
                               color: "var(--ok)",
                             }}>
-                              ✓ Tamamlandı
+                              ✓ {lang === "az" ? "Tamamlandı" : "Completed"}
                             </span>
                           )}
                         </div>
@@ -375,6 +375,6 @@ export default function PlanDetailPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

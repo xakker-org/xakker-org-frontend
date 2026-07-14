@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import Tile, { TileHead } from "../components/ui/Tile";
 import Button from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import EmptyState from "../components/ui/EmptyState";
 import { endpoints } from "../services/endpoints";
+import { useLang } from "../contexts/LanguageContext";
+import Icon from "../components/ui/Icon";
 
 const OPTION_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -21,7 +22,7 @@ function isYouTube(url) {
 }
 
 /* ── Quiz modal (video-triggered) ─────────────────────────────── */
-function QuizModal({ question, onSubmit, onContinue }) {
+function QuizModal({ question, onSubmit, onContinue, lang }) {
   const [selected, setSelected]   = useState(null);
   const [result, setResult]       = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -67,7 +68,7 @@ function QuizModal({ question, onSubmit, onContinue }) {
             fontFamily: "var(--font-mono)", fontSize: 12,
             color: "var(--accent)", fontWeight: 700,
           }}>
-            {question.points} xal
+            {question.points} {lang === "az" ? "xal" : "pts"}
           </span>
         </div>
 
@@ -109,7 +110,7 @@ function QuizModal({ question, onSubmit, onContinue }) {
 
         {answered && (
           <div className={`xk-explain ${isCorrect ? "ok" : "no"}`}>
-            <b>{isCorrect ? "Doğru!" : "Düzgün cavab işarələnib."}</b>
+            <b>{isCorrect ? (lang === "az" ? "Doğru!" : "Correct!") : (lang === "az" ? "Düzgün cavab işarələnib." : "The correct answer is marked.")}</b>
             {(result?.explanation || attempt?.explanation) && (
               <span> {result?.explanation || attempt?.explanation}</span>
             )}
@@ -118,13 +119,13 @@ function QuizModal({ question, onSubmit, onContinue }) {
 
         {!answered && (
           <button className="xk-btn primary block" onClick={handleSubmit} disabled={!selected || submitting}>
-            {submitting ? "Göndərilir..." : "Yoxla"}
+            {submitting ? (lang === "az" ? "Göndərilir..." : "Submitting...") : (lang === "az" ? "Yoxla" : "Check")}
           </button>
         )}
       </div>
 
       <button className="xk-btn primary" onClick={onContinue}>
-        Videoya davam et →
+        {lang === "az" ? "Videoya davam et →" : "Continue video →"}
       </button>
     </div>
   );
@@ -241,7 +242,7 @@ function YouTubePlayer({ videoId, timelineQuestions, onQuestionTrigger, blockedU
 }
 
 /* ── Inline question block ─────────────────────────────────────── */
-function InlineQuestionBlock({ question, courseSlug, lessonId, onAnswered }) {
+function InlineQuestionBlock({ question, courseSlug, lessonId, onAnswered, lang }) {
   const [selected, setSelected]     = useState(null);
   const [result, setResult]         = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -262,7 +263,7 @@ function InlineQuestionBlock({ question, courseSlug, lessonId, onAnswered }) {
       setResult(data);
       if (onAnswered) onAnswered(data);
     } catch (err) {
-      setError(err?.response?.data?.detail || "Cavab göndərilə bilmədi.");
+      setError(err?.response?.data?.detail || (lang === "az" ? "Cavab göndərilə bilmədi." : "The answer could not be submitted."));
     } finally {
       setSubmitting(false);
     }
@@ -280,10 +281,10 @@ function InlineQuestionBlock({ question, courseSlug, lessonId, onAnswered }) {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Chip size="sm" tone={answered ? (isCorrect ? "mint" : "accent") : "sky"}>
-          {answered ? (isCorrect ? "✓ Düzgün" : "✗ Yanlış") : "Quiz"}
+          {answered ? (isCorrect ? (lang === "az" ? "✓ Düzgün" : "✓ Correct") : (lang === "az" ? "✗ Yanlış" : "✗ Wrong")) : "Quiz"}
         </Chip>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--accent)", fontWeight: 700 }}>
-          {question.points} xal
+          {question.points} {lang === "az" ? "xal" : "pts"}
         </span>
       </div>
 
@@ -332,7 +333,7 @@ function InlineQuestionBlock({ question, courseSlug, lessonId, onAnswered }) {
                 {letter}
               </span>
               <span style={{ flex: 1 }}>{choice.text}</span>
-              {answered && isCorrectCh && <Chip size="sm" tone="mint">✓</Chip>}
+              {answered && isCorrectCh && <Chip size="sm" tone="mint"><Icon name="check" size={11} /></Chip>}
             </button>
           );
         })}
@@ -357,14 +358,14 @@ function InlineQuestionBlock({ question, courseSlug, lessonId, onAnswered }) {
           )}
           {attempt && !result && (
             <p style={{ fontSize: 12, color: "var(--ink-4)", margin: 0 }}>
-              Bu suala artıq cavab vermişdiniz.
+              {lang === "az" ? "Bu suala artıq cavab vermişdiniz." : "You have already answered this question."}
             </p>
           )}
         </div>
       ) : (
         <div style={{ paddingTop: 4 }}>
           <Button variant="accent" size="sm" onClick={handleSubmit} disabled={!selected || submitting}>
-            {submitting ? "Göndərilir..." : "Cavabı göndər"}
+            {submitting ? (lang === "az" ? "Göndərilir..." : "Submitting...") : (lang === "az" ? "Cavabı göndər" : "Submit answer")}
           </Button>
         </div>
       )}
@@ -375,6 +376,7 @@ function InlineQuestionBlock({ question, courseSlug, lessonId, onAnswered }) {
 /* ── Main LessonPage ───────────────────────────────────────────── */
 export default function LessonPage() {
   const { slug, lessonId } = useParams();
+  const { lang } = useLang();
   const [lesson, setLesson]         = useState(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState("");
@@ -388,7 +390,7 @@ export default function LessonPage() {
     setLoading(true);
     endpoints.lessonDetail(slug, lessonId)
       .then(({ data }) => { setLesson(data); setCompleted(data.user_completed || false); })
-      .catch(() => setError("Dərs yüklənə bilmədi."))
+      .catch(() => setError(lang === "az" ? "Dərs yüklənə bilmədi." : "The lesson could not be loaded."))
       .finally(() => setLoading(false));
   }, [slug, lessonId]);
 
@@ -404,7 +406,7 @@ export default function LessonPage() {
       if (data.lesson_completed) setCompleted(true);
       return data;
     } catch (err) {
-      return { error: err?.response?.data?.detail || "Xəta baş verdi." };
+      return { error: err?.response?.data?.detail || (lang === "az" ? "Xəta baş verdi." : "Something went wrong.") };
     }
   }, [slug, lessonId]);
 
@@ -428,24 +430,24 @@ export default function LessonPage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <TileSkeleton height={80} />
           <TileSkeleton height={320} />
           <TileSkeleton height={180} />
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (error || !lesson) {
     return (
-      <AppShell>
+      <>
         <Tile>
-          <EmptyState icon="◌" title="Dərs tapılmadı" description={error || ""}
-            action={<Button as={Link} to={`/courses/${slug}`} variant="accent">← Kursa qayıt</Button>} />
+          <EmptyState icon="search" title={lang === "az" ? "Dərs tapılmadı" : "Lesson not found"} description={error || ""}
+            action={<Button as={Link} to={`/courses/${slug}`} variant="accent">{lang === "az" ? "← Kursa qayıt" : "← Back to course"}</Button>} />
         </Tile>
-      </AppShell>
+      </>
     );
   }
 
@@ -456,17 +458,17 @@ export default function LessonPage() {
   const hasNoQuestions = questions.length === 0;
 
   return (
-    <AppShell>
+    <>
       {/* Breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         <Link to="/courses"
           style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-4)", textDecoration: "none" }}>
-          Kurslar
+          {lang === "az" ? "Kurslar" : "Courses"}
         </Link>
         <span style={{ color: "var(--line-3)" }}>›</span>
         <Link to={`/courses/${slug}`}
           style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-3)", textDecoration: "none" }}>
-          Kurs
+          {lang === "az" ? "Kurs" : "Course"}
         </Link>
         <span style={{ color: "var(--line-3)" }}>›</span>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-1)", fontWeight: 600 }}>
@@ -482,11 +484,11 @@ export default function LessonPage() {
             <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "var(--ink-1)", lineHeight: 1.25 }}>
               {lesson.title}
             </h1>
-            {completed && <Chip size="sm" tone="mint">✓ Tamamlandı</Chip>}
+            {completed && <Chip size="sm" tone="mint">✓ {lang === "az" ? "Tamamlandı" : "Completed"}</Chip>}
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {lesson.has_video    && <Chip size="sm">▶ Video</Chip>}
-            {lesson.has_text     && <Chip size="sm">≡ Mətn</Chip>}
+            {lesson.has_text     && <Chip size="sm">≡ {lang === "az" ? "Mətn" : "Text"}</Chip>}
             {questions.length > 0 && <Chip size="sm" tone="sky">{questions.length} quiz</Chip>}
             {timelineQs.length  > 0 && (
               <Chip size="sm" tone="amber">⏱ {timelineQs.length} video quiz</Chip>
@@ -518,7 +520,9 @@ export default function LessonPage() {
                 background: "rgba(255,184,107,0.08)", border: "1px solid rgba(255,184,107,0.25)",
                 fontSize: 12, color: "var(--warn)", marginTop: 4,
               }}>
-                ⏱ Bu videoda {timelineQs.length} quiz var — video müəyyən anlarda avtomatik dayanacaq.
+                ⏱ {lang === "az"
+                  ? `Bu videoda ${timelineQs.length} quiz var — video müəyyən anlarda avtomatik dayanacaq.`
+                  : `This video has ${timelineQs.length} quiz${timelineQs.length > 1 ? "zes" : ""} — it will pause automatically at certain points.`}
               </div>
             )}
           </Tile>
@@ -542,7 +546,7 @@ export default function LessonPage() {
               letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-4)",
               marginBottom: 12,
             }}>
-              Quiz Sualları
+              {lang === "az" ? "Quiz Sualları" : "Quiz Questions"}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {inlineQs.map(q => (
@@ -552,6 +556,7 @@ export default function LessonPage() {
                   courseSlug={slug}
                   lessonId={lessonId}
                   onAnswered={handleInlineAnswered}
+                  lang={lang}
                 />
               ))}
             </div>
@@ -562,12 +567,12 @@ export default function LessonPage() {
         <Tile style={{ padding: "14px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
             <Button variant="ghost" as={Link} to={`/courses/${slug}`}>
-              ← Kursa qayıt
+              {lang === "az" ? "← Kursa qayıt" : "← Back to course"}
             </Button>
             <div style={{ display: "flex", gap: 8 }}>
               {hasNoQuestions && !completed && (
                 <Button variant="accent" onClick={handleMarkComplete} disabled={completing}>
-                  {completing ? "..." : "✓ Tamamlandı kimi işarələ"}
+                  {completing ? "..." : (lang === "az" ? "✓ Tamamlandı kimi işarələ" : "✓ Mark as completed")}
                 </Button>
               )}
               {completed && (
@@ -577,7 +582,7 @@ export default function LessonPage() {
                   background: "rgba(110,255,214,0.08)", border: "1px solid rgba(110,255,214,0.25)",
                   color: "var(--ok)",
                 }}>
-                  ✓ Bu dərs tamamlandı
+                  ✓ {lang === "az" ? "Bu dərs tamamlandı" : "This lesson is completed"}
                 </span>
               )}
             </div>
@@ -592,8 +597,9 @@ export default function LessonPage() {
           question={activeQuestion}
           onSubmit={handleModalSubmit}
           onContinue={handleModalContinue}
+          lang={lang}
         />
       )}
-    </AppShell>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import api from "../services/api";
 import { endpoints } from "../services/endpoints";
 import { useLang } from "../contexts/LanguageContext";
 import { setTokens } from "../utils/tokens";
+import Icon from "../components/ui/Icon";
 import "../styles/auth.css";
 
 const MODES = ["login", "register", "forgot"];
@@ -598,12 +599,12 @@ export default function AuthPage() {
 
               {error && (
                 <div className="auth-message auth-error" role="alert">
-                  <span className="msg-icon">✕</span> {error}
+                  <span className="msg-icon"><Icon name="close" size={13} /></span> {error}
                 </div>
               )}
               {success && (
                 <div className="auth-message auth-success" role="status">
-                  <span className="msg-icon">✓</span> {success}
+                  <span className="msg-icon"><Icon name="check" size={13} /></span> {success}
                 </div>
               )}
 

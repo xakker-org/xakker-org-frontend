@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import { endpoints } from "../services/endpoints";
+import { useLang } from "../contexts/LanguageContext";
+import { localizeCategory } from "../utils/categoryLabels";
 
 const CAT_HUE = {
   web:215, network:175, linux:265, sistem:265, system:265,
@@ -46,6 +47,7 @@ function BookIcon() {
 export default function CoursePage() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { lang } = useLang();
   const [course, setCourse]   = useState(null);
   const [loading, setLoading] = useState(true);
   const [selIdx, setSelIdx]   = useState(0);
@@ -70,22 +72,22 @@ export default function CoursePage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <TileSkeleton height={40} />
         <div className="xk-course-detail" style={{ marginTop: 16 }}>
           <TileSkeleton height={480} />
           <TileSkeleton height={480} />
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (!course) {
     return (
-      <AppShell>
-        <div className="xk-back-row"><Link to="/courses" className="xk-back"><ChevronIcon /> Geri</Link></div>
-        <div className="xk-empty-screen"><h3>Kurs tapılmadı</h3></div>
-      </AppShell>
+      <>
+        <div className="xk-back-row"><Link to="/courses" className="xk-back"><ChevronIcon /> {lang === "az" ? "Geri" : "Back"}</Link></div>
+        <div className="xk-empty-screen"><h3>{lang === "az" ? "Kurs tapılmadı" : "Course not found"}</h3></div>
+      </>
     );
   }
 
@@ -97,8 +99,8 @@ export default function CoursePage() {
   /* Build curriculum sections */
   const half     = Math.ceil(lessons.length / 2);
   const sections = [
-    { label: "Bölmə 1 · Əsaslar", items: lessons.slice(0, half) },
-    { label: "Bölmə 2 · Praktika", items: lessons.slice(half) },
+    { label: lang === "az" ? "Bölmə 1 · Əsaslar" : "Section 1 · Basics", items: lessons.slice(0, half) },
+    { label: lang === "az" ? "Bölmə 2 · Praktika" : "Section 2 · Practice", items: lessons.slice(half) },
   ].filter(s => s.items.length > 0);
 
   const complete = () => {
@@ -107,14 +109,14 @@ export default function CoursePage() {
   };
 
   return (
-    <AppShell>
+    <>
       {/* Back */}
       <div className="xk-back-row xk-reveal">
-        <Link to="/courses" className="xk-back"><ChevronIcon /> Geri</Link>
+        <Link to="/courses" className="xk-back"><ChevronIcon /> {lang === "az" ? "Geri" : "Back"}</Link>
         <div className="xk-crumbs">
-          <span>Kurslar</span>
+          <span>{lang === "az" ? "Kurslar" : "Courses"}</span>
           <span className="xk-crumb-sep">/</span>
-          <span className="cur">{course.category || course.category_name || "Kurs"}</span>
+          <span className="cur">{localizeCategory(course.category || course.category_name, lang) || (lang === "az" ? "Kurs" : "Course")}</span>
         </div>
       </div>
 
@@ -131,7 +133,7 @@ export default function CoursePage() {
               </svg>
             </button>
             <div className="xk-player-cap">
-              {lesson.has_video ? "VİDEO" : "MƏTN"} · {lesson.estimated_minutes || 5} dəq
+              {lesson.has_video ? (lang === "az" ? "VİDEO" : "VIDEO") : (lang === "az" ? "MƏTN" : "TEXT")} · {lesson.estimated_minutes || 5} {lang === "az" ? "dəq" : "min"}
             </div>
           </div>
 
@@ -142,21 +144,23 @@ export default function CoursePage() {
               letterSpacing: ".1em", textTransform: "uppercase",
               color: `hsl(${hue} 80% 70%)`, marginBottom: 8,
             }}>
-              {course.category || "Kurs"}
+              {localizeCategory(course.category, lang) || (lang === "az" ? "Kurs" : "Course")}
               {(course.author_name || course.instructor) && ` · ${course.author_name || course.instructor}`}
             </div>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 10, lineHeight: 1.15 }}>
               {lesson.title || course.title}
             </h1>
             <p style={{ color: "var(--text-2)", fontSize: 14, lineHeight: 1.6, marginBottom: 20 }}>
-              Bu dərsdə {course.title.toLowerCase()} mövzusunun "{(lesson.title || "").toLowerCase()}" hissəsini addım-addım keçirik.
+              {lang === "az"
+                ? `Bu dərsdə ${course.title.toLowerCase()} mövzusunun "${(lesson.title || "").toLowerCase()}" hissəsini addım-addım keçirik.`
+                : `In this lesson we walk through the "${(lesson.title || "").toLowerCase()}" part of ${course.title.toLowerCase()} step by step.`}
             </p>
             <div className="xk-lesson-foot" style={{ borderTop: "1px solid var(--border)", paddingTop: 18, marginTop: 0 }}>
               <button className="xk-btn ghost" onClick={() => selIdx > 0 ? setSelIdx(selIdx - 1) : navigate("/courses")}>
-                Əvvəlki
+                {lang === "az" ? "Əvvəlki" : "Previous"}
               </button>
               <button className="xk-btn primary" onClick={lesson.id ? () => navigate(`/courses/${slug}/lessons/${lesson.id}`) : complete}>
-                {done.has(selIdx) ? "Növbəti" : "Tamamla və davam et"}
+                {done.has(selIdx) ? (lang === "az" ? "Növbəti" : "Next") : (lang === "az" ? "Tamamla və davam et" : "Complete and continue")}
                 <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
@@ -168,7 +172,7 @@ export default function CoursePage() {
         {/* Right: curriculum */}
         <div className="xk-card xk-curriculum xk-reveal" style={{ animationDelay: "120ms" }}>
           <div className="xk-curr-head">
-            <h3 className="xk-card-title">Kurs proqramı</h3>
+            <h3 className="xk-card-title">{lang === "az" ? "Kurs proqramı" : "Course curriculum"}</h3>
             <span className="xk-mission-pct">{pct}%</span>
           </div>
           <div className="xk-track" style={{ height: 4 }}>
@@ -189,7 +193,7 @@ export default function CoursePage() {
                         {isDone ? <CheckIcon /> : l.has_video ? <ArrowIcon /> : <BookIcon />}
                       </span>
                       <span className="xk-curr-title">{l.title}</span>
-                      <span className="xk-curr-min">{l.estimated_minutes || 5}d</span>
+                      <span className="xk-curr-min">{l.estimated_minutes || 5}{lang === "az" ? "d" : "m"}</span>
                     </button>
                   );
                 })}
@@ -198,6 +202,6 @@ export default function CoursePage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -1,0 +1,143 @@
+/* ================================================================
+   XAKKER — Ambient background layer (AnimatedBackground.jsx)
+   Fixed, full-viewport, mounted once at the AppShell root — sits
+   BEHIND .sb / .tb / .main (all translucent, see shell.css) so the
+   effect reads as one continuous field across sidebar, topbar and
+   content, not something clipped to the content pane.
+
+   Round 10 — "Aurora Mesh": a clean break from rounds 7-9, which
+   were all a "grid/dots + glow + sheen" formula and read as a mostly
+   static texture with one moving accent. This round removes the
+   grid, the dot texture and the sheen sweep entirely — there is no
+   repeating pattern and no hard edge anywhere. Instead: 4 very large,
+   heavily-blurred colour blobs (accent red + violet + sky, the
+   existing --accent-rgb/--c-5/--c-6 tokens) overlap across the WHOLE
+   viewport and each independently drifts position + scale + opacity
+   on its own long, offset ease-in-out loop (46-70s). Because the
+   loops are independently timed, the blobs never gang up into a
+   single obvious "pulse" — the overlap zones between them shift
+   continuously, so the *entire* field is always slowly reshaping,
+   not just one corner. That continuous, everywhere motion (vs. a
+   static grid + one animated accent) is what reads as alive.
+   Pure CSS, transform/opacity only (blur is a static, non-animated
+   filter) — cheap to composite, nothing layout-affecting animates.
+   ================================================================ */
+
+.xk-bg {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-base);
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--bg);
+}
+
+/* Base blob — large, soft, circular colour field, positioned so it
+   overhangs the viewport edges (this is what carries visible colour
+   under the sidebar/topbar without any vignette or edge mask). */
+.xk-bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(10px);
+  will-change: transform, opacity;
+  mix-blend-mode: screen;
+}
+
+[data-theme="light"] .xk-bg-blob {
+  mix-blend-mode: multiply;
+}
+
+/* ── 1. Accent (signature red) — biggest, top-left, sets the base
+   hue. Slow drift diagonally + gentle breathing. ── */
+.xk-bg-blob-a {
+  top: -35%;
+  left: -22%;
+  width: 95vw;
+  height: 95vw;
+  max-width: 1150px;
+  max-height: 1150px;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.16) 0%, rgba(var(--accent-rgb), 0) 68%);
+  animation: xk-blob-drift-a 52s ease-in-out infinite;
+}
+
+/* ── 2. Sky blue — bottom-right, opposite corner, largest offset
+   timing so it crosses the accent's rhythm rather than syncing to it. ── */
+.xk-bg-blob-b {
+  bottom: -32%;
+  right: -20%;
+  width: 88vw;
+  height: 88vw;
+  max-width: 1050px;
+  max-height: 1050px;
+  background: radial-gradient(circle, rgba(108, 179, 255, 0.13) 0%, rgba(108, 179, 255, 0) 70%);
+  animation: xk-blob-drift-b 63s ease-in-out infinite;
+}
+
+/* ── 3. Violet — middle band, floats across the seam between the
+   other two so the center of the screen (not just the corners) also
+   stays alive. ── */
+.xk-bg-blob-c {
+  top: 18%;
+  left: 38%;
+  width: 70vw;
+  height: 70vw;
+  max-width: 820px;
+  max-height: 820px;
+  background: radial-gradient(circle, rgba(192, 132, 252, 0.11) 0%, rgba(192, 132, 252, 0) 70%);
+  animation: xk-blob-drift-c 70s ease-in-out infinite;
+}
+
+/* ── 4. Small accent echo — top-right, short travel, keeps the
+   upper chrome (topbar) visibly warm/in-motion on its own timing. ── */
+.xk-bg-blob-d {
+  top: -20%;
+  right: 4%;
+  width: 46vw;
+  height: 46vw;
+  max-width: 560px;
+  max-height: 560px;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.10) 0%, rgba(var(--accent-rgb), 0) 72%);
+  animation: xk-blob-drift-d 46s ease-in-out infinite;
+}
+
+@keyframes xk-blob-drift-a {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
+  33%  { transform: translate3d(6%, 5%, 0) scale(1.1); opacity: 1; }
+  66%  { transform: translate3d(-3%, 8%, 0) scale(0.96); opacity: 0.9; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
+}
+
+@keyframes xk-blob-drift-b {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.8; }
+  40%  { transform: translate3d(-7%, -6%, 0) scale(1.08); opacity: 1; }
+  70%  { transform: translate3d(4%, -3%, 0) scale(0.95); opacity: 0.85; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.8; }
+}
+
+@keyframes xk-blob-drift-c {
+  0%   { transform: translate3d(-50%, 0, 0) scale(1); opacity: 0.7; }
+  50%  { transform: translate3d(-42%, 10%, 0) scale(1.15); opacity: 1; }
+  100% { transform: translate3d(-50%, 0, 0) scale(1); opacity: 0.7; }
+}
+
+@keyframes xk-blob-drift-d {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.75; }
+  50%  { transform: translate3d(-8%, 6%, 0) scale(1.12); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.75; }
+}
+
+/* ── Reduced motion — freeze into a single static, still-legible
+   composition (all four blobs remain in their base position, nothing
+   drifts/breathes) ── */
+@media (prefers-reduced-motion: reduce) {
+  .xk-bg-blob-a,
+  .xk-bg-blob-b,
+  .xk-bg-blob-c,
+  .xk-bg-blob-d {
+    animation: none;
+  }
+
+  .xk-bg-blob-c {
+    transform: translate3d(-50%, 0, 0);
+  }
+}

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { useLang } from "../contexts/LanguageContext";
 import { endpoints } from "../services/endpoints";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import XKBar from "../components/ui/XKBar";
+import Icon from "../components/ui/Icon";
 import { getMockMissions } from "../data/mockData";
+import { localizeCategory } from "../utils/categoryLabels";
 
 const T = {
   az: {
@@ -15,7 +16,9 @@ const T = {
     crypto: "Kripto", recon: "Kəşfiyyat",
     start: "Başla", cont: "Davam et",
     lessons: "dərs", xp: "XP", hours: "saat",
-    notFound: "Missiya tapılmadı",
+    notFound: "Missiya tapılmadı", changeFilter: "Filtri dəyiş.",
+    done: "✓ Tamamlandı",
+    levels: { beginner: "Asan", intermediate: "Orta", advanced: "Çətin", easy: "Asan", medium: "Orta", hard: "Çətin", expert: "Ekspert" },
   },
   en: {
     eyebrow: "Platform", title: "Missions",
@@ -24,11 +27,13 @@ const T = {
     crypto: "Crypto", recon: "Recon",
     start: "Start", cont: "Continue",
     lessons: "lessons", xp: "XP", hours: "hours",
-    notFound: "No missions found",
+    notFound: "No missions found", changeFilter: "Try a different filter.",
+    done: "✓ Completed",
+    levels: { beginner: "Easy", intermediate: "Medium", advanced: "Hard", easy: "Easy", medium: "Medium", hard: "Hard", expert: "Expert" },
   },
 };
 
-const TRACKS = ["Hamısı", "Web", "Network", "System", "Crypto", "Recon"];
+const FILTER_KEYS = ["all", "web", "network", "system", "crypto", "recon"];
 
 /* Category color driven by track name */
 const TRACK_COLORS = {
@@ -53,8 +58,8 @@ function missionColor(m) {
   return "var(--accent)";
 }
 
-function missionTrack(m) {
-  return m.track || m.category || "Mission";
+function missionTrack(m, lang) {
+  return localizeCategory(m.track || m.category, lang) || (lang === "az" ? "Missiya" : "Mission");
 }
 
 function statusOf(p) {
@@ -68,7 +73,7 @@ export default function MissionsPage() {
   const t = T[lang] || T.az;
 
   const [missions, setMissions] = useState([]);
-  const [filter, setFilter]     = useState("Hamısı");
+  const [filter, setFilter]     = useState("all");
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
@@ -85,30 +90,15 @@ export default function MissionsPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (filter === "Hamısı") return missions;
+    if (filter === "all") return missions;
     return missions.filter(m => {
       const hay = (m.track || m.category || m.title || "").toLowerCase();
-      return hay.includes(filter.toLowerCase());
+      return hay.includes(filter);
     });
   }, [missions, filter]);
 
-  const Icon = ({ name }) => {
-    const paths = {
-      layers: "M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5",
-      bolt:   "M13 2L4 14h7l-1 8 9-12h-7z",
-      arrow:  "M5 12h14M13 6l6 6-6 6",
-    };
-    return (
-      <svg width={14} height={14} viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"
-        style={{ flexShrink: 0 }}>
-        <path d={paths[name] || paths.arrow} />
-      </svg>
-    );
-  };
-
   return (
-    <AppShell>
+    <>
       <div className="xk-screen">
         {/* Screen head */}
         <div className="xk-screen-head xk-reveal">
@@ -121,14 +111,14 @@ export default function MissionsPage() {
 
         {/* Filters */}
         <div className="xk-filters xk-reveal" style={{ animationDelay: "60ms" }}>
-          {TRACKS.map(tr => (
+          {FILTER_KEYS.map(tr => (
             <button
               key={tr}
               type="button"
               className={`xk-filter${filter === tr ? " on" : ""}`}
               onClick={() => setFilter(tr)}
             >
-              {tr}
+              {t[tr]}
             </button>
           ))}
         </div>
@@ -142,7 +132,7 @@ export default function MissionsPage() {
           <div className="xk-empty-screen">
             <div className="xk-empty-ico">◎</div>
             <h3>{t.notFound}</h3>
-            <p>Filtri dəyiş.</p>
+            <p>{t.changeFilter}</p>
           </div>
         ) : (
           <div className="xk-mission-grid">
@@ -150,12 +140,12 @@ export default function MissionsPage() {
               const p      = m.user_progress;
               const st     = statusOf(p);
               const color  = missionColor(m);
-              const track  = missionTrack(m);
+              const track  = missionTrack(m, lang);
               const total  = p?.total_passes ?? m.pass_count ?? 0;
               const done   = p?.completed_passes ?? 0;
               const pct    = total > 0 ? Math.round((done / total) * 100) : 0;
               const diff   = m.difficulty || "beginner";
-              const diffLabel = { easy:"Asan", beginner:"Asan", medium:"Orta", intermediate:"Orta", hard:"Çətin", advanced:"Çətin", expert:"Ekspert" }[diff] || diff;
+              const diffLabel = t.levels[diff] || diff;
 
               return (
                 <Link
@@ -203,7 +193,7 @@ export default function MissionsPage() {
                     tabIndex={-1}
                     style={{ pointerEvents: "none" }}
                   >
-                    {st === "completed" ? "✓ Tamamlandı" : st === "in-progress" ? t.cont : t.start}
+                    {st === "completed" ? t.done : st === "in-progress" ? t.cont : t.start}
                     {st !== "completed" && (
                       <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                         <path d="M5 12h14M13 6l6 6-6 6" />
@@ -216,6 +206,6 @@ export default function MissionsPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

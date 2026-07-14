@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import AppShell from "../components/AppShell";
 import { useLang } from "../contexts/LanguageContext";
 import { endpoints } from "../services/endpoints";
 import { TileSkeleton } from "../components/ui/Skeleton";
@@ -8,18 +7,22 @@ const T = {
   az: {
     eyebrow: "İcma", title: "Reytinq", sub: "Qlobal sıralamada yerini gör.",
     you: "sən", loading: "Yüklənir...", notFound: "Heç kim tapılmadı",
+    tabXp: "XP", tabTasks: "Tapşırıqlar", tabRooms: "Laboratoriyalar", tabStreak: "Seriya",
+    searchPlaceholder: "İstifadəçi axtar...",
   },
   en: {
     eyebrow: "Community", title: "Leaderboard", sub: "See your position in the global rankings.",
     you: "you", loading: "Loading...", notFound: "No one found",
+    tabXp: "XP", tabTasks: "Tasks", tabRooms: "Rooms", tabStreak: "Streak",
+    searchPlaceholder: "Search users...",
   },
 };
 
 function initials(u) { return (u || "?").charAt(0).toUpperCase(); }
 
 const SORT_TABS = [
-  { v: "xp", l: "XP" }, { v: "tasks", l: "Tasks" },
-  { v: "rooms", l: "Rooms" }, { v: "streak", l: "Streak" },
+  { v: "xp", key: "tabXp" }, { v: "tasks", key: "tabTasks" },
+  { v: "rooms", key: "tabRooms" }, { v: "streak", key: "tabStreak" },
 ];
 
 export default function LeaderboardPage() {
@@ -73,7 +76,7 @@ export default function LeaderboardPage() {
   const podiumRank  = [2, 1, 3];
 
   return (
-    <AppShell>
+    <>
       <div className="xk-screen">
         {/* Head */}
         <div className="xk-screen-head xk-reveal">
@@ -128,13 +131,13 @@ export default function LeaderboardPage() {
                     className={`xk-filter${tab === s.v ? " on" : ""}`}
                     style={{ padding: "6px 14px" }}
                     onClick={() => setTab(s.v)}>
-                    {s.l}
+                    {t[s.key]}
                   </button>
                 ))}
               </div>
               <input
                 className="xk-card"
-                placeholder="İstifadəçi axtar..."
+                placeholder={t.searchPlaceholder}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 style={{
@@ -187,6 +190,6 @@ export default function LeaderboardPage() {
           </>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

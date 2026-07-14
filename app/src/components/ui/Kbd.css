@@ -11,8 +11,8 @@
   color: var(--ink-3);
   background: var(--bg);
   border: 1px solid var(--line-2);
-  border-bottom: 2px solid rgba(255,255,255,0.08);
+  border-bottom: 2px solid rgba(var(--overlay-rgb), 0.08);
   border-radius: 5px;
   letter-spacing: 0;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+  box-shadow: 0 1px 0 rgba(var(--overlay-rgb), 0.04) inset;
 }

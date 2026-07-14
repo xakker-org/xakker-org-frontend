@@ -1,20 +1,44 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCommand } from "../../contexts/CommandContext";
+import { useLang } from "../../contexts/LanguageContext";
 import { endpoints } from "../../services/endpoints";
 import Kbd from "./Kbd";
 import "./CommandPalette.css";
 
-const ROUTES = [
-  { id: "r-dashboard",   group: "Naviqasiya", title: "Dashboard",     hint: "Ana səhifə",        path: "/dashboard",   icon: "⌂" },
-  { id: "r-missions",    group: "Naviqasiya", title: "Missions",      hint: "Praktiki tapşırıq", path: "/missions",    icon: "◎" },
-  { id: "r-rooms",       group: "Naviqasiya", title: "Labs / Rooms",  hint: "Lab otaqları",      path: "/rooms",       icon: "▣" },
-  { id: "r-self-study",  group: "Naviqasiya", title: "Self-Study",    hint: "Suallar",           path: "/self-study",  icon: "✎" },
-  { id: "r-plans",       group: "Naviqasiya", title: "Learning Paths",hint: "Planlar",           path: "/plans",       icon: "↗" },
-  { id: "r-courses",     group: "Naviqasiya", title: "Courses",       hint: "Kurslar",           path: "/courses",     icon: "▤" },
-  { id: "r-leaderboard", group: "Naviqasiya", title: "Leaderboard",   hint: "Liderlik",          path: "/leaderboard", icon: "★" },
-  { id: "r-profile",     group: "Naviqasiya", title: "Profile",       hint: "Profilim",          path: "/profile",     icon: "◉" },
-];
+const T = {
+  az: {
+    nav: "Naviqasiya", missions: "Missions", courses: "Courses", labs: "Labs",
+    dashboard: "Ana səhifə", missionsHint: "Praktiki tapşırıq", roomsHint: "Lab otaqları",
+    selfStudyHint: "Suallar", plansHint: "Planlar", coursesHint: "Kurslar",
+    leaderboardHint: "Liderlik", profileHint: "Profilim",
+    searchPlaceholder: "Mission, kurs, route axtar...", searchLabel: "Axtar",
+    empty: "Heç nə tapılmadı", move: "hərəkət", openLbl: "aç", close: "bağla",
+    dialogLabel: "Əmr paleti",
+  },
+  en: {
+    nav: "Navigation", missions: "Missions", courses: "Courses", labs: "Labs",
+    dashboard: "Home page", missionsHint: "Practical tasks", roomsHint: "Lab rooms",
+    selfStudyHint: "Questions", plansHint: "Plans", coursesHint: "Courses",
+    leaderboardHint: "Leaderboard", profileHint: "My profile",
+    searchPlaceholder: "Search missions, courses, routes...", searchLabel: "Search",
+    empty: "Nothing found", move: "move", openLbl: "open", close: "close",
+    dialogLabel: "Command palette",
+  },
+};
+
+function buildRoutes(t) {
+  return [
+    { id: "r-dashboard",   group: t.nav, title: "Dashboard",     hint: t.dashboard,     path: "/dashboard",   icon: "⌂" },
+    { id: "r-missions",    group: t.nav, title: t.missions,      hint: t.missionsHint,  path: "/missions",    icon: "◎" },
+    { id: "r-rooms",       group: t.nav, title: "Labs / Rooms",  hint: t.roomsHint,     path: "/rooms",       icon: "▣" },
+    { id: "r-self-study",  group: t.nav, title: "Self-Study",    hint: t.selfStudyHint, path: "/self-study",  icon: "✎" },
+    { id: "r-plans",       group: t.nav, title: "Learning Paths",hint: t.plansHint,     path: "/plans",       icon: "↗" },
+    { id: "r-courses",     group: t.nav, title: t.courses,       hint: t.coursesHint,   path: "/courses",     icon: "▤" },
+    { id: "r-leaderboard", group: t.nav, title: "Leaderboard",   hint: t.leaderboardHint, path: "/leaderboard", icon: "★" },
+    { id: "r-profile",     group: t.nav, title: "Profile",       hint: t.profileHint,   path: "/profile",     icon: "◉" },
+  ];
+}
 
 function fuzzy(needle, hay) {
   if (!needle) return 0;
@@ -30,6 +54,9 @@ function fuzzy(needle, hay) {
 
 export default function CommandPalette() {
   const { open, setOpen } = useCommand();
+  const { lang } = useLang();
+  const t = T[lang] || T.az;
+  const ROUTES = useMemo(() => buildRoutes(t), [t]);
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [items, setItems] = useState([]);
@@ -52,13 +79,13 @@ export default function CommandPalette() {
     ]).then((res) => {
       if (!mounted) return;
       const ms = (res[0]?.value?.data || []).map(m => ({
-        id: `m-${m.id}`, group: "Missions", title: m.title, hint: m.short_description || m.description?.slice(0, 60), path: `/missions/${m.slug}`, icon: m.icon || "◎",
+        id: `m-${m.id}`, group: t.missions, title: m.title, hint: m.short_description || m.description?.slice(0, 60), path: `/missions/${m.slug}`, icon: m.icon || "◎",
       }));
       const cs = (res[1]?.value?.data || []).map(c => ({
-        id: `c-${c.id}`, group: "Courses", title: c.title, hint: c.description?.slice(0, 60), path: `/courses/${c.slug}`, icon: c.icon || "▤",
+        id: `c-${c.id}`, group: t.courses, title: c.title, hint: c.description?.slice(0, 60), path: `/courses/${c.slug}`, icon: c.icon || "▤",
       }));
       const rs = (res[2]?.value?.data || []).map(r => ({
-        id: `room-${r.id}`, group: "Labs", title: r.title, hint: r.summary?.slice(0, 60), path: `/rooms/${r.slug}`, icon: r.icon || "▣",
+        id: `room-${r.id}`, group: t.labs, title: r.title, hint: r.summary?.slice(0, 60), path: `/rooms/${r.slug}`, icon: r.icon || "▣",
       }));
       setItems([...ROUTES, ...ms, ...cs, ...rs]);
     });
@@ -108,24 +135,24 @@ export default function CommandPalette() {
   if (!open) return null;
 
   return (
-    <div className="cmd-overlay" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label="Command palette">
+    <div className="cmd-overlay" onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-label={t.dialogLabel}>
       <div className="cmd" onClick={(e) => e.stopPropagation()}>
         <div className="cmd-input-wrap">
           <span className="cmd-input-ico" aria-hidden="true">⌕</span>
           <input
             ref={inputRef}
             className="cmd-input"
-            placeholder="Mission, kurs, route axtar..."
+            placeholder={t.searchPlaceholder}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={onKeyDown}
-            aria-label="Axtar"
+            aria-label={t.searchLabel}
           />
           <span className="cmd-input-hint"><Kbd>Esc</Kbd></span>
         </div>
         <div className="cmd-list" role="listbox">
           {flat.length === 0 ? (
-            <div className="cmd-empty">Heç nə tapılmadı</div>
+            <div className="cmd-empty">{t.empty}</div>
           ) : (
             grouped.map(([group, list]) => (
               <div className="cmd-group" key={group}>
@@ -157,9 +184,9 @@ export default function CommandPalette() {
           )}
         </div>
         <div className="cmd-foot">
-          <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> hərəkət</span>
-          <span><Kbd>↵</Kbd> aç</span>
-          <span><Kbd>Esc</Kbd> bağla</span>
+          <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> {t.move}</span>
+          <span><Kbd>↵</Kbd> {t.openLbl}</span>
+          <span><Kbd>Esc</Kbd> {t.close}</span>
         </div>
       </div>
     </div>

@@ -14,13 +14,13 @@ export default defineConfig({
     cssCodeSplit: false,
     rollupOptions: {
       output: {
-        entryFileNames: "app.js",
-        chunkFileNames: "chunks/[name].js",
+        entryFileNames: "app.[hash].js",
+        chunkFileNames: "chunks/[name].[hash].js",
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith(".css")) {
-            return "app.css";
+            return "app.[hash].css";
           }
-          return "assets/[name][extname]";
+          return "assets/[name].[hash][extname]";
         },
       },
     },

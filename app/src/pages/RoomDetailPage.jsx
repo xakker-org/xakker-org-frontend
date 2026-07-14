@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import AppShell from "../components/AppShell";
 import { TileSkeleton } from "../components/ui/Skeleton";
 import { endpoints } from "../services/endpoints";
+import { useLang } from "../contexts/LanguageContext";
 
 /* ================================================================
    Terminal command simulation engine
@@ -10,7 +10,7 @@ import { endpoints } from "../services/endpoints";
 const SIM = [
   {
     test: c => c === "help",
-    run: () => [
+    run: (_c, lang) => (lang === "az" ? [
       { t: "info",  v: "Mövcud əmrlər:" },
       { t: "",      v: "  nmap  -sV <ip>          — Port skanı + servis versiyaları" },
       { t: "",      v: "  gobuster dir -u <url>   — Veb directory brute-force" },
@@ -23,11 +23,24 @@ const SIM = [
       { t: "",      v: "  find / -perm -4000       — SUID faylları axtar" },
       { t: "",      v: "  ls -la                   — Fayl siyahısı" },
       { t: "",      v: "  clear                    — Ekranı təmizlə" },
-    ],
+    ] : [
+      { t: "info",  v: "Available commands:" },
+      { t: "",      v: "  nmap  -sV <ip>          — Port scan + service versions" },
+      { t: "",      v: "  gobuster dir -u <url>   — Web directory brute-force" },
+      { t: "",      v: "  curl  <url>             — HTTP request" },
+      { t: "",      v: "  hydra -l user -P wl     — Brute-force login" },
+      { t: "",      v: "  sqlmap -u <url>          — Automated SQL injection" },
+      { t: "",      v: "  nc  <ip> <port>          — Netcat connect / listener" },
+      { t: "",      v: "  whoami / id              — Current user / group" },
+      { t: "",      v: "  cat /etc/passwd          — List users" },
+      { t: "",      v: "  find / -perm -4000       — Find SUID files" },
+      { t: "",      v: "  ls -la                   — List files" },
+      { t: "",      v: "  clear                    — Clear screen" },
+    ]),
   },
   {
     test: c => c.startsWith("nmap"),
-    run: c => {
+    run: (c, lang) => {
       const sV = c.includes("-sv") || c.includes("-sc") || c.includes("-a");
       return [
         { t: "muted", v: "Starting Nmap 7.94 ( https://nmap.org ) at " + new Date().toLocaleTimeString() },
@@ -40,13 +53,13 @@ const SIM = [
         { t: "",      v: "3306/tcp open  mysql" + (sV ? "   MySQL 8.0.32-0ubuntu0.22.04.2" : "") },
         { t: "",      v: "" },
         { t: sV ? "success" : "", v: sV ? "Service detection performed. NSE: Script Post-scanning." : "Nmap done: 1 IP address (1 host up) scanned." },
-        { t: "success", v: "[ ✓ Açıq portlar tapıldı: 22 (ssh), 80 (http), 3306 (mysql) ]" },
+        { t: "success", v: lang === "az" ? "[ ✓ Açıq portlar tapıldı: 22 (ssh), 80 (http), 3306 (mysql) ]" : "[ ✓ Open ports found: 22 (ssh), 80 (http), 3306 (mysql) ]" },
       ];
     },
   },
   {
     test: c => c.startsWith("gobuster"),
-    run: () => [
+    run: (_c, lang) => [
       { t: "muted", v: "===============================================================" },
       { t: "info",  v: "Gobuster v3.6 — by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)" },
       { t: "muted", v: "===============================================================" },
@@ -55,18 +68,18 @@ const SIM = [
       { t: "",      v: "/index.php             (Status: 200) [Size: 2048]" },
       { t: "",      v: "/images                (Status: 301) [Size: 315]" },
       { t: "",      v: "/admin                 (Status: 301) [Size: 316]" },
-      { t: "success", v: "/admin/login.php      (Status: 200) [Size: 1024]  ← TAPILDI" },
+      { t: "success", v: "/admin/login.php      (Status: 200) [Size: 1024]  ← " + (lang === "az" ? "TAPILDI" : "FOUND") },
       { t: "",      v: "/uploads               (Status: 403) [Size: 279]" },
       { t: "",      v: "/config.php            (Status: 403) [Size: 279]" },
-      { t: "success", v: "/backup/db.sql        (Status: 200) [Size: 48291] ← AÇIQ DATABASE!" },
+      { t: "success", v: "/backup/db.sql        (Status: 200) [Size: 48291] ← " + (lang === "az" ? "AÇIQ DATABASE!" : "OPEN DATABASE!") },
       { t: "",      v: "" },
-      { t: "success", v: "[ ✓ Admin login paneli tapıldı: /admin/login.php ]" },
-      { t: "success", v: "[ ✓ Açıq database dump tapıldı: /backup/db.sql   ]" },
+      { t: "success", v: lang === "az" ? "[ ✓ Admin login paneli tapıldı: /admin/login.php ]" : "[ ✓ Admin login panel found: /admin/login.php ]" },
+      { t: "success", v: lang === "az" ? "[ ✓ Açıq database dump tapıldı: /backup/db.sql   ]" : "[ ✓ Open database dump found: /backup/db.sql   ]" },
     ],
   },
   {
     test: c => c.startsWith("curl"),
-    run: c => {
+    run: (c, lang) => {
       if (c.includes("admin")) return [
         { t: "muted", v: "< HTTP/1.1 200 OK" },
         { t: "muted", v: "< Server: Apache/2.4.52 (Ubuntu)" },
@@ -81,7 +94,7 @@ const SIM = [
         { t: "",      v: "  </form>" },
         { t: "",      v: "</body></html>" },
         { t: "",      v: "" },
-        { t: "success", v: "[ ✓ Admin login forması tapıldı → POST /admin/login.php ]" },
+        { t: "success", v: lang === "az" ? "[ ✓ Admin login forması tapıldı → POST /admin/login.php ]" : "[ ✓ Admin login form found → POST /admin/login.php ]" },
       ];
       return [
         { t: "muted", v: "< HTTP/1.1 200 OK" },
@@ -93,7 +106,7 @@ const SIM = [
   },
   {
     test: c => c.startsWith("hydra"),
-    run: () => [
+    run: (_c, lang) => [
       { t: "muted", v: "Hydra v9.4 (c) 2022 by van Hauser/THC & David Maciejak" },
       { t: "info",  v: "[DATA] max 16 tasks per 1 server" },
       { t: "info",  v: "[DATA] attacking http-post-form://target/admin/login.php" },
@@ -103,12 +116,12 @@ const SIM = [
       { t: "success", v: "[80][http-post-form] host: target   login: admin   password: P@ssw0rd2024   [SUCCESS]" },
       { t: "",      v: "" },
       { t: "muted", v: "1 of 1 target successfully completed, 1 valid password found" },
-      { t: "success", v: "[ ✓ Etimadnamə tapıldı: admin:P@ssw0rd2024 ]" },
+      { t: "success", v: lang === "az" ? "[ ✓ Etimadnamə tapıldı: admin:P@ssw0rd2024 ]" : "[ ✓ Credentials found: admin:P@ssw0rd2024 ]" },
     ],
   },
   {
     test: c => c.startsWith("sqlmap"),
-    run: () => [
+    run: (_c, lang) => [
       { t: "muted", v: "        ___" },
       { t: "muted", v: "       __H__    sqlmap/1.7.9" },
       { t: "muted", v: "  ___ ___[(]_____ ___ ___  {1.7.9#stable}" },
@@ -133,12 +146,12 @@ const SIM = [
       { t: "success", v: "| 1  | admin    | $2y$10$mXhAzP4g...             | xkr{SQL_1nj3ct10n_m4st3r}     |" },
       { t: "",      v: "+----+----------+----------------------------------+-------------------------------+" },
       { t: "",      v: "" },
-      { t: "success", v: "[ ✓ SQL injection uğurlu! Flag tapıldı: xkr{SQL_1nj3ct10n_m4st3r} ]" },
+      { t: "success", v: lang === "az" ? "[ ✓ SQL injection uğurlu! Flag tapıldı: xkr{SQL_1nj3ct10n_m4st3r} ]" : "[ ✓ SQL injection successful! Flag found: xkr{SQL_1nj3ct10n_m4st3r} ]" },
     ],
   },
   {
     test: c => c.startsWith("nc") || c.startsWith("netcat"),
-    run: () => [
+    run: (_c, lang) => [
       { t: "info",    v: "Ncat: Version 7.94 ( https://nmap.org/ncat )" },
       { t: "info",    v: "Ncat: Listening on :::4444" },
       { t: "success", v: "Ncat: Connection from 10.10.11.42:49210." },
@@ -150,7 +163,7 @@ const SIM = [
       { t: "",        v: "cat /home/ctfuser/user.txt" },
       { t: "success", v: "xkr{us3r_fl4g_pwn3d}" },
       { t: "",        v: "" },
-      { t: "success", v: "[ ✓ Reverse shell alındı! user.txt oxundu. ]" },
+      { t: "success", v: lang === "az" ? "[ ✓ Reverse shell alındı! user.txt oxundu. ]" : "[ ✓ Reverse shell obtained! user.txt read. ]" },
     ],
   },
   {
@@ -173,13 +186,13 @@ const SIM = [
   },
   {
     test: c => c.startsWith("find") && c.includes("perm"),
-    run: () => [
+    run: (_c, lang) => [
       { t: "",        v: "/usr/bin/find" },
       { t: "success", v: "/usr/bin/python3.10" },
       { t: "",        v: "/usr/bin/pkexec" },
       { t: "",        v: "/usr/lib/dbus-1.0/dbus-daemon-launch-helper" },
       { t: "",        v: "" },
-      { t: "success", v: "[ ✓ /usr/bin/python3.10 SUID — privilege escalation mümkün! ]" },
+      { t: "success", v: lang === "az" ? "[ ✓ /usr/bin/python3.10 SUID — privilege escalation mümkün! ]" : "[ ✓ /usr/bin/python3.10 SUID — privilege escalation possible! ]" },
     ],
   },
   {
@@ -196,44 +209,54 @@ const SIM = [
   },
   {
     test: c => c.startsWith("python") && c.includes("-c"),
-    run: () => [
+    run: (_c, lang) => [
       { t: "success", v: "root@xakker:/var/www/html# " },
       { t: "success", v: "# whoami" },
       { t: "success", v: "root" },
-      { t: "success", v: "[ ✓ Root shell əldə edildi! Privilege escalation uğurlu! ]" },
+      { t: "success", v: lang === "az" ? "[ ✓ Root shell əldə edildi! Privilege escalation uğurlu! ]" : "[ ✓ Root shell obtained! Privilege escalation successful! ]" },
     ],
   },
 ];
 
 const COMPLETIONS = ["nmap","gobuster","curl","hydra","sqlmap","nc","netcat","whoami","id","cat","find","ls","help","clear","python3"];
 
-function simulate(raw) {
+function simulate(raw, lang) {
   const c = raw.trim().toLowerCase();
   if (!c) return null;
   if (c === "clear") return { clear: true };
   for (const e of SIM) {
-    if (e.test(c)) return { lines: e.run(c) };
+    if (e.test(c)) return { lines: e.run(c, lang) };
   }
   return {
     lines: [
       { t: "err", v: `zsh: command not found: ${raw.split(" ")[0]}` },
-      { t: "muted", v: "Mövcud əmrləri görmək üçün 'help' yaz." },
+      { t: "muted", v: lang === "az" ? "Mövcud əmrləri görmək üçün 'help' yaz." : "Type 'help' to see available commands." },
     ],
   };
 }
 
 /* ── Difficulty badge ──────────────────────────────────────────── */
-const DIFF = {
-  beginner:     { label: "Asan",    color: "#6effd6", n: 1 },
-  easy:         { label: "Asan",    color: "#6effd6", n: 1 },
-  intermediate: { label: "Orta",    color: "#ffb86b", n: 2 },
-  medium:       { label: "Orta",    color: "#ffb86b", n: 2 },
-  advanced:     { label: "Çətin",   color: "#ff7a8a", n: 3 },
-  hard:         { label: "Çətin",   color: "#ff7a8a", n: 3 },
-  expert:       { label: "Ekspert", color: "#c084fc", n: 4 },
+const DIFF_META = {
+  beginner:     { color: "#6effd6", n: 1 },
+  easy:         { color: "#6effd6", n: 1 },
+  intermediate: { color: "#ffb86b", n: 2 },
+  medium:       { color: "#ffb86b", n: 2 },
+  advanced:     { color: "#ff7a8a", n: 3 },
+  hard:         { color: "#ff7a8a", n: 3 },
+  expert:       { color: "#c084fc", n: 4 },
 };
-function DiffBadge({ level }) {
-  const d = DIFF[(level || "beginner").toLowerCase()] || DIFF.beginner;
+const DIFF_LABEL = {
+  az: { beginner: "Asan", easy: "Asan", intermediate: "Orta", medium: "Orta", advanced: "Çətin", hard: "Çətin", expert: "Ekspert" },
+  en: { beginner: "Easy", easy: "Easy", intermediate: "Medium", medium: "Medium", advanced: "Hard", hard: "Hard", expert: "Expert" },
+};
+function diffMeta(level, lang) {
+  const key = (level || "beginner").toLowerCase();
+  const meta = DIFF_META[key] || DIFF_META.beginner;
+  const label = (DIFF_LABEL[lang] || DIFF_LABEL.az)[key] || (DIFF_LABEL[lang] || DIFF_LABEL.az).beginner;
+  return { ...meta, label };
+}
+function DiffBadge({ level, lang }) {
+  const d = diffMeta(level, lang);
   return (
     <span className="fi-badge" style={{
       color: d.color, background: `${d.color}14`, border: `1px solid ${d.color}35`,
@@ -273,7 +296,7 @@ function KaliPS1({ cmd, isInput = false }) {
 }
 
 /* ── Single task row + answer submission ─────────────────────── */
-function TaskRow({ task, roomSlug, onDone }) {
+function TaskRow({ task, roomSlug, onDone, lang }) {
   const isDone = task.completed || task._localDone;
   const [open,    setOpen]    = useState(false);
   const [answers, setAnswers] = useState({}); // questionId → value
@@ -293,16 +316,16 @@ function TaskRow({ task, roomSlug, onDone }) {
       const d = res.data;
       if (d.is_correct) {
         setStates(s => ({ ...s, [q.id]: "ok" }));
-        setMsgs(m => ({ ...m, [q.id]: d.explanation || "✓ Düzgün cavab! " + (d.xp_delta ? `+${d.xp_delta} XP` : "") }));
+        setMsgs(m => ({ ...m, [q.id]: d.explanation || (lang === "az" ? "✓ Düzgün cavab! " : "✓ Correct! ") + (d.xp_delta ? `+${d.xp_delta} XP` : "") }));
         onDone(task.id);
       } else {
         setStates(s => ({ ...s, [q.id]: "wrong" }));
-        setMsgs(m => ({ ...m, [q.id]: d.explanation || "✗ Yanlış cavab. Yenidən cəhd et." }));
+        setMsgs(m => ({ ...m, [q.id]: d.explanation || (lang === "az" ? "✗ Yanlış cavab. Yenidən cəhd et." : "✗ Wrong answer. Try again.") }));
         setTimeout(() => setStates(s => ({ ...s, [q.id]: "idle" })), 2200);
       }
     } catch {
       setStates(s => ({ ...s, [q.id]: "wrong" }));
-      setMsgs(m => ({ ...m, [q.id]: "Xəta baş verdi." }));
+      setMsgs(m => ({ ...m, [q.id]: lang === "az" ? "Xəta baş verdi." : "Something went wrong." }));
       setTimeout(() => setStates(s => ({ ...s, [q.id]: "idle" })), 2200);
     }
   };
@@ -347,7 +370,7 @@ function TaskRow({ task, roomSlug, onDone }) {
               <div className="lab-answer-row">
                 <input
                   className={`lab-answer-input${states[q.id] === "ok" ? " ok" : states[q.id] === "wrong" ? " wrong" : ""}`}
-                  placeholder={q.kind === "flag" ? "xkr{...}" : "Cavabı daxil et..."}
+                  placeholder={q.kind === "flag" ? "xkr{...}" : (lang === "az" ? "Cavabı daxil et..." : "Enter your answer...")}
                   value={answers[q.id] || ""}
                   onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
                   onKeyDown={e => e.key === "Enter" && submit(q)}
@@ -374,14 +397,14 @@ function TaskRow({ task, roomSlug, onDone }) {
                     <rect x={3} y={11} width={18} height={11} rx={2} />
                     <path d="M7 11V7a5 5 0 0110 0v4" />
                   </svg>
-                  İpucunu göstər
+                  {lang === "az" ? "İpucunu göstər" : "Show hint"}
                   {q.hint_cost > 0 && <span className="lab-hint-cost">-{q.hint_cost} XP</span>}
                 </button>
               )}
 
               {hints[q.id] && (
                 <div className="lab-hint-text">
-                  <div className="lab-hint-label">💡 İpucu</div>
+                  <div className="lab-hint-label">💡 {lang === "az" ? "İpucu" : "Hint"}</div>
                   {hints[q.id]}
                 </div>
               )}
@@ -390,7 +413,7 @@ function TaskRow({ task, roomSlug, onDone }) {
 
           {(!task.questions || task.questions.length === 0) && (
             <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-4)", margin: 0 }}>
-              Bu tapşırıq üçün cavab forması yoxdur.
+              {lang === "az" ? "Bu tapşırıq üçün cavab forması yoxdur." : "This task has no answer form."}
             </p>
           )}
         </div>
@@ -400,33 +423,46 @@ function TaskRow({ task, roomSlug, onDone }) {
 }
 
 /* ── About tab content ─────────────────────────────────────────── */
-function AboutTab({ room, targetIp }) {
-  const level = (room.level || "beginner").toLowerCase();
-  const diff = DIFF[level] || DIFF.beginner;
-
-  const envInfo = {
+const ENV_INFO = {
+  az: {
     docker:  { label: "Docker Container", desc: "Yüngülçəkili, sürətli başlayan mühit." },
     vm:      { label: "Virtual Machine",  desc: "Tam izolə edilmiş VM, real OS." },
     linux:   { label: "Linux Server",     desc: "Linux əsaslı hədəf sistem." },
     windows: { label: "Windows Server",   desc: "Windows əsaslı hədəf sistem." },
     web:     { label: "Web App",          desc: "Bulud əsaslı veb tətbiq hədəfi." },
     cloud:   { label: "Cloud Instance",   desc: "Bulud əsaslı infrastruktur hədəfi." },
-  }[(room.env || "docker").toLowerCase()] || { label: room.env || "Docker", desc: "" };
+  },
+  en: {
+    docker:  { label: "Docker Container", desc: "Lightweight, fast-starting environment." },
+    vm:      { label: "Virtual Machine",  desc: "Fully isolated VM, real OS." },
+    linux:   { label: "Linux Server",     desc: "Linux-based target system." },
+    windows: { label: "Windows Server",   desc: "Windows-based target system." },
+    web:     { label: "Web App",          desc: "Cloud-hosted web app target." },
+    cloud:   { label: "Cloud Instance",   desc: "Cloud-hosted infrastructure target." },
+  },
+};
+
+function AboutTab({ room, targetIp, lang }) {
+  const level = (room.level || "beginner").toLowerCase();
+  const diff = diffMeta(level, lang);
+
+  const envInfo = (ENV_INFO[lang] || ENV_INFO.az)[(room.env || "docker").toLowerCase()]
+    || { label: room.env || "Docker", desc: "" };
 
   return (
     <div className="lab-about">
       <h2>{room.title}</h2>
-      <p>{room.description || room.summary || "İzolyasiya olunmuş mühitdə praktik pentest məşqi."}</p>
+      <p>{room.description || room.summary || (lang === "az" ? "İzolyasiya olunmuş mühitdə praktik pentest məşqi." : "Hands-on pentest exercise in an isolated environment.")}</p>
 
       <div style={{
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
         gap: 10, margin: "18px 0",
       }}>
         {[
-          { label: "Hədəf IP",  value: targetIp, mono: true,  color: "var(--accent)" },
-          { label: "Mühit",     value: envInfo.label                                  },
-          { label: "Çətinlik",  value: diff.label, color: diff.color                  },
-          { label: "Müddət",    value: `~${room.estimated_minutes || 60} dəq`         },
+          { label: lang === "az" ? "Hədəf IP" : "Target IP",  value: targetIp, mono: true,  color: "var(--accent)" },
+          { label: lang === "az" ? "Mühit"    : "Environment", value: envInfo.label                                  },
+          { label: lang === "az" ? "Çətinlik" : "Difficulty",  value: diff.label, color: diff.color                  },
+          { label: lang === "az" ? "Müddət"   : "Duration",    value: lang === "az" ? `~${room.estimated_minutes || 60} dəq` : `~${room.estimated_minutes || 60} min` },
         ].map(s => (
           <div key={s.label} style={{
             background: "rgba(255,255,255,0.04)", border: "1px solid var(--line)",
@@ -446,15 +482,15 @@ function AboutTab({ room, targetIp }) {
         ))}
       </div>
 
-      <h2 style={{ marginTop: 18 }}>Başlamaq üçün</h2>
-      <p>Aşağıdakı addımları izlə:</p>
+      <h2 style={{ marginTop: 18 }}>{lang === "az" ? "Başlamaq üçün" : "Getting started"}</h2>
+      <p>{lang === "az" ? "Aşağıdakı addımları izlə:" : "Follow these steps:"}</p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
         {[
-          { n: "1", text: `nmap -sV ${targetIp} — Açıq portları tap` },
-          { n: "2", text: `gobuster dir -u http://${targetIp} — Gizli URL-ləri axtar` },
-          { n: "3", text: "Tapılan giriş nöqtəsini araşdır" },
-          { n: "4", text: "Flag-ı tap və tapşırıq formasına daxil et" },
+          { n: "1", text: lang === "az" ? `nmap -sV ${targetIp} — Açıq portları tap` : `nmap -sV ${targetIp} — Find open ports` },
+          { n: "2", text: lang === "az" ? `gobuster dir -u http://${targetIp} — Gizli URL-ləri axtar` : `gobuster dir -u http://${targetIp} — Discover hidden URLs` },
+          { n: "3", text: lang === "az" ? "Tapılan giriş nöqtəsini araşdır" : "Investigate the entry point you find" },
+          { n: "4", text: lang === "az" ? "Flag-ı tap və tapşırıq formasına daxil et" : "Find the flag and submit it in the task form" },
         ].map(s => (
           <div key={s.n} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
             <span style={{
@@ -469,13 +505,22 @@ function AboutTab({ room, targetIp }) {
         ))}
       </div>
 
-      <h2>Terminal haqqında</h2>
-      <p>
-        Sağdakı terminal simulyasiya edilmiş bir Kali Linux mühitidir.
-        Real alət çıxışlarına bənzər cavablar verir.
-        <code>help</code> yazaraq əmrlərin siyahısını gör.
-        ↑/↓ düymələri ilə əmr tarixçəsinə dön, <code>Tab</code> ilə tamamla.
-      </p>
+      <h2>{lang === "az" ? "Terminal haqqında" : "About the terminal"}</h2>
+      {lang === "az" ? (
+        <p>
+          Sağdakı terminal simulyasiya edilmiş bir Kali Linux mühitidir.
+          Real alət çıxışlarına bənzər cavablar verir.
+          <code>help</code> yazaraq əmrlərin siyahısını gör.
+          ↑/↓ düymələri ilə əmr tarixçəsinə dön, <code>Tab</code> ilə tamamla.
+        </p>
+      ) : (
+        <p>
+          The terminal on the right is a simulated Kali Linux environment.
+          It returns responses that mimic real tool output.
+          Type <code>help</code> to see the list of commands.
+          Use ↑/↓ to navigate command history, <code>Tab</code> to autocomplete.
+        </p>
+      )}
     </div>
   );
 }
@@ -485,6 +530,7 @@ function AboutTab({ room, targetIp }) {
    ================================================================ */
 export default function RoomDetailPage() {
   const { slug } = useParams();
+  const { lang } = useLang();
 
   const [room,     setRoom]     = useState(null);
   const [loading,  setLoading]  = useState(true);
@@ -503,9 +549,9 @@ export default function RoomDetailPage() {
         { t: "banner", v: "  ██╔╝ ██╗██║  ██║██║  ██╗██║  ██╗███████╗██║  ██║" },
         { t: "banner", v: "  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝" },
         { t: "muted",  v: "" },
-        { t: "info",   v: `  Pentest Lab v2.1  |  Hədəf: ${ip || "10.10.11.1"}  |  VPN: aktiv` },
+        { t: "info",   v: lang === "az" ? `  Pentest Lab v2.1  |  Hədəf: ${ip || "10.10.11.1"}  |  VPN: aktiv` : `  Pentest Lab v2.1  |  Target: ${ip || "10.10.11.1"}  |  VPN: active` },
         { t: "muted",  v: "  ─────────────────────────────────────────────────" },
-        { t: "",       v: "  'help' yazaraq mövcud əmrləri gör." },
+        { t: "",       v: lang === "az" ? "  'help' yazaraq mövcud əmrləri gör." : "  Type 'help' to see available commands." },
         { t: "muted",  v: "" },
       ],
     },
@@ -553,7 +599,7 @@ export default function RoomDetailPage() {
     const c = cmd.trim();
     if (!c) return;
 
-    const result = simulate(c);
+    const result = simulate(c, lang);
 
     setHistory(prev => {
       const next = [...prev.filter(x => x !== c), c];
@@ -574,7 +620,7 @@ export default function RoomDetailPage() {
       ...prev,
       { type: "cmd", cmd: c, lines: result.lines || [] },
     ]);
-  }, [cmd, room]);
+  }, [cmd, room, lang]);
 
   const handleKeyDown = useCallback(e => {
     if (e.key === "Enter") { handleRun(); return; }
@@ -609,29 +655,29 @@ export default function RoomDetailPage() {
   /* ── Loading ── */
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <TileSkeleton height={52} />
           <TileSkeleton height={540} />
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (!room) {
     return (
-      <AppShell>
+      <>
         <Link to="/rooms" className="fi-back">
           <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
             <path d="M15 6l-6 6 6 6" />
           </svg>
-          Laboratoriyalara qayıt
+          {lang === "az" ? "Laboratoriyalara qayıt" : "Back to labs"}
         </Link>
         <div className="xk-empty-screen">
           <div className="xk-empty-ico">🧪</div>
-          <h3>Lab tapılmadı</h3>
+          <h3>{lang === "az" ? "Lab tapılmadı" : "Lab not found"}</h3>
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -656,7 +702,7 @@ export default function RoomDetailPage() {
   ];
 
   return (
-    <AppShell>
+    <>
       <div className="xk-screen" style={{ paddingBottom: 0 }}>
 
         {/* Back */}
@@ -665,11 +711,11 @@ export default function RoomDetailPage() {
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
               <path d="M15 6l-6 6 6 6" />
             </svg>
-            Geri
+            {lang === "az" ? "Geri" : "Back"}
           </Link>
           <span style={{ color: "var(--line-3)" }}>/</span>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--ink-4)" }}>
-            Laboratoriyalar
+            {lang === "az" ? "Laboratoriyalar" : "Labs"}
           </span>
           <span style={{ color: "var(--line-3)" }}>/</span>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--ink-2)" }}>
@@ -682,7 +728,7 @@ export default function RoomDetailPage() {
           <span style={{ fontSize: 22, flexShrink: 0 }}>{envIcon}</span>
           <span className="lab-header-title">{room.title}</span>
           <div className="lab-header-badges">
-            <DiffBadge level={room.level} />
+            <DiffBadge level={room.level} lang={lang} />
             <span className="fi-badge fi-badge-muted" style={{ fontFamily: "var(--font-mono)", fontSize: 10.5 }}>
               {(room.env || "Docker").toUpperCase()}
             </span>
@@ -690,8 +736,8 @@ export default function RoomDetailPage() {
               {targetIp}
             </span>
             {allDone
-              ? <span className="lab-status-dot done">✓ Tamamlandı</span>
-              : <span className="lab-status-dot active">Aktiv</span>
+              ? <span className="lab-status-dot done">✓ {lang === "az" ? "Tamamlandı" : "Completed"}</span>
+              : <span className="lab-status-dot active">{lang === "az" ? "Aktiv" : "Active"}</span>
             }
           </div>
         </div>
@@ -709,7 +755,7 @@ export default function RoomDetailPage() {
                 {[
                   { k: "IP",     v: targetIp,              mono: true, accent: true },
                   { k: "OS",     v: "Linux / Debian 11"                              },
-                  { k: "Mühit",  v: room.env || "Docker"                             },
+                  { k: lang === "az" ? "Mühit" : "Env", v: room.env || "Docker"     },
                   { k: "VPN",    v: "WireGuard",            mono: true               },
                   { k: "XP",     v: `${totalXp} xp`,        mono: true               },
                 ].map(row => (
@@ -729,13 +775,13 @@ export default function RoomDetailPage() {
               {/* Tasks */}
               <div className="lab-panel-sect">
                 <div className="lab-panel-head">
-                  Tapşırıqlar
+                  {lang === "az" ? "Tapşırıqlar" : "Tasks"}
                   <span className="lab-panel-head-count">{doneCount}/{tasks.length}</span>
                 </div>
 
                 {tasks.length === 0 ? (
                   <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-4)", margin: 0 }}>
-                    Tapşırıq yoxdur.
+                    {lang === "az" ? "Tapşırıq yoxdur." : "No tasks."}
                   </p>
                 ) : (
                   <div className="lab-task-list">
@@ -745,6 +791,7 @@ export default function RoomDetailPage() {
                         task={{ ...task, _localDone: doneTasks.has(task.id) }}
                         roomSlug={slug}
                         onDone={markDone}
+                        lang={lang}
                       />
                     ))}
                   </div>
@@ -755,10 +802,10 @@ export default function RoomDetailPage() {
                     <span style={{ fontSize: 18 }}>🎉</span>
                     <div>
                       <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13, color: "var(--ok)" }}>
-                        Lab tamamlandı!
+                        {lang === "az" ? "Lab tamamlandı!" : "Lab completed!"}
                       </div>
                       <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--ok)", opacity: 0.7 }}>
-                        +{totalXp} XP qazandın
+                        {lang === "az" ? `+${totalXp} XP qazandın` : `+${totalXp} XP earned`}
                       </div>
                     </div>
                   </div>
@@ -767,7 +814,7 @@ export default function RoomDetailPage() {
 
               {/* Quick commands */}
               <div className="lab-panel-sect">
-                <div className="lab-panel-head">Tez əmrlər</div>
+                <div className="lab-panel-head">{lang === "az" ? "Tez əmrlər" : "Quick commands"}</div>
                 <div className="lab-quick-row">
                   {QUICK.map(q => (
                     <button
@@ -800,7 +847,7 @@ export default function RoomDetailPage() {
               </div>
               {[
                 { id: "terminal", label: "Terminal", icon: ">_" },
-                { id: "about",    label: "Haqqında", icon: "ℹ" },
+                { id: "about",    label: lang === "az" ? "Haqqında" : "About", icon: "ℹ" },
                 { id: "writeup",  label: allDone ? "Write-up" : "Write-up 🔒", icon: "📄", locked: !allDone },
               ].map(t => (
                 <button
@@ -831,7 +878,7 @@ export default function RoomDetailPage() {
                   setCmd("");
                 }}
               >
-                ↺ Sıfırla
+                ↺ {lang === "az" ? "Sıfırla" : "Reset"}
               </button>
             </div>
 
@@ -894,7 +941,7 @@ export default function RoomDetailPage() {
                     autoComplete="off"
                     autoCorrect="off"
                     spellCheck={false}
-                    placeholder="əmri yaz… (↑↓ tarixçə, Tab tamamla)"
+                    placeholder={lang === "az" ? "əmri yaz… (↑↓ tarixçə, Tab tamamla)" : "type a command… (↑↓ history, Tab to autocomplete)"}
                     onChange={e => setCmd(e.target.value)}
                     onKeyDown={handleKeyDown}
                   />
@@ -905,7 +952,7 @@ export default function RoomDetailPage() {
 
             {/* About tab */}
             {tab === "about" && (
-              <AboutTab room={room} targetIp={targetIp} />
+              <AboutTab room={room} targetIp={targetIp} lang={lang} />
             )}
 
             {/* Write-up (locked) */}
@@ -913,7 +960,9 @@ export default function RoomDetailPage() {
               <div className="lab-about">
                 <h2>Write-up</h2>
                 <p>
-                  Təbriklər! Bu lab üçün yazılmış addım-addım write-up aşağıdadır.
+                  {lang === "az"
+                    ? "Təbriklər! Bu lab üçün yazılmış addım-addım write-up aşağıdadır."
+                    : "Congratulations! The step-by-step write-up for this lab is below."}
                 </p>
                 <pre>{`# ${room.title} — Write-up
 
@@ -940,6 +989,6 @@ Flag: xkr{SQL_1nj3ct10n_m4st3r}
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

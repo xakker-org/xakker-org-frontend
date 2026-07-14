@@ -1,6 +1,9 @@
+import { useLang } from "../../contexts/LanguageContext";
 import "./DataTable.css";
 
-export default function DataTable({ columns = [], data = [], rowKey, highlightRow, onRowClick, sortKey, onSort }) {
+export default function DataTable({ columns = [], data = [], rowKey, highlightRow, onRowClick, sortKey, onSort, emptyMessage }) {
+  const { lang } = useLang();
+  const empty = emptyMessage || (lang === "az" ? "Məlumat yoxdur" : "No data");
   return (
     <div className="dt-wrap">
       <table className="dt">
@@ -23,7 +26,7 @@ export default function DataTable({ columns = [], data = [], rowKey, highlightRo
         </thead>
         <tbody>
           {data.length === 0 && (
-            <tr><td colSpan={columns.length} className="dt-empty">No data</td></tr>
+            <tr><td colSpan={columns.length} className="dt-empty">{empty}</td></tr>
           )}
           {data.map((row, i) => (
             <tr

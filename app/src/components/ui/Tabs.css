@@ -23,6 +23,7 @@
   transition: color var(--dur-1);
 }
 .tab:hover { color: var(--ink-1); }
+.tab:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: -2px; border-radius: 6px; }
 .tab.is-active {
   color: var(--ink-1);
   font-weight: 600;
