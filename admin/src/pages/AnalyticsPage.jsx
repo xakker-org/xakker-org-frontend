@@ -19,7 +19,7 @@ const T = {
     tabs: { overview: "Ümumi", content: "Məzmun", activity: "Fəaliyyət" },
     totalUsers: "Ümumi istifadəçi", new7: "Yeni (7 gün)", new30: "Yeni (30 gün)", active7: "Aktiv (7 gün)",
     totalXp: "Verilmiş XP", courses: "Kurslar", rooms: "Otaqlar", missions: "Missiyalar", lessons: "Dərslər",
-    topQuestions: "Ən çox cəhd olunan suallar", roomsCompleted: "Ən çox tamamlanan otaqlar", examStats: "İmtahan statistikası",
+    roomsCompleted: "Ən çox tamamlanan otaqlar", examStats: "İmtahan statistikası",
     passRate: "Keçid faizi", avgScore: "Orta bal", passed: "Keçdi", failed: "Keçmədi",
     signups: "Qeydiyyatlar", activityFeed: "Fəaliyyət",
   },
@@ -28,7 +28,7 @@ const T = {
     tabs: { overview: "Overview", content: "Content", activity: "Activity" },
     totalUsers: "Total users", new7: "New (7d)", new30: "New (30d)", active7: "Active (7d)",
     totalXp: "XP awarded", courses: "Courses", rooms: "Rooms", missions: "Missions", lessons: "Lessons",
-    topQuestions: "Most attempted questions", roomsCompleted: "Most completed rooms", examStats: "Exam stats",
+    roomsCompleted: "Most completed rooms", examStats: "Exam stats",
     passRate: "Pass rate", avgScore: "Avg score", passed: "Passed", failed: "Failed",
     signups: "Signups", activityFeed: "Activity",
   },
@@ -104,22 +104,7 @@ export default function AnalyticsPage() {
         content === undefined ? <TileSkeleton height={240} /> :
         content === null ? <EmptyState icon="!" title={errorLabel} action={<Button variant="ghost" onClick={retry}>{retryLabel}</Button>} /> : (
           <div className="bento">
-            <Tile span={7}>
-              <TileHead title={t.topQuestions} />
-              {content.top_questions.length === 0 ? (
-                <EmptyState icon="◌" title="—" />
-              ) : (
-                <DataTable
-                  columns={[
-                    { key: "question__title", header: lang === "az" ? "Sual" : "Question" },
-                    { key: "attempts", header: lang === "az" ? "Cəhd" : "Attempts", align: "right" },
-                  ]}
-                  data={content.top_questions}
-                  rowKey={(r, i) => i}
-                />
-              )}
-            </Tile>
-            <Tile span={5}>
+            <Tile span={12}>
               <TileHead title={t.examStats} />
               <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
                 <ProgressRing value={passPct} label={`${passPct}%`} sub={t.passRate} tone="mint" />
