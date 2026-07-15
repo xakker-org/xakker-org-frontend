@@ -21,11 +21,11 @@
 .gh-count {
   font-size: 14px;
   font-weight: 600;
-  color: var(--ink-1, #e6edf3);
+  color: var(--ink-1);
 }
 
 .gh-count-year {
-  color: var(--ink-4, #8b949e);
+  color: var(--ink-4);
   font-weight: 400;
 }
 
@@ -39,9 +39,9 @@
 .gh-ybtn {
   padding: 3px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--line-3);
   background: transparent;
-  color: #58a6ff;
+  color: var(--accent);
   font-size: 12px;
   font-family: inherit;
   cursor: pointer;
@@ -50,14 +50,14 @@
 }
 
 .gh-ybtn:hover {
-  background: rgba(88, 166, 255, 0.1);
-  border-color: #388bfd;
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
 
 .gh-ybtn--on {
-  background: rgba(88, 166, 255, 0.12);
-  border-color: #388bfd;
-  color: #e6edf3;
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--ink-1);
   font-weight: 600;
 }
 
@@ -82,7 +82,7 @@
   display: grid;
   /* grid-template-rows set inline via JS for dynamic cell size */
   font-size: 9px;
-  color: #8b949e;
+  color: var(--ink-3);
   text-align: right;
   width: 28px;
   align-items: center;
@@ -109,7 +109,7 @@
 .gh-mlabel {
   /* width set inline via JS (cellPx + GAP) */
   font-size: 10px;
-  color: #8b949e;
+  color: var(--ink-3);
   white-space: nowrap;
   overflow: visible;
   user-select: none;
@@ -150,14 +150,14 @@
   z-index: 2;
 }
 
-/* Tone levels — exact GitHub dark theme colours */
-.gh-tx { background: #0d1117; outline: none !important; cursor: default; pointer-events: none; }
-.gh-tf { background: #161b22; outline: 1px solid rgba(255,255,255,0.03) !important; cursor: default; pointer-events: none; }
-.gh-t0 { background: #161b22; }
-.gh-t1 { background: #0e4429; }
-.gh-t2 { background: #006d32; }
-.gh-t3 { background: #26a641; }
-.gh-t4 { background: #39d353; }
+/* Tone levels — accent-red intensity ramp, matching ActivityBars.jsx */
+.gh-tx { background: var(--bg); outline: none !important; cursor: default; pointer-events: none; }
+.gh-tf { background: var(--bg-card); outline: 1px solid rgba(255,255,255,0.03) !important; cursor: default; pointer-events: none; }
+.gh-t0 { background: var(--bg-card-2); }
+.gh-t1 { background: color-mix(in srgb, var(--accent) 22%, var(--bg-card)); }
+.gh-t2 { background: color-mix(in srgb, var(--accent) 45%, var(--bg-card)); }
+.gh-t3 { background: color-mix(in srgb, var(--accent) 70%, var(--bg-card)); }
+.gh-t4 { background: var(--accent); }
 
 /* Footer */
 .gh-foot {
@@ -172,7 +172,7 @@
   align-items: center;
   gap: 3px;
   font-size: 11px;
-  color: #8b949e;
+  color: var(--ink-3);
   user-select: none;
 }
 
@@ -185,8 +185,8 @@
   position: fixed;
   z-index: 9999;
   pointer-events: none;
-  background: #1c2128;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--bg-elev);
+  border: 1px solid var(--line-3);
   border-radius: 6px;
   padding: 8px 12px;
   white-space: nowrap;
@@ -198,20 +198,20 @@
 
 .gh-tip-val {
   font-size: 12px;
-  color: #e6edf3;
+  color: var(--ink-1);
 }
 
 .gh-tip-val strong {
-  color: #39d353;
+  color: var(--accent);
   font-weight: 700;
 }
 
 .gh-tip-empty {
   font-size: 12px;
-  color: #8b949e;
+  color: var(--ink-3);
 }
 
 .gh-tip-date {
   font-size: 11px;
-  color: #8b949e;
+  color: var(--ink-3);
 }

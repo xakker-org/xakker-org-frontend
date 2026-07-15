@@ -501,7 +501,9 @@
 .kali-path    { color: #56d364; }
 .kali-dollar  { color: var(--accent); font-weight: 700; }
 .kali-cmd     { color: #e6edf3; }
-.kali-cursor  { display: inline-block; width: 9px; height: 16px; background: var(--accent); vertical-align: text-bottom; animation: kali-blink 1s step-end infinite; }
+.kali-cursor  { display: inline-block; width: 9px; height: 16px; background: var(--accent); vertical-align: text-bottom; margin-left: 1px; }
+.kali-cursor.is-focused { animation: kali-blink 1s step-end infinite; }
+.kali-cursor.is-blurred { opacity: 0.35; animation: none; }
 @keyframes kali-blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
 
 /* Output line types */
@@ -520,7 +522,7 @@
   margin-bottom: 14px;
 }
 
-/* Terminal input row */
+/* Terminal input row (used by TerminalQuestion.jsx single-input challenge terminal) */
 .lab-term-input-row {
   display: flex; align-items: center; gap: 0;
   padding: 12px 20px;
@@ -542,6 +544,18 @@
   transition: filter 150ms; white-space: nowrap;
 }
 .lab-run-btn:hover { filter: brightness(1.1); }
+
+/* Single inline terminal input for RoomDetailPage — visually hidden, drives the $ prompt line */
+.lab-term-inp-inline {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0; background: none; outline: none;
+  color: transparent; caret-color: transparent;
+}
 
 /* About tab content */
 .lab-about {

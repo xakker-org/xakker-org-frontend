@@ -20,11 +20,20 @@ const NAV_SECTIONS = [
     children: [
       { to: "/content/courses", icon: "courses", label: { az: "Kurslar", en: "Courses" } },
       { to: "/content/rooms", icon: "labs", label: { az: "Otaqlar", en: "Rooms" } },
-      { to: "/content/missions", icon: "map", label: { az: "Missiyalar", en: "Missions" } },
       { to: "/content/lessons", icon: "book", label: { az: "Dərslər", en: "Lessons" } },
       { to: "/content/plans", icon: "paths", label: { az: "Planlar", en: "Plans" } },
       { to: "/content/categories", icon: "beaker", label: { az: "Kateqoriyalar", en: "Categories" } },
       { to: "/content/room-tags", icon: "terminal", label: { az: "Teqlər", en: "Tags" } },
+    ],
+  },
+  {
+    type: "group",
+    icon: "flag",
+    label: { az: "CTF Missiyaları", en: "CTF Missions" },
+    children: [
+      { to: "/content/ctf-missions", icon: "flag", label: { az: "Missiyalar (CTF)", en: "Missions (CTF)" } },
+      { to: "/content/ctf-mission-categories", icon: "beaker", label: { az: "Kateqoriyalar", en: "Categories" } },
+      { to: "/content/ctf-mission-tags", icon: "tag", label: { az: "Teqlər", en: "Tags" } },
     ],
   },
   {
@@ -42,7 +51,23 @@ const NAV_SECTIONS = [
 ];
 
 const COLLAPSED_KEY = "xk_admin_sb_collapsed";
-const GROUP_OPEN_KEY = "xk_admin_sb_group_open";
+const GROUP_OPEN_KEY = "xk_admin_sb_group_open"; // JSON map of { [groupLabel]: boolean }
+
+const GROUP_LABELS = NAV_SECTIONS.filter((s) => s.type === "group").map((s) => s.label.az);
+
+function loadGroupOpenState() {
+  try {
+    const raw = localStorage.getItem(GROUP_OPEN_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    const state = {};
+    for (const key of GROUP_LABELS) state[key] = parsed[key] !== false;
+    return state;
+  } catch {
+    const state = {};
+    for (const key of GROUP_LABELS) state[key] = true;
+    return state;
+  }
+}
 
 export default function AdminShell({ children }) {
   const navigate = useNavigate();
@@ -52,9 +77,7 @@ export default function AdminShell({ children }) {
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem(COLLAPSED_KEY) === "1"; } catch { return false; }
   });
-  const [groupOpen, setGroupOpen] = useState(() => {
-    try { return localStorage.getItem(GROUP_OPEN_KEY) !== "0"; } catch { return true; }
-  });
+  const [groupOpen, setGroupOpen] = useState(loadGroupOpenState);
 
   const toggleCollapsed = () => {
     setCollapsed((c) => {
@@ -64,10 +87,10 @@ export default function AdminShell({ children }) {
     });
   };
 
-  const toggleGroup = () => {
+  const toggleGroup = (groupLabel) => {
     setGroupOpen((o) => {
-      const next = !o;
-      try { localStorage.setItem(GROUP_OPEN_KEY, next ? "1" : "0"); } catch {}
+      const next = { ...o, [groupLabel]: !o[groupLabel] };
+      try { localStorage.setItem(GROUP_OPEN_KEY, JSON.stringify(next)); } catch {}
       return next;
     });
   };
@@ -129,16 +152,17 @@ export default function AdminShell({ children }) {
                   </NavLink>
                 );
               }
+              const isOpen = groupOpen[item.label.az] !== false;
               return (
                 <div className="sb-group" key={item.label.az}>
-                  <button type="button" className="sb-group-toggle" onClick={toggleGroup}>
+                  <button type="button" className="sb-group-toggle" onClick={() => toggleGroup(item.label.az)}>
                     <span className="sb-link-ico"><Icon name={item.icon} size={20} /></span>
                     <span className="sb-link-label">{item.label[lang] || item.label.az}</span>
-                    <span className={`sb-group-chevron${groupOpen ? " is-open" : ""}`}>
+                    <span className={`sb-group-chevron${isOpen ? " is-open" : ""}`}>
                       <Icon name="chevronDown" size={14} />
                     </span>
                   </button>
-                  {groupOpen && (
+                  {isOpen && (
                     <div className="sb-group-children">
                       {item.children.map((child) => (
                         <NavLink
@@ -192,7 +216,7 @@ export default function AdminShell({ children }) {
           </button>
 
           <div className="tb-admin-id">
-            <Chip tone="accent">{lang === "az" ? "Admin Panel" : "Admin Panel"}</Chip>
+            <Chip tone="accent">Admin Panel</Chip>
           </div>
 
           <div className="tb-right">

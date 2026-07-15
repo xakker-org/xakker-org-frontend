@@ -24,11 +24,11 @@ const TABS = [
     label: { az: "Task irəliləyişi", en: "Task progress" },
     endpoint: () => progress.tasks,
     columns: [
-      { key: "username", header: "User" },
-      { key: "task_title", header: "Task" },
-      { key: "room_title", header: "Room" },
-      { key: "completed", header: "Done", align: "center", render: (r) => boolChip(r.completed) },
-      { key: "earned_points", header: "Points", align: "right" },
+      { key: "username", header: { az: "İstifadəçi", en: "User" } },
+      { key: "task_title", header: { az: "Tapşırıq", en: "Task" } },
+      { key: "room_title", header: { az: "Otaq", en: "Room" } },
+      { key: "completed", header: { az: "Bitib", en: "Done" }, align: "center", render: (r) => boolChip(r.completed) },
+      { key: "earned_points", header: { az: "Xal", en: "Points" }, align: "right" },
     ],
   },
   {
@@ -36,10 +36,10 @@ const TABS = [
     label: { az: "Task cəhdləri", en: "Task attempts" },
     endpoint: () => progress.taskQuestionAttempts,
     columns: [
-      { key: "username", header: "User" },
-      { key: "question_prompt", header: "Question" },
-      { key: "is_correct", header: "Correct", align: "center", render: (r) => boolChip(r.is_correct) },
-      { key: "attempted_at", header: "When" },
+      { key: "username", header: { az: "İstifadəçi", en: "User" } },
+      { key: "question_prompt", header: { az: "Sual", en: "Question" } },
+      { key: "is_correct", header: { az: "Düzgün", en: "Correct" }, align: "center", render: (r) => boolChip(r.is_correct) },
+      { key: "attempted_at", header: { az: "Vaxt", en: "When" } },
     ],
   },
   {
@@ -47,31 +47,44 @@ const TABS = [
     label: { az: "Dərs irəliləyişi", en: "Lesson progress" },
     endpoint: () => progress.lessons,
     columns: [
-      { key: "username", header: "User" },
-      { key: "lesson_title", header: "Lesson" },
-      { key: "is_completed", header: "Done", align: "center", render: (r) => boolChip(r.is_completed) },
+      { key: "username", header: { az: "İstifadəçi", en: "User" } },
+      { key: "lesson_title", header: { az: "Dərs", en: "Lesson" } },
+      { key: "is_completed", header: { az: "Bitib", en: "Done" }, align: "center", render: (r) => boolChip(r.is_completed) },
     ],
   },
   {
     key: "missions",
-    label: { az: "Missiya irəliləyişi", en: "Mission progress" },
+    label: { az: "Missiya irəliləyişi (köhnə)", en: "Mission progress (legacy)" },
     endpoint: () => progress.missions,
     columns: [
-      { key: "username", header: "User" },
-      { key: "mission_title", header: "Mission" },
-      { key: "is_completed", header: "Done", align: "center", render: (r) => boolChip(r.is_completed) },
-      { key: "exam_passed", header: "Exam", align: "center", render: (r) => boolChip(r.exam_passed) },
+      { key: "username", header: { az: "İstifadəçi", en: "User" } },
+      { key: "mission_title", header: { az: "Missiya", en: "Mission" } },
+      { key: "is_completed", header: { az: "Bitib", en: "Done" }, align: "center", render: (r) => boolChip(r.is_completed) },
+      { key: "exam_passed", header: { az: "İmtahan", en: "Exam" }, align: "center", render: (r) => boolChip(r.exam_passed) },
     ],
   },
   {
     key: "exam-attempts",
-    label: { az: "İmtahan cəhdləri", en: "Exam attempts" },
+    label: { az: "İmtahan cəhdləri (köhnə)", en: "Exam attempts (legacy)" },
     endpoint: () => progress.missionExamAttempts,
     columns: [
-      { key: "username", header: "User" },
-      { key: "exam_title", header: "Exam" },
-      { key: "score", header: "Score", align: "right" },
-      { key: "passed", header: "Passed", align: "center", render: (r) => boolChip(r.passed) },
+      { key: "username", header: { az: "İstifadəçi", en: "User" } },
+      { key: "exam_title", header: { az: "İmtahan", en: "Exam" } },
+      { key: "score", header: { az: "Bal", en: "Score" }, align: "right" },
+      { key: "passed", header: { az: "Keçdi", en: "Passed" }, align: "center", render: (r) => boolChip(r.passed) },
+    ],
+  },
+  {
+    key: "ctf-missions",
+    label: { az: "CTF irəliləyişi", en: "CTF progress" },
+    endpoint: () => progress.ctfMissions,
+    columns: [
+      { key: "username", header: { az: "İstifadəçi", en: "User" } },
+      { key: "mission_title", header: { az: "Missiya", en: "Mission" } },
+      { key: "status", header: { az: "Vəziyyət", en: "Status" } },
+      { key: "flag_attempts", header: { az: "Cəhdlər", en: "Attempts" }, align: "right" },
+      { key: "solved_at", header: { az: "Həll tarixi", en: "Solved at" } },
+      { key: "writeup_unlocked_at", header: { az: "Write-up açıldı", en: "Write-up unlocked" } },
     ],
   },
   {
@@ -79,9 +92,9 @@ const TABS = [
     label: { az: "Qeydiyyatlar", en: "Enrollments" },
     endpoint: () => progress.enrollments,
     columns: [
-      { key: "username", header: "User" },
-      { key: "course_title", header: "Course" },
-      { key: "created_at", header: "Enrolled" },
+      { key: "username", header: { az: "İstifadəçi", en: "User" } },
+      { key: "course_title", header: { az: "Kurs", en: "Course" } },
+      { key: "created_at", header: { az: "Qeydiyyat tarixi", en: "Enrolled" } },
     ],
   },
 ];
@@ -110,7 +123,7 @@ export default function ProgressPage() {
 
       <Tabs value={tab} onChange={setTab} options={TABS.map((tb) => ({ value: tb.key, label: tb.label[lang] || tb.label.az }))} />
 
-      <div style={{ height: 20 }} />
+      <div style={{ height: "var(--s5)" }} />
 
       {loading ? (
         <TileSkeleton height={280} />

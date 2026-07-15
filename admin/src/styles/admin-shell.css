@@ -75,7 +75,7 @@
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-mono);
   font-weight: 800;
-  color: #fff;
+  color: var(--accent-ink);
   font-size: 14px;
   flex-shrink: 0;
 }
@@ -371,7 +371,7 @@
 .tb-lang-btn:hover { color: var(--ink-2); }
 .tb-lang-btn.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-ink);
   box-shadow: 0 1px 4px rgba(255,59,59,0.35);
 }
 

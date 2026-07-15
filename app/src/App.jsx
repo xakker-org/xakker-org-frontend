@@ -4,9 +4,7 @@ import AppShell from "./components/AppShell";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import MissionDetailPage from "./pages/MissionDetailPage";
-import MissionExamPage from "./pages/MissionExamPage";
 import MissionsPage from "./pages/MissionsPage";
-import PassContentPage from "./pages/PassContentPage";
 import RoomsPage from "./pages/RoomsPage";
 import RoomDetailPage from "./pages/RoomDetailPage";
 import PlansPage from "./pages/PlansPage";
@@ -41,11 +39,9 @@ export default function App() {
       <Route element={<AppShell />}>
         <Route path="/dashboard" element={<DashboardPage />} />
 
-        {/* ── Missions ── */}
+        {/* ── Missions (CTF-style, Round 19 — replaces old passes+exam flow) ── */}
         <Route path="/missions" element={<MissionsPage />} />
         <Route path="/missions/:slug" element={<MissionDetailPage />} />
-        <Route path="/missions/:slug/passes/:passId" element={<PassContentPage />} />
-        <Route path="/missions/:slug/exam" element={<MissionExamPage />} />
 
         {/* Rooms / Plans / Courses */}
         <Route path="/rooms" element={<RoomsPage />} />

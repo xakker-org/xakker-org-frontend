@@ -72,13 +72,15 @@ export default function CommandPalette() {
     if (items.length > ROUTES.length) return; // already fetched
     let mounted = true;
     Promise.allSettled([
-      endpoints.missions().catch(() => ({ data: [] })),
+      endpoints.missionsList({}).catch(() => ({ data: [] })),
       endpoints.courses().catch(() => ({ data: [] })),
       endpoints.rooms({}).catch(() => ({ data: [] })),
     ]).then((res) => {
       if (!mounted) return;
-      const ms = (res[0]?.value?.data || []).map(m => ({
-        id: `m-${m.id}`, group: t.missions, title: m.title, hint: m.short_description || m.description?.slice(0, 60), path: `/missions/${m.slug}`, icon: m.icon || "◎",
+      const missionData = res[0]?.value?.data;
+      const missionItems = Array.isArray(missionData) ? missionData : (missionData?.results || []);
+      const ms = missionItems.map(m => ({
+        id: `m-${m.id}`, group: t.missions, title: m.title, hint: m.short_description?.slice(0, 60), path: `/missions/${m.slug}`, icon: "◎",
       }));
       const cs = (res[1]?.value?.data || []).map(c => ({
         id: `c-${c.id}`, group: t.courses, title: c.title, hint: c.description?.slice(0, 60), path: `/courses/${c.slug}`, icon: c.icon || "▤",

@@ -21,10 +21,9 @@ export const taskQuestions = createResource("/admin/task-questions/");
 export const lessons = createResource("/admin/lessons/");
 export const lessonQuestions = createResource("/admin/lesson-questions/");
 export const plans = createResource("/admin/plans/");
-export const missions = createResource("/admin/missions/");
-export const missionPasses = createResource("/admin/mission-passes/");
-export const missionExams = createResource("/admin/mission-exams/");
-export const missionExamQuestions = createResource("/admin/mission-exam-questions/");
+export const ctfMissions = createResource("/admin/ctf-missions/");
+export const ctfMissionCategories = createResource("/admin/ctf-mission-categories/");
+export const ctfMissionTags = createResource("/admin/ctf-mission-tags/");
 
 const usersResource = createResource("/admin/users/");
 export const users = {
@@ -42,6 +41,7 @@ export const progress = {
   missions: createResource("/admin/progress/missions/"),
   missionExamAttempts: createResource("/admin/progress/mission-exam-attempts/"),
   enrollments: createResource("/admin/progress/enrollments/"),
+  ctfMissions: createResource("/admin/progress/ctf-missions/"),
 };
 
 export const auditLogs = createResource("/admin/audit-logs/");

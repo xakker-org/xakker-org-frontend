@@ -308,6 +308,45 @@
 .xk-curr-title { flex: 1; font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .xk-curr-min { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
 
+/* ── CTF mission markdown body (description / connection_info / writeup) ── */
+.xk-md { font-size: 14.5px; line-height: 1.65; color: var(--text-2); }
+.xk-md .md-h1, .xk-md .md-h2, .xk-md .md-h3, .xk-md .md-h4 { color: var(--text); font-family: var(--font-display); font-weight: 600; margin: 20px 0 10px; }
+.xk-md .md-h1:first-child, .xk-md .md-h2:first-child, .xk-md .md-h3:first-child { margin-top: 0; }
+.xk-md .md-h1 { font-size: 20px; } .xk-md .md-h2 { font-size: 17px; } .xk-md .md-h3 { font-size: 15px; }
+.xk-md .md-p { margin: 0 0 12px; }
+.xk-md .md-list { margin: 0 0 12px; padding-left: 22px; display: flex; flex-direction: column; gap: 5px; }
+.xk-md code { font-family: var(--font-mono); font-size: 12.5px; background: rgba(var(--overlay-rgb),.08); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; color: var(--text); }
+.xk-md .md-code { border-radius: 12px; overflow-x: auto; border: 1px solid var(--border); margin: 6px 0 14px; background: #0a0a0c; padding: 14px 16px; }
+.xk-md .md-code code { background: none; border: none; padding: 0; font-size: 13px; line-height: 1.7; color: #d6d6df; white-space: pre; }
+.xk-md .md-quote { margin: 0 0 12px; padding: 10px 14px; border-left: 3px solid rgba(var(--accent-rgb),.5); background: rgba(var(--accent-rgb),.05); border-radius: 0 8px 8px 0; }
+.xk-md a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── CTF flag submit panel ── */
+.xk-flag-card { position: relative; }
+.xk-flag-row { display: flex; gap: 10px; align-items: stretch; margin-top: 14px; flex-wrap: wrap; }
+.xk-flag-input { flex: 1; min-width: 220px; font-family: var(--font-mono); }
+.xk-flag-feedback { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 13px; border-radius: 10px; font-size: 13px; font-weight: 500; animation: reveal .25s ease both; }
+.xk-flag-feedback.ok { background: rgba(25,195,125,.1); border: 1px solid rgba(25,195,125,.28); color: #19c37d; }
+.xk-flag-feedback.no { background: rgba(var(--accent-rgb),.08); border: 1px solid rgba(var(--accent-rgb),.25); color: var(--accent); }
+.xk-flag-attempts { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+.xk-solved-banner { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; background: rgba(25,195,125,.1); border: 1px solid rgba(25,195,125,.28); color: #19c37d; font-weight: 600; font-size: 14px; }
+.xk-solved-banner .ico { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(25,195,125,.18); flex: none; }
+
+/* ── CTF write-up locked/unlocked section ── */
+.xk-writeup-card { position: relative; }
+.xk-writeup-locked { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; padding: 34px 20px; }
+.xk-writeup-locked .ico { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); }
+.xk-writeup-locked p { color: var(--muted); font-size: 13.5px; max-width: 380px; margin: 0; }
+.xk-writeup-unlocked-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: #19c37d; }
+
+/* ── Mission list filter bar ── */
+.xk-mission-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: var(--gap); }
+.xk-mission-toolbar .field { min-width: 220px; flex: 1; margin: 0; }
+.xk-tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+.xk-mission-card-cats { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.xk-mission-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.xk-mission-solved-tick { display: inline-flex; align-items: center; gap: 5px; color: #19c37d; font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+
 /* ── Responsive detail ── */
 @media (max-width: 1080px) {
   .xk-detail-grid, .xk-course-detail { grid-template-columns: 1fr; }

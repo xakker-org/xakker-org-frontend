@@ -594,3 +594,67 @@ export function getMockQuestionProgress() {
 export function getMockPlanRoadmap(slug) {
   return MOCK_PLAN_ROADMAP[slug] || [];
 }
+
+/* ── CTF Missions (Round 19) — dev fallback matching API_CONTRACT.md
+   "CTF Missions + Write-ups" response shapes exactly. Used only if the
+   /api/missions/ backend is unreachable. ── */
+const MOCK_CTF_MISSIONS = [
+  {
+    id: 1, title: "Zəif SQL Sorğusu", slug: "zeif-sql-sorgusu", difficulty: "easy",
+    category: { name: "Web", slug: "web" },
+    tags: [{ name: "SQLi", slug: "sqli" }],
+    short_description: "Login formasında filtrlənməmiş sorğunu tap və bypass et.",
+    points: 100, estimated_time: 20, solved_count: 132,
+    user_status: "not_started", writeup_available: true,
+  },
+  {
+    id: 2, title: "Gizli Alt-domen", slug: "gizli-alt-domen", difficulty: "medium",
+    category: { name: "Recon", slug: "recon" },
+    tags: [{ name: "OSINT", slug: "osint" }, { name: "DNS", slug: "dns" }],
+    short_description: "DNS qeydlərini araşdıraraq gizlədilmiş admin panelini tap.",
+    points: 150, estimated_time: 35, solved_count: 74,
+    user_status: "attempted", writeup_available: true,
+  },
+  {
+    id: 3, title: "Broken JWT", slug: "broken-jwt", difficulty: "hard",
+    category: { name: "Web", slug: "web" },
+    tags: [{ name: "Auth", slug: "auth" }, { name: "JWT", slug: "jwt" }],
+    short_description: "alg=none zəifliyindən istifadə edərək admin tokeni saxtalaşdır.",
+    points: 250, estimated_time: 50, solved_count: 21,
+    user_status: "solved", writeup_available: true,
+  },
+  {
+    id: 4, title: "Şifrələnmiş Fayl", slug: "sifrelenmis-fayl", difficulty: "expert",
+    category: { name: "Crypto", slug: "crypto" },
+    tags: [{ name: "AES", slug: "aes" }],
+    short_description: "Zəif açar generasiyasından istifadə edərək faylı deşifr et.",
+    points: 400, estimated_time: 90, solved_count: 6,
+    user_status: "not_started", writeup_available: false,
+  },
+];
+
+export function getMockCtfMissions() {
+  return { count: MOCK_CTF_MISSIONS.length, results: MOCK_CTF_MISSIONS };
+}
+
+export function getMockCtfMissionDetail(slug) {
+  const base = MOCK_CTF_MISSIONS.find((m) => m.slug === slug) || MOCK_CTF_MISSIONS[0];
+  const solved = base.user_status === "solved";
+  return {
+    ...base,
+    description:
+      "## Ssenari\n\nHədəf tətbiqdə istifadəçi girişi formu mövcuddur. Formun arxasındakı sorğu " +
+      "düzgün validasiya olunmayıb.\n\n- Tətbiqi araşdır\n- Zəifliyi tap\n- Bayrağı çıxar\n\n" +
+      "Uğur qazandıqda bayraq formatı: `XKR{...}`",
+    connection_info: "```\nhost: target.xakker.local\nport: 8080\n```\nSSH tələb olunmur, brauzerdən qoşul.",
+    user_status: base.user_status, flag_attempts: solved ? 3 : 0, solved_at: solved ? new Date().toISOString() : null,
+    writeup: {
+      exists: base.writeup_available,
+      is_locked_by_default: true,
+      unlocked: solved,
+      content: solved
+        ? "## Həll yolu\n\n1. Login formuna `' OR '1'='1` daxil et\n2. Admin sessiyası aç\n3. Bayrağı profil səhifəsində tap"
+        : null,
+    },
+  };
+}

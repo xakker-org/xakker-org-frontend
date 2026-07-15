@@ -5,16 +5,18 @@ const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","
 const MONTH_S   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const BAR_MAX_H = 88;
 
+// Intensity ramp — same accent-red hue used across the rest of the panel,
+// increasing opacity/mix instead of borrowing GitHub's fixed green scale.
 function barColor(v) {
   if (!v || v < 1) return "rgba(255,255,255,0.07)";
-  if (v < 5)       return "#0e4429";
-  if (v < 15)      return "#006d32";
-  if (v < 30)      return "#26a641";
-  return "#39d353";
+  if (v < 5)       return "color-mix(in srgb, var(--accent) 30%, var(--bg-card-2))";
+  if (v < 15)      return "color-mix(in srgb, var(--accent) 55%, var(--bg-card-2))";
+  if (v < 30)      return "color-mix(in srgb, var(--accent) 80%, var(--bg-card-2))";
+  return "var(--accent)";
 }
 function barGlow(v) {
-  if (v >= 30) return "0 2px 8px rgba(57,211,83,0.55)";
-  if (v >= 15) return "0 1px 5px rgba(38,166,65,0.40)";
+  if (v >= 30) return "0 2px 8px rgba(var(--accent-rgb),0.55)";
+  if (v >= 15) return "0 1px 5px rgba(var(--accent-rgb),0.40)";
   return "none";
 }
 
@@ -85,7 +87,7 @@ export default function ActivityBars({ days = [], weeks = 5 }) {
               <div style={{
                 fontFamily: "var(--font-mono)",
                 fontSize: 8,
-                color: weekXP > 0 ? "rgba(57,211,83,0.6)" : "rgba(255,255,255,0.12)",
+                color: weekXP > 0 ? "rgba(var(--accent-rgb),0.7)" : "rgba(255,255,255,0.12)",
                 letterSpacing: "0.04em",
                 textAlign: "center",
                 height: 10,
@@ -116,7 +118,7 @@ export default function ActivityBars({ days = [], weeks = 5 }) {
                         borderRadius: bar.value > 0 ? "2px 2px 0 0" : "1px",
                         boxShadow: barGlow(bar.value),
                         cursor: bar.value > 0 ? "pointer" : "default",
-                        outline: bar.isToday ? "1.5px solid rgba(57,211,83,0.85)" : "none",
+                        outline: bar.isToday ? "1.5px solid rgba(var(--accent-rgb),0.85)" : "none",
                         outlineOffset: 1,
                         transition: "filter 60ms",
                         position: "relative",
@@ -136,7 +138,7 @@ export default function ActivityBars({ days = [], weeks = 5 }) {
                     textAlign: "center",
                     fontFamily: "var(--font-mono)",
                     fontSize: 7,
-                    color: bar.isToday ? "#39d353"
+                    color: bar.isToday ? "var(--accent)"
                           : bar.dow === 0 || bar.dow === 4 ? "rgba(255,255,255,0.2)"
                           : "rgba(255,255,255,0.10)",
                     fontWeight: bar.isToday ? 700 : 400,
@@ -174,7 +176,7 @@ export default function ActivityBars({ days = [], weeks = 5 }) {
         letterSpacing: "0.04em",
         flexWrap: "wrap",
       }}>
-        <span style={{ color: totalXP > 0 ? "rgba(57,211,83,0.75)" : undefined }}>
+        <span style={{ color: totalXP > 0 ? "rgba(var(--accent-rgb),0.85)" : undefined }}>
           {totalXP > 0 ? `${totalXP.toLocaleString()} XP` : "0 XP"}
         </span>
         <span>{active} aktiv gün / {weeks * 7}</span>
@@ -189,7 +191,7 @@ export default function ActivityBars({ days = [], weeks = 5 }) {
           position: "fixed",
           left: tipLeft,
           top: tipTop,
-          background: "#1c2128",
+          background: "var(--bg-elev)",
           border: "1px solid rgba(255,255,255,0.14)",
           borderRadius: 7,
           padding: "8px 13px",
@@ -213,13 +215,13 @@ export default function ActivityBars({ days = [], weeks = 5 }) {
               fontFamily: "var(--font-mono)",
               fontSize: 14,
               fontWeight: 700,
-              color: "#39d353",
+              color: "var(--accent)",
               display: "flex",
               alignItems: "baseline",
               gap: 4,
             }}>
               {hover.value}
-              <span style={{ fontSize: 10, fontWeight: 400, color: "rgba(57,211,83,0.65)" }}>XP</span>
+              <span style={{ fontSize: 10, fontWeight: 400, color: "rgba(var(--accent-rgb),0.7)" }}>XP</span>
             </div>
           ) : (
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>

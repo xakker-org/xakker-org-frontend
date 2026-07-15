@@ -1,4 +1,5 @@
 import Field, { Input, Textarea, Select } from "../ui/Field";
+import MarkdownEditor from "../ui/MarkdownEditor";
 import RelationSelect from "./RelationSelect";
 import { useLang } from "../../contexts/LanguageContext";
 
@@ -49,10 +50,18 @@ export default function FieldRenderer({ field, value, onChange, error }) {
     );
   }
 
-  if (field.type === "textarea" || field.type === "richtext") {
+  if (field.type === "richtext") {
     return (
       <Field label={label} error={error}>
-        <Textarea rows={field.type === "richtext" ? 10 : 4} value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
+        <MarkdownEditor value={value ?? ""} onChange={onChange} rows={12} />
+      </Field>
+    );
+  }
+
+  if (field.type === "textarea") {
+    return (
+      <Field label={label} error={error}>
+        <Textarea rows={4} value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
       </Field>
     );
   }

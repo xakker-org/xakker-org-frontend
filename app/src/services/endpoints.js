@@ -48,17 +48,22 @@ export const endpoints = {
   submitLessonQuestion: (courseSlug, lessonId, questionId, payload) =>
     api.post(`/courses/${courseSlug}/lessons/${lessonId}/questions/${questionId}/submit/`, payload),
 
-  // ── Missions ──────────────────────────────────────────────
-  missions: () => api.get("/courses/missions/"),
-  missionDetail: (slug) => api.get(`/courses/missions/${slug}/`),
-  missionStart: (slug) => api.post(`/courses/missions/${slug}/start/`),
-  missionPassDetail: (slug, passId) => api.get(`/courses/missions/${slug}/passes/${passId}/`),
-  missionPassComplete: (slug, passId) => api.post(`/courses/missions/${slug}/passes/${passId}/complete/`),
-  missionExamDetail: (slug) => api.get(`/courses/missions/${slug}/exam/`),
-  missionExamStart: (slug) => api.post(`/courses/missions/${slug}/exam/start/`),
-  missionExamSubmit: (slug, attemptId, payload) =>
-    api.post(`/courses/missions/${slug}/exam/${attemptId}/submit/`, payload),
-  myMissionProgress: () => api.get("/courses/missions/my-progress/"),
+  // ── CTF Missions (Round 19) — /api/missions/, replaces the old
+  // passes+exam "courses.Mission" user flow entirely. NOTE: this is a
+  // different backend app (`ctf`) than /api/courses/... — no naming
+  // collision, the old courses.Mission endpoints below no longer have
+  // any caller in the user app (grepped clean) and were removed.
+  missionsList: (params = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") qs.append(k, v);
+    });
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return api.get(`/missions/${suffix}`);
+  },
+  missionDetail: (slug) => api.get(`/missions/${slug}/`),
+  submitFlag: (slug, flag) => api.post(`/missions/${slug}/submit-flag/`, { flag }),
+  unlockWriteup: (slug) => api.post(`/missions/${slug}/unlock-writeup/`),
 
   // ── Xakker AI (chatbot) ──────────────────────────────────
   aiChatSend: ({ conversation_id, message, lang }) =>

@@ -18,7 +18,7 @@ const T = {
     title: "Analitika", sub: "Platformanın ümumi göstəriciləri",
     tabs: { overview: "Ümumi", content: "Məzmun", activity: "Fəaliyyət" },
     totalUsers: "Ümumi istifadəçi", new7: "Yeni (7 gün)", new30: "Yeni (30 gün)", active7: "Aktiv (7 gün)",
-    totalXp: "Verilmiş XP", courses: "Kurslar", rooms: "Otaqlar", missions: "Missiyalar", lessons: "Dərslər",
+    totalXp: "Verilmiş XP", courses: "Kurslar", rooms: "Otaqlar", missions: "Missiyalar",
     roomsCompleted: "Ən çox tamamlanan otaqlar", examStats: "İmtahan statistikası",
     passRate: "Keçid faizi", avgScore: "Orta bal", passed: "Keçdi", failed: "Keçmədi",
     signups: "Qeydiyyatlar", activityFeed: "Fəaliyyət",
@@ -27,7 +27,7 @@ const T = {
     title: "Analytics", sub: "Platform-wide metrics",
     tabs: { overview: "Overview", content: "Content", activity: "Activity" },
     totalUsers: "Total users", new7: "New (7d)", new30: "New (30d)", active7: "Active (7d)",
-    totalXp: "XP awarded", courses: "Courses", rooms: "Rooms", missions: "Missions", lessons: "Lessons",
+    totalXp: "XP awarded", courses: "Courses", rooms: "Rooms", missions: "Missions",
     roomsCompleted: "Most completed rooms", examStats: "Exam stats",
     passRate: "Pass rate", avgScore: "Avg score", passed: "Passed", failed: "Failed",
     signups: "Signups", activityFeed: "Activity",
@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
         ]}
       />
 
-      <div style={{ height: 20 }} />
+      <div style={{ height: "var(--s5)" }} />
 
       {tab === "overview" && (
         overview === undefined ? <TileSkeleton height={240} /> :
@@ -92,10 +92,10 @@ export default function AnalyticsPage() {
             <Tile span={3}><Stat label={t.new30} value={overview.users.new_30d} /></Tile>
             <Tile span={3}><Stat label={t.active7} value={overview.users.active_7d} /></Tile>
 
-            <Tile span={4}><Stat label={t.totalXp} value={overview.xp.total_awarded.toLocaleString()} unit=" XP" /></Tile>
-            <Tile span={2}><Stat label={t.courses} value={overview.content.courses} /></Tile>
-            <Tile span={2}><Stat label={t.rooms} value={overview.content.rooms} /></Tile>
-            <Tile span={2}><Stat label={t.missions} value={overview.content.missions} /></Tile>
+            <Tile span={3}><Stat label={t.totalXp} value={overview.xp.total_awarded.toLocaleString()} unit=" XP" /></Tile>
+            <Tile span={3}><Stat label={t.courses} value={overview.content.courses} /></Tile>
+            <Tile span={3}><Stat label={t.rooms} value={overview.content.rooms} /></Tile>
+            <Tile span={3}><Stat label={t.missions} value={overview.content.missions} /></Tile>
           </div>
         )
       )}

@@ -12,7 +12,7 @@ import Icon from "../components/ui/Icon";
 const QUICK_LINKS = [
   { to: "/content/courses", icon: "courses", label: { az: "Kurslar", en: "Courses" } },
   { to: "/content/rooms", icon: "labs", label: { az: "Otaqlar", en: "Rooms" } },
-  { to: "/content/missions", icon: "map", label: { az: "Missiyalar", en: "Missions" } },
+  { to: "/content/ctf-missions", icon: "flag", label: { az: "Missiyalar (CTF)", en: "Missions (CTF)" } },
   { to: "/users", icon: "profile", label: { az: "İstifadəçilər", en: "Users" } },
   { to: "/analytics", icon: "leaderboard", label: { az: "Analitika", en: "Analytics" } },
 ];
@@ -49,7 +49,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div style={{ height: 24 }} />
+      <div style={{ height: "var(--s6)" }} />
 
       <Tile pad="lg">
         <TileHead title={t.quick} />

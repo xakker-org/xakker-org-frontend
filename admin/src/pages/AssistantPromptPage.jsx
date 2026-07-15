@@ -134,7 +134,7 @@ export default function AssistantPromptPage() {
       </div>
 
       {data.updated_at && (
-        <div style={{ marginTop: 16, fontSize: 13, color: "var(--muted, #8b8b93)" }}>
+        <div style={{ marginTop: 16, fontSize: 13, color: "var(--ink-3)" }}>
           {t.updatedAt}: {new Date(data.updated_at).toLocaleString(lang === "az" ? "az-AZ" : "en-US")}
         </div>
       )}

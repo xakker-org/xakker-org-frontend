@@ -1,82 +1,147 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { TileSkeleton } from "../components/ui/Skeleton";
-import XKBar from "../components/ui/XKBar";
+import { Chip, DiffBadge } from "../components/ui/Chip";
+import { Input } from "../components/ui/Field";
+import Icon from "../components/ui/Icon";
 import { endpoints } from "../services/endpoints";
 import { useLang } from "../contexts/LanguageContext";
+import { renderMarkdown } from "../utils/markdown";
+import { getMockCtfMissionDetail } from "../data/mockData";
 
-function passState(passId, completedIds, allPasses) {
-  if (completedIds.includes(passId)) return "completed";
-  const firstIncomplete = allPasses.find(p => !completedIds.includes(p.id));
-  if (firstIncomplete && firstIncomplete.id === passId) return "active";
-  return "locked";
-}
-
-const TRACK_COLORS = {
-  web:"#3b82f6", network:"#14b8a6", system:"#8b5cf6", linux:"#8b5cf6",
-  sistem:"#8b5cf6", crypto:"#22c55e", kripto:"#22c55e", pentest:"#ff3b3b",
-  recon:"#f59e0b", osint:"#f59e0b",
+const T = {
+  az: {
+    back: "Geri", crumb: "Missiyalar",
+    notFoundTitle: "Missiya tapılmadı", notFoundSub: "Bu missiya mövcud deyil.",
+    points: "xal", min: "dəq", solvedBy: "həll etdi",
+    levels: { easy: "Asan", medium: "Orta", hard: "Çətin", expert: "Ekspert" },
+    scenario: "Ssenari", connection: "Qoşulma məlumatı",
+    flagTitle: "Bayrağı təqdim et", flagPlaceholder: "XKR{...}", submit: "Göndər", submitting: "Göndərilir...",
+    correct: "Düzgün! Bayraq qəbul edildi.", wrong: "Yanlış bayraq, yenidən cəhd et.",
+    attempts: (n) => `${n} cəhd edilib`,
+    solvedBanner: "Bu missiyanı həll etdin!", pointsAwarded: (n) => `+${n} xal qazanıldı`,
+    alreadySolved: "Artıq həll edilib",
+    writeupTitle: "Həll yolu",
+    lockedCta: "Sıxışıb qaldınmı? Həll yolunu göstər",
+    unlocking: "Açılır...",
+    unlockedTag: "Açıldı",
+    noWriteup: "Bu missiya üçün həll yolu mövcud deyil.",
+    loadError: "Missiya yüklənə bilmədi.",
+  },
+  en: {
+    back: "Back", crumb: "Missions",
+    notFoundTitle: "Mission not found", notFoundSub: "This mission doesn't exist.",
+    points: "pts", min: "min", solvedBy: "solved",
+    levels: { easy: "Easy", medium: "Medium", hard: "Hard", expert: "Expert" },
+    scenario: "Scenario", connection: "Connection info",
+    flagTitle: "Submit flag", flagPlaceholder: "XKR{...}", submit: "Submit", submitting: "Submitting...",
+    correct: "Correct! Flag accepted.", wrong: "Wrong flag, try again.",
+    attempts: (n) => `${n} attempt${n === 1 ? "" : "s"} made`,
+    solvedBanner: "You solved this mission!", pointsAwarded: (n) => `+${n} points earned`,
+    alreadySolved: "Already solved",
+    writeupTitle: "Write-up",
+    lockedCta: "Stuck? Reveal the write-up",
+    unlocking: "Unlocking...",
+    unlockedTag: "Unlocked",
+    noWriteup: "No write-up available for this mission.",
+    loadError: "The mission could not be loaded.",
+  },
 };
-function missionColor(m) {
-  if (m.color) return m.color;
-  const k = (m.track || m.category || m.title || "").toLowerCase();
-  for (const [key, val] of Object.entries(TRACK_COLORS)) {
-    if (k.includes(key)) return val;
-  }
-  return "var(--accent)";
-}
-
-function SvgIcon({ d, size = 15 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"
-      style={{ flexShrink: 0, color: "var(--muted)" }}>
-      <path d={d} />
-    </svg>
-  );
-}
 
 export default function MissionDetailPage() {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const { lang } = useLang();
+  const t = T[lang] || T.az;
 
-  const [mission, setMission]   = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [starting, setStarting] = useState(false);
-  const [error, setError]       = useState(null);
+  const [mission, setMission] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
 
-  const fetchMission = () => {
+  const [flag, setFlag]           = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback]   = useState(null); // { correct, already_solved, points_awarded }
+
+  const [writeupOpen, setWriteupOpen]     = useState(false);
+  const [writeupContent, setWriteupContent] = useState(null);
+  const [unlocking, setUnlocking]         = useState(false);
+
+  useEffect(() => {
+    let ok = true;
     setLoading(true);
     endpoints.missionDetail(slug)
-      .then(({ data }) => setMission(data))
-      .catch(() => setError(lang === "az" ? "Mission tapılmadı" : "Mission not found"))
-      .finally(() => setLoading(false));
+      .then(({ data }) => {
+        if (!ok) return;
+        setMission(data);
+        if (data?.writeup?.unlocked) {
+          setWriteupOpen(true);
+          setWriteupContent(data.writeup.content);
+        }
+      })
+      .catch(() => {
+        if (!ok) return;
+        const mock = getMockCtfMissionDetail(slug);
+        setMission(mock);
+        if (mock.writeup.unlocked) {
+          setWriteupOpen(true);
+          setWriteupContent(mock.writeup.content);
+        }
+      })
+      .finally(() => { if (ok) setLoading(false); });
+    return () => { ok = false; };
+  }, [slug]);
+
+  const handleSubmitFlag = async (e) => {
+    e.preventDefault();
+    if (!flag.trim() || submitting) return;
+    setSubmitting(true);
+    setFeedback(null);
+    try {
+      const { data } = await endpoints.submitFlag(slug, flag.trim());
+      setFeedback(data);
+      setMission((prev) => prev && ({
+        ...prev,
+        user_status: data.user_status,
+        flag_attempts: data.flag_attempts,
+        solved_at: data.correct ? (prev.solved_at || new Date().toISOString()) : prev.solved_at,
+        writeup: data.correct && prev.writeup ? { ...prev.writeup, unlocked: true } : prev.writeup,
+      }));
+      if (data.correct) {
+        setFlag("");
+        setWriteupOpen((o) => o); // don't force-open; unlock button below now unnecessary but keep consistent
+      }
+    } catch {
+      setFeedback({ correct: false, error: true });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  useEffect(() => { fetchMission(); }, [slug]);
-
-  const handleStart = async () => {
-    setStarting(true);
+  const handleUnlockWriteup = async () => {
+    if (unlocking) return;
+    setUnlocking(true);
     try {
-      await endpoints.missionStart(slug);
-      fetchMission();
+      const { data } = await endpoints.unlockWriteup(slug);
+      setWriteupContent(data.content);
+      setWriteupOpen(true);
     } catch {
-      setError(lang === "az" ? "Mission başladıla bilmədi." : "The mission could not be started.");
+      // fallback: still open with mock content in dev if backend not live
+      const mock = getMockCtfMissionDetail(slug);
+      if (mock.writeup?.content) {
+        setWriteupContent(mock.writeup.content);
+        setWriteupOpen(true);
+      }
     } finally {
-      setStarting(false);
+      setUnlocking(false);
     }
   };
 
   if (loading) {
     return (
-      <>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <TileSkeleton height={40} />
-          <TileSkeleton height={220} />
-          <TileSkeleton height={400} />
-        </div>
-      </>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <TileSkeleton height={40} />
+        <TileSkeleton height={220} />
+        <TileSkeleton height={300} />
+      </div>
     );
   }
 
@@ -84,303 +149,163 @@ export default function MissionDetailPage() {
     return (
       <>
         <div className="xk-back-row">
-          <Link to="/missions" className="xk-back">← {lang === "az" ? "Geri" : "Back"}</Link>
+          <Link to="/missions" className="xk-back"><Icon name="arrowLeft" size={14} /> {t.back}</Link>
         </div>
         <div className="xk-empty-screen">
-          <div className="xk-empty-ico">◎</div>
-          <h3>{lang === "az" ? "Mission tapılmadı" : "Mission not found"}</h3>
-          <p>{lang === "az" ? "Bu mission mövcud deyil." : "This mission doesn't exist."}</p>
+          <div className="xk-empty-ico"><Icon name="target" size={24} /></div>
+          <h3>{t.notFoundTitle}</h3>
+          <p>{t.notFoundSub}</p>
         </div>
       </>
     );
   }
 
-  const prog         = mission.user_progress;
-  const completedIds = prog?.completed_pass_ids ?? [];
-  const totalPasses  = mission.passes?.length ?? 0;
-  const donePasses   = completedIds.length;
-  const pct          = totalPasses > 0 ? Math.round((donePasses / totalPasses) * 100) : 0;
-  const allPassesDone = donePasses >= totalPasses && totalPasses > 0;
-  const examUnlocked = allPassesDone && mission.exam;
-  const isCompleted  = prog?.is_completed;
-  const started      = donePasses > 0;
-  const color        = missionColor(mission);
-  const track        = mission.track || mission.category || (lang === "az" ? "Missiya" : "Mission");
-  const totalXp      = (mission.passes || []).reduce((s, p) => s + (p.xp_reward || 10), 0) || mission.xp_reward || 0;
-
-  const LEARN_MAP = {
-    az: {
-      web: ["HTTP protokolu və başlıqlar", "XSS və SQL injection əsasları", "Brauzer təhlükəsizlik modeli"],
-      network: ["TCP/IP və portlar", "Nmap ilə skan", "Xidmət barmaq izləri"],
-      system: ["Linux icazə modeli", "Privilege escalation", "SUID/SGID istismarı"],
-      linux: ["Linux icazə modeli", "Privilege escalation", "SUID/SGID istismarı"],
-      crypto: ["Heş və şifrələmə", "Simmetrik/asimmetrik açarlar", "Parol qırma"],
-      recon: ["OSINT metodları", "DNS kəşfiyyatı", "Alt-domen tapma"],
-    },
-    en: {
-      web: ["HTTP protocol and headers", "XSS and SQL injection basics", "Browser security model"],
-      network: ["TCP/IP and ports", "Scanning with Nmap", "Service fingerprinting"],
-      system: ["Linux permission model", "Privilege escalation", "SUID/SGID exploitation"],
-      linux: ["Linux permission model", "Privilege escalation", "SUID/SGID exploitation"],
-      crypto: ["Hashing and encryption", "Symmetric/asymmetric keys", "Password cracking"],
-      recon: ["OSINT methods", "DNS recon", "Subdomain discovery"],
-    },
-  };
-  const learnItems = LEARN_MAP[lang === "az" ? "az" : "en"][(mission.track || "").toLowerCase()] || [];
-
-  const nextIdx = prog ? completedIds.length : 0;
-  const firstPassId = mission.passes?.[nextIdx]?.id || mission.passes?.[0]?.id;
+  const isSolved   = mission.user_status === "solved";
+  const writeup    = mission.writeup || { exists: false, unlocked: false, content: null };
+  const showUnlockCta = writeup.exists && !writeupOpen;
 
   return (
     <>
-      {/* Back row */}
       <div className="xk-back-row xk-reveal">
         <Link to="/missions" className="xk-back">
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-            <path d="M15 6l-6 6 6 6" />
-          </svg>
-          {lang === "az" ? "Geri" : "Back"}
+          <Icon name="arrowLeft" size={14} /> {t.back}
         </Link>
         <div className="xk-crumbs">
-          <span>{lang === "az" ? "Missiyalar" : "Missions"}</span>
+          <span>{t.crumb}</span>
           <span className="xk-crumb-sep">/</span>
-          <span className="cur">{track}</span>
+          <span className="cur">{mission.title}</span>
         </div>
       </div>
 
-      {/* Hero banner */}
-      <div className="xk-detail-hero xk-reveal" style={{ "--mc": color, animationDelay: "60ms" }}>
+      {/* Hero */}
+      <div className="xk-detail-hero xk-reveal" style={{ animationDelay: "60ms" }}>
         <div className="xk-hero-bar" />
         <div className="xk-hero-main">
           <div className="xk-hero-top">
-            <span className="xk-feat-track">{track}</span>
-            <span className="xk-badge tone-muted">
-              {(lang === "az"
-                ? { easy:"Asan", beginner:"Asan", medium:"Orta", intermediate:"Orta", hard:"Çətin", advanced:"Çətin", expert:"Ekspert" }
-                : { easy:"Easy", beginner:"Easy", medium:"Medium", intermediate:"Medium", hard:"Hard", advanced:"Hard", expert:"Expert" }
-              )[mission.difficulty] || mission.difficulty || (lang === "az" ? "Orta" : "Medium")}
-            </span>
+            <span className="xk-feat-track">{mission.category?.name || "—"}</span>
+            <DiffBadge level={mission.difficulty} labelOverride={t.levels[mission.difficulty] || mission.difficulty} />
+            {isSolved && <span className="xk-badge tone-ok"><Icon name="check" size={11} /> {t.alreadySolved}</span>}
           </div>
           <h1 className="xk-hero-title">{mission.title}</h1>
-          {mission.description && (
-            <p className="xk-hero-desc">{mission.description}</p>
+          {mission.short_description && <p className="xk-hero-desc">{mission.short_description}</p>}
+
+          {mission.tags?.length > 0 && (
+            <div className="xk-mission-tags" style={{ marginTop: 12 }}>
+              {mission.tags.map((tg) => <Chip key={tg.slug} tone="neutral" size="sm">#{tg.name}</Chip>)}
+            </div>
           )}
+
           <div className="xk-hero-meta">
-            <span>
-              <SvgIcon d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5" />
-              {totalPasses} {lang === "az" ? "dərs" : "lessons"}
-            </span>
-            <span>
-              <SvgIcon d="M13 2L4 14h7l-1 8 9-12h-7z" />
-              {totalXp.toLocaleString()} XP
-            </span>
-            {mission.estimated_hours > 0 && (
-              <span>
-                <SvgIcon d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2" />
-                ~{mission.estimated_hours * 60} {lang === "az" ? "dəq" : "min"}
-              </span>
-            )}
-          </div>
-          <div className="xk-hero-actions">
-            {!prog ? (
-              <button className="xk-btn primary" onClick={handleStart} disabled={starting}>
-                {starting ? (lang === "az" ? "Başlanır..." : "Starting...") : (lang === "az" ? "Missiyanı başlat" : "Start mission")}
-                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-              </button>
-            ) : (
-              <Link
-                to={firstPassId ? `/missions/${slug}/passes/${firstPassId}` : "#"}
-                className="xk-btn primary"
-              >
-                {pct === 100 ? (lang === "az" ? "Təkrar bax" : "Review") : started ? (lang === "az" ? "Davam et" : "Continue") : (lang === "az" ? "Başla" : "Start")}
-                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-              </Link>
-            )}
-            {prog && totalPasses > 0 && (
-              <div className="xk-hero-prog">
-                <div className="xk-track" style={{ height: 5 }}>
-                  <div className="xk-fill" style={{ width: `${pct}%`, background: color }} />
-                </div>
-                <span>{donePasses}/{totalPasses} {lang === "az" ? "tamamlandı" : "completed"}</span>
-              </div>
-            )}
+            <span><Icon name="xp" size={14} /> {mission.points} {t.points}</span>
+            {mission.estimated_time > 0 && <span><Icon name="clock" size={14} /> ~{mission.estimated_time} {t.min}</span>}
+            <span><Icon name="users" size={14} /> {mission.solved_count} {t.solvedBy}</span>
           </div>
         </div>
       </div>
 
-      {/* 2-col grid: lessons + aside */}
       <div className="xk-detail-grid">
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap)" }}>
+          {/* Scenario / description */}
+          <div className="xk-card xk-reveal" style={{ animationDelay: "120ms" }}>
+            <h3 className="xk-card-title" style={{ marginBottom: 14 }}>{t.scenario}</h3>
+            <div className="xk-md" dangerouslySetInnerHTML={{ __html: renderMarkdown(mission.description) }} />
+          </div>
 
-        {/* Pass list */}
-        <div className="xk-card xk-lessons-card xk-reveal" style={{ animationDelay: "140ms" }}>
-          <h3 className="xk-card-title">{lang === "az" ? "Dərslər" : "Lessons"}</h3>
-
-          {(!mission.passes || mission.passes.length === 0) ? (
-            <div className="xk-empty-screen" style={{ padding: "32px 0" }}>
-              <p>{lang === "az" ? "Hələ heç bir pass yayımlanmayıb." : "No lessons published yet."}</p>
-            </div>
-          ) : (
-            <div className="xk-lesson-list">
-              {mission.passes.map((p, idx) => {
-                const state    = prog ? passState(p.id, completedIds, mission.passes) : idx === 0 ? "active" : "locked";
-                const isDone   = state === "completed";
-                const isActive = state === "active";
-                const isLocked = state === "locked" && !!prog;
-                const canClick = isDone || isActive || !prog;
-                const typeIcon = "book";
-
-                return (
-                  <Link
-                    key={p.id}
-                    to={canClick ? `/missions/${slug}/passes/${p.id}` : "#"}
-                    onClick={!canClick ? e => e.preventDefault() : undefined}
-                    className={`xk-lesson-row${isDone ? " done" : ""}${isActive ? " next" : ""}`}
-                    style={{
-                      animationDelay: `${180 + idx * 45}ms`,
-                      opacity: isLocked ? 0.5 : 1,
-                      pointerEvents: isLocked ? "none" : "auto",
-                      textDecoration: "none",
-                      display: "flex",
-                    }}
-                  >
-                    <span className="xk-lesson-status">
-                      {isDone
-                        ? <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><path d="M5 12l4 4 10-10" /></svg>
-                        : isActive
-                        ? <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-                        : <span className="xk-lesson-num">{p.order || idx + 1}</span>}
-                    </span>
-                    <div className="xk-lesson-meta">
-                      <span className="xk-lesson-title">Pass {p.order || idx + 1}: {p.title}</span>
-                      <span className="xk-lesson-type">
-                        <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
-                          <path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-4 2zM4 19a2 2 0 012-2h13" />
-                        </svg>
-                        {lang === "az" ? "Nəzəriyyə" : "Theory"}
-                        {p.estimated_minutes > 0 && ` · ${p.estimated_minutes} ${lang === "az" ? "dəq" : "min"}`}
-                      </span>
-                    </div>
-                    <span className="xk-lesson-xp">+{p.xp_reward || 10}</span>
-                  </Link>
-                );
-              })}
-
-              {/* Final exam */}
-              {mission.exam && (
-                <Link
-                  to={examUnlocked ? `/missions/${slug}/exam` : "#"}
-                  onClick={!examUnlocked ? e => e.preventDefault() : undefined}
-                  className={`xk-lesson-row${isCompleted && prog?.exam_passed ? " done" : examUnlocked ? " next" : ""}`}
-                  style={{
-                    marginTop: 8,
-                    opacity: !examUnlocked ? 0.55 : 1,
-                    pointerEvents: !examUnlocked ? "none" : "auto",
-                    textDecoration: "none",
-                    display: "flex",
-                  }}
-                >
-                  <span className="xk-lesson-status">
-                    {isCompleted && prog?.exam_passed
-                      ? <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><path d="M5 12l4 4 10-10" /></svg>
-                      : examUnlocked
-                      ? <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-                      : <span style={{ fontSize: 14 }}>🔒</span>}
-                  </span>
-                  <div className="xk-lesson-meta">
-                    <span className="xk-lesson-title">📋 {mission.exam.title}</span>
-                    <span className="xk-lesson-type">
-                      {lang === "az" ? `Final Exam · Keç faizi: ${mission.exam.passing_score}%` : `Final Exam · Pass rate: ${mission.exam.passing_score}%`}
-                    </span>
-                  </div>
-                  {examUnlocked && <span className="xk-badge tone-accent">{lang === "az" ? "Exam ver →" : "Take exam →"}</span>}
-                  {isCompleted && prog?.exam_passed && <span className="xk-badge tone-ok">✓ {lang === "az" ? "Keçildi" : "Passed"}</span>}
-                </Link>
-              )}
+          {/* Connection info */}
+          {mission.connection_info && (
+            <div className="xk-card xk-reveal" style={{ animationDelay: "160ms" }}>
+              <h3 className="xk-card-title" style={{ marginBottom: 14 }}>{t.connection}</h3>
+              <div className="xk-md" dangerouslySetInnerHTML={{ __html: renderMarkdown(mission.connection_info) }} />
             </div>
           )}
 
-          {/* Start CTA */}
-          {!prog && (
-            <div style={{ marginTop: 18, paddingTop: 18, borderTop: "1px solid var(--border)" }}>
-              <button className="xk-btn primary block" onClick={handleStart} disabled={starting}>
-                {starting ? (lang === "az" ? "Başlanır..." : "Starting...") : `🚀 ${lang === "az" ? "Missiyanı başlat" : "Start mission"}`}
-              </button>
+          {/* Flag submit / solved banner */}
+          <div className="xk-card xk-flag-card xk-reveal" style={{ animationDelay: "200ms" }}>
+            {isSolved ? (
+              <div className="xk-solved-banner">
+                <span className="ico"><Icon name="check" size={16} /></span>
+                <div>
+                  <div>{t.solvedBanner}</div>
+                  {mission.flag_attempts != null && (
+                    <div className="xk-flag-attempts" style={{ marginTop: 2 }}>{t.attempts(mission.flag_attempts)}</div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <h3 className="xk-card-title">{t.flagTitle}</h3>
+                <form className="xk-flag-row" onSubmit={handleSubmitFlag}>
+                  <Input
+                    className="xk-flag-input"
+                    value={flag}
+                    onChange={(e) => setFlag(e.target.value)}
+                    placeholder={t.flagPlaceholder}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <button type="submit" className="xk-btn primary" disabled={submitting || !flag.trim()}>
+                    {submitting ? t.submitting : t.submit}
+                  </button>
+                </form>
+                {feedback && (
+                  <div className={`xk-flag-feedback ${feedback.correct ? "ok" : "no"}`}>
+                    <Icon name={feedback.correct ? "check" : "alert"} size={14} />
+                    {feedback.correct ? t.correct : t.wrong}
+                  </div>
+                )}
+                {mission.flag_attempts > 0 && (
+                  <div className="xk-flag-attempts">{t.attempts(mission.flag_attempts)}</div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Write-up — locked by default, stays open once unlocked */}
+          {writeup.exists && (
+            <div className="xk-card xk-writeup-card xk-reveal" style={{ animationDelay: "240ms" }}>
+              <div className="xk-card-head" style={{ marginBottom: writeupOpen ? 14 : 0 }}>
+                <h3 className="xk-card-title">{t.writeupTitle}</h3>
+                {writeupOpen && (
+                  <span className="xk-writeup-unlocked-tag"><Icon name="check" size={12} /> {t.unlockedTag}</span>
+                )}
+              </div>
+
+              {writeupOpen ? (
+                <div className="xk-md" dangerouslySetInnerHTML={{ __html: renderMarkdown(writeupContent || "") }} />
+              ) : (
+                <div className="xk-writeup-locked">
+                  <div className="ico"><Icon name="lock" size={22} /></div>
+                  <p>{lang === "az"
+                    ? "Həll yolu standart olaraq gizlidir. İstəsən indi göstərə bilərik."
+                    : "The write-up is hidden by default. You can reveal it whenever you want."}</p>
+                  <button type="button" className="xk-btn outline" onClick={handleUnlockWriteup} disabled={unlocking}>
+                    <Icon name="lock" size={14} />
+                    {unlocking ? t.unlocking : t.lockedCta}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {/* Aside */}
         <div className="xk-detail-aside">
-          {/* Progress */}
-          {prog && (
-            <div className="xk-card xk-reveal" style={{ animationDelay: "200ms" }}>
-              <div className="xk-card-eyebrow">{lang === "az" ? "İrəliləyişiniz" : "Your progress"}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>
-                    {donePasses}/{totalPasses}
-                  </div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
-                    {isCompleted ? (lang === "az" ? "✓ Tamamlandı" : "✓ Completed") : (lang === "az" ? "Davam edir" : "In progress")}
-                  </div>
-                </div>
-                <div style={{
-                  width: 54, height: 54, borderRadius: "50%", flexShrink: 0,
-                  display: "grid", placeItems: "center",
-                  background: isCompleted ? "rgba(25,195,125,.12)" : "rgba(var(--accent-rgb),.12)",
-                  border: `2px solid ${isCompleted ? "rgba(25,195,125,.3)" : "rgba(var(--accent-rgb),.3)"}`,
-                  fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16,
-                  color: isCompleted ? "#19c37d" : "var(--accent)",
-                }}>
-                  {pct}%
-                </div>
-              </div>
-              <div className="xk-track" style={{ height: 6 }}>
-                <div className="xk-fill" style={{ width: `${pct}%`, background: color }} />
-              </div>
-              {mission.exam && (
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 12.5 }}>
-                  <span style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>{lang === "az" ? "Final İmtahan" : "Final Exam"}</span>
-                  <span style={{ color: prog?.exam_passed ? "#19c37d" : allPassesDone ? "var(--accent)" : "var(--muted)", fontWeight: 600 }}>
-                    {prog?.exam_passed ? (lang === "az" ? "✓ Keçildi" : "✓ Passed") : allPassesDone ? (lang === "az" ? "Açıldı" : "Unlocked") : (lang === "az" ? "Kilidli" : "Locked")}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* What you'll learn */}
-          {learnItems.length > 0 && (
-            <div className="xk-card xk-aside-card xk-reveal" style={{ animationDelay: "260ms" }}>
-              <div className="xk-card-eyebrow">{lang === "az" ? "Nə öyrənəcəksən" : "What you'll learn"}</div>
-              <ul className="xk-learn-list">
-                {learnItems.map((x, i) => (
-                  <li key={i}>
-                    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" style={{ color: "var(--accent)", flexShrink: 0, marginTop: 2 }}>
-                      <path d="M5 12l4 4 10-10" />
-                    </svg>
-                    {x}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Reward */}
-          <div className="xk-card xk-aside-card xk-reveal" style={{ animationDelay: "320ms" }}>
+          <div className="xk-card xk-aside-card xk-reveal" style={{ animationDelay: "180ms" }}>
             <div className="xk-card-eyebrow">{lang === "az" ? "Mükafat" : "Reward"}</div>
             <div className="xk-reward-row">
-              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" style={{ color: "var(--accent)" }}>
-                <path d="M13 2L4 14h7l-1 8 9-12h-7z" />
-              </svg>
-              <b>{totalXp.toLocaleString()} XP</b>
+              <Icon name="xp" size={16} style={{ color: "var(--accent)" }} />
+              <b>{mission.points} {t.points}</b>
             </div>
             <div className="xk-reward-row">
-              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" style={{ color: "var(--accent)" }}>
-                <path d="M12 13a5 5 0 100-10 5 5 0 000 10zM8.5 11.5L7 21l5-3 5 3-1.5-9.5" />
-              </svg>
-              {lang === "az" ? `"${track} Başlanğıc" nişanı` : `"${track} Starter" badge`}
+              <Icon name="users" size={16} style={{ color: "var(--accent)" }} />
+              {mission.solved_count} {t.solvedBy}
             </div>
+            {mission.estimated_time > 0 && (
+              <div className="xk-reward-row">
+                <Icon name="clock" size={16} style={{ color: "var(--accent)" }} />
+                ~{mission.estimated_time} {t.min}
+              </div>
+            )}
           </div>
         </div>
       </div>

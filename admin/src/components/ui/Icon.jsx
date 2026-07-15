@@ -168,6 +168,26 @@ export default function Icon({ name, size = 16, className = "", style }) {
         <path d="M12.5 10.5L13 12L14.5 12.5L13 13L12.5 14.5L12 13L10.5 12.5L12 12L12.5 10.5Z" fill="currentColor" opacity=".7"/>
       </>
     ),
+    trash: (
+      <>
+        <path d="M3 4.5H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M6 4.5V3C6 2.45 6.45 2 7 2H9C9.55 2 10 2.45 10 3V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M4.5 4.5L5.1 13.1C5.14 13.6 5.55 14 6.05 14H9.95C10.45 14 10.86 13.6 10.9 13.1L11.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M6.6 7V11.3M9.4 7V11.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </>
+    ),
+    flag: (
+      <>
+        <path d="M4 2V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M4 2.5H11.5C12.2 2.5 12.5 3 12 3.5L10.2 5.5L12 7.5C12.5 8 12.2 8.5 11.5 8.5H4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      </>
+    ),
+    tag: (
+      <>
+        <path d="M2.5 8.2V3.5C2.5 3 2.9 2.5 3.5 2.5H8.2C8.5 2.5 8.8 2.6 9 2.9L13.3 7.2C13.7 7.6 13.7 8.2 13.3 8.6L8.6 13.3C8.2 13.7 7.6 13.7 7.2 13.3L2.9 9C2.6 8.8 2.5 8.5 2.5 8.2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+        <circle cx="5.5" cy="5.5" r="1" fill="currentColor"/>
+      </>
+    ),
     eyeOff: (
       <>
         <path d="M1.5 8C1.5 8 4 3.5 8 3.5C12 3.5 14.5 8 14.5 8C14.5 8 12 12.5 8 12.5C4 12.5 1.5 8 1.5 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" opacity=".5"/>
