@@ -10,7 +10,7 @@ const T = {
   az: {
     nav: "Naviqasiya", missions: "Missions", courses: "Courses", labs: "Labs",
     dashboard: "Ana səhifə", missionsHint: "Praktiki tapşırıq", roomsHint: "Lab otaqları",
-    selfStudyHint: "Suallar", plansHint: "Planlar", coursesHint: "Kurslar",
+    plansHint: "Planlar", coursesHint: "Kurslar",
     leaderboardHint: "Liderlik", profileHint: "Profilim",
     searchPlaceholder: "Mission, kurs, route axtar...", searchLabel: "Axtar",
     empty: "Heç nə tapılmadı", move: "hərəkət", openLbl: "aç", close: "bağla",
@@ -19,7 +19,7 @@ const T = {
   en: {
     nav: "Navigation", missions: "Missions", courses: "Courses", labs: "Labs",
     dashboard: "Home page", missionsHint: "Practical tasks", roomsHint: "Lab rooms",
-    selfStudyHint: "Questions", plansHint: "Plans", coursesHint: "Courses",
+    plansHint: "Plans", coursesHint: "Courses",
     leaderboardHint: "Leaderboard", profileHint: "My profile",
     searchPlaceholder: "Search missions, courses, routes...", searchLabel: "Search",
     empty: "Nothing found", move: "move", openLbl: "open", close: "close",
@@ -32,7 +32,6 @@ function buildRoutes(t) {
     { id: "r-dashboard",   group: t.nav, title: "Dashboard",     hint: t.dashboard,     path: "/dashboard",   icon: "⌂" },
     { id: "r-missions",    group: t.nav, title: t.missions,      hint: t.missionsHint,  path: "/missions",    icon: "◎" },
     { id: "r-rooms",       group: t.nav, title: "Labs / Rooms",  hint: t.roomsHint,     path: "/rooms",       icon: "▣" },
-    { id: "r-self-study",  group: t.nav, title: "Self-Study",    hint: t.selfStudyHint, path: "/self-study",  icon: "✎" },
     { id: "r-plans",       group: t.nav, title: "Learning Paths",hint: t.plansHint,     path: "/plans",       icon: "↗" },
     { id: "r-courses",     group: t.nav, title: t.courses,       hint: t.coursesHint,   path: "/courses",     icon: "▤" },
     { id: "r-leaderboard", group: t.nav, title: "Leaderboard",   hint: t.leaderboardHint, path: "/leaderboard", icon: "★" },

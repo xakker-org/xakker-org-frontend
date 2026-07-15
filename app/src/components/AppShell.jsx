@@ -12,15 +12,16 @@ import Kbd from "./ui/Kbd";
 import CommandPalette from "./ui/CommandPalette";
 import Icon from "./ui/Icon";
 import AnimatedBackground from "./AnimatedBackground";
+import AiFab from "./AiFab";
 import { localizeRank } from "../utils/rankLabels";
 
 const NAV_MAIN = [
   { to: "/dashboard",   label: { az: "Dashboard",       en: "Dashboard"      }, icon: "dashboard" },
   { to: "/missions",    label: { az: "Missions",        en: "Missions"       }, icon: "missions",  badge: { az: "Yeni", en: "New" } },
   { to: "/rooms",       label: { az: "Labs",            en: "Labs"           }, icon: "labs" },
-  { to: "/self-study",  label: { az: "Sərbəst Tədris",  en: "Self-Study"     }, icon: "study" },
   { to: "/plans",       label: { az: "Öyrənmə Yolları", en: "Learning Paths" }, icon: "paths" },
   { to: "/courses",     label: { az: "Kurslar",         en: "Courses"        }, icon: "courses" },
+  { to: "/xakker-ai",  label: { az: "Xakker AI",      en: "Xakker AI"   }, icon: "sparkles" },
 ];
 
 const NAV_COMM = [
@@ -79,9 +80,9 @@ export default function AppShell() {
         <div className="sb-brand-row">
           <Link to="/dashboard" className="sb-brand" onClick={() => setDrawer(false)}>
             <img
-              src={collapsed ? "/static/logo/logoXakker.png" : "/static/logo/xakkerLogoWhite2.png"}
+              src={theme === "dark" ? "/static/logo/xakkerLogoWhite.png" : "/static/logo/xakkerLogo3.png"}
               alt="Xakker"
-              className="sb-brand-img"
+              className={`sb-brand-img${theme === "dark" ? " sb-brand-img--dark" : " sb-brand-img--light"}`}
               onError={(e) => {
                 e.currentTarget.src = "/static/logo/logoXakker.png";
                 e.currentTarget.onerror = null;
@@ -238,7 +239,7 @@ export default function AppShell() {
           </div>
         </header>
 
-        <main className="content">
+        <main className={`content${location.pathname.startsWith("/xakker-ai") ? " content-full" : ""}`}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}
@@ -254,6 +255,7 @@ export default function AppShell() {
       </div>
 
       <CommandPalette />
+      <AiFab />
     </div>
   );
 }

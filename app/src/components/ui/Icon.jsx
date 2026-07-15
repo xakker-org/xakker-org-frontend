@@ -40,13 +40,6 @@ export default function Icon({ name, size = 16, strokeWidth, className = "", sty
         <path d="M2.5 8.5H13.5" stroke="currentColor" strokeWidth={sw}/>
       </>
     ),
-    study: (
-      <>
-        <rect x="2.5" y="2.5" width="11" height="10" rx="1.5" stroke="currentColor" strokeWidth={sw}/>
-        <path d="M5 6.5H11" stroke="currentColor" strokeWidth={sw} strokeLinecap="round"/>
-        <path d="M5 9H9" stroke="currentColor" strokeWidth={sw} strokeLinecap="round"/>
-      </>
-    ),
     paths: (
       <>
         <circle cx="3.5" cy="12.5" r="1.8" fill="currentColor"/>
@@ -254,6 +247,12 @@ export default function Icon({ name, size = 16, strokeWidth, className = "", sty
         <path d="M2.5 4.5H13.5" stroke="currentColor" strokeWidth={sw} strokeLinecap="round"/>
         <path d="M6 4.5V2.8C6 2.36 6.36 2 6.8 2H9.2C9.64 2 10 2.36 10 2.8V4.5" stroke="currentColor" strokeWidth={sw}/>
         <path d="M4 4.5L4.7 13C4.75 13.6 5.25 14 5.8 14H10.2C10.75 14 11.25 13.6 11.3 13L12 4.5" stroke="currentColor" strokeWidth={sw}/>
+      </>
+    ),
+    sparkles: (
+      <>
+        <path d="M8 1.5L9.2 5.4 13 6.6 9.2 7.8 8 11.7 6.8 7.8 3 6.6 6.8 5.4 8 1.5Z" stroke="currentColor" strokeWidth={sw} strokeLinejoin="round"/>
+        <path d="M12.8 9.8L13.4 11.7 15.2 12.3 13.4 12.9 12.8 14.8 12.2 12.9 10.4 12.3 12.2 11.7 12.8 9.8Z" fill="currentColor" opacity=".85"/>
       </>
     ),
     external: (

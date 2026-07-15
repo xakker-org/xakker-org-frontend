@@ -43,17 +43,6 @@ const TABS = [
     ],
   },
   {
-    key: "qa",
-    label: { az: "Sərbəst cəhdlər", en: "Self-study attempts" },
-    endpoint: () => progress.questionAttempts,
-    columns: [
-      { key: "username", header: "User" },
-      { key: "question_title", header: "Question" },
-      { key: "is_correct", header: "Correct", align: "center", render: (r) => boolChip(r.is_correct) },
-      { key: "points_awarded", header: "Points", align: "right" },
-    ],
-  },
-  {
     key: "lessons",
     label: { az: "Dərs irəliləyişi", en: "Lesson progress" },
     endpoint: () => progress.lessons,

@@ -26,6 +26,8 @@ import "./styles/dashboard.css";
 import "./styles/screens.css";
 import "./styles/proto.css";
 import "./styles/lab.css";
+import "./styles/ai-fab.css";
+import "./styles/ai-assistant.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

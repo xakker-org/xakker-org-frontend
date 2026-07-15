@@ -527,7 +527,6 @@ const MOCK_PLAN_ROADMAP = {
     { id: 5, title: "Burp Suite Pro", type: "mission", target: "/missions/burp-suite-pro", desc: "Proxy, Repeater, Intruder, Scanner", done: false },
     { id: 6, title: "Web Lab: Vulnerable Bank", type: "room", target: "/rooms/vulnerable-bank", desc: "Real bank tətbiqində pentest", done: false },
     { id: 7, title: "Web Lab: Dark Forum", type: "room", target: "/rooms/dark-forum", desc: "Forumda SQLI + XSS kombinasiyası", done: false },
-    { id: 8, title: "Final Sınaq", type: "exam", target: "/self-study", desc: "Bug bounty simulyasiyası", done: false },
   ],
   "penetration-tester": [
     { id: 1, title: "Network Fundamentals", type: "course", target: "/courses/network-security", desc: "TCP/IP, subnets, routing, firewalls", done: false },
@@ -541,7 +540,6 @@ const MOCK_PLAN_ROADMAP = {
     { id: 9, title: "Secured Zone Lab", type: "room", target: "/rooms/secured-zone", desc: "Hardened server exploitation", done: false },
     { id: 10, title: "Zero Day Playground", type: "room", target: "/rooms/zero-day-playground", desc: "0-day vulnerability research", done: false },
     { id: 11, title: "OSINT & Recon", type: "mission", target: "/missions/osint-recon", desc: "Passive information gathering", done: false },
-    { id: 12, title: "Final Exam", type: "exam", target: "/self-study", desc: "Full-scope penetration test", done: false },
   ],
   "soc-analyst": [
     { id: 1, title: "Network Security Course", type: "course", target: "/courses/network-security", desc: "TCP/IP, firewalls, IDS/IPS", done: false },
@@ -549,14 +547,12 @@ const MOCK_PLAN_ROADMAP = {
     { id: 3, title: "Threat Hunting", type: "room", target: "/rooms/malware-analysis-lab", desc: "IOC hunting, YARA rules", done: false },
     { id: 4, title: "Incident Response", type: "mission", target: "/missions/firewall-bypass", desc: "Incident handling workflow", done: false },
     { id: 5, title: "Phishing Analysis", type: "room", target: "/rooms/phishing-campaign", desc: "Email analysis, URL scanning", done: false },
-    { id: 6, title: "SOC Capstone", type: "exam", target: "/self-study", desc: "SOC analyst simulyasiyası", done: false },
   ],
   "crypto-expert": [
     { id: 1, title: "Cryptography Basics", type: "course", target: "/courses/cryptography-basics", desc: "AES, RSA, hashing, signatures", done: false },
     { id: 2, title: "Crypto CTF", type: "mission", target: "/missions/crypto-ctf", desc: "Crypto challenge-lər", done: false },
     { id: 3, title: "Hash Cracking", type: "mission", target: "/missions/hash-cracking", desc: "MD5, SHA1, bcrypt kracking", done: false },
     { id: 4, title: "Crypto Vault Lab", type: "room", target: "/rooms/crypto-vault", desc: "Encryption bypass, key extraction", done: false },
-    { id: 5, title: "Steganoqrafiya", type: "exam", target: "/self-study", desc: "Image/audio stenography", done: false },
   ],
   "red-team-specialist": [
     { id: 1, title: "Advanced Pentesting", type: "course", target: "/courses/advanced-pentesting", desc: "Advanced web and network attacks", done: false },
@@ -568,7 +564,6 @@ const MOCK_PLAN_ROADMAP = {
     { id: 7, title: "Buffer Overflow", type: "course", target: "/courses/buffer-overflow-exploit", desc: "Exploit development", done: false },
     { id: 8, title: "Mobile Security", type: "course", target: "/courses/mobile-security", desc: "Android/iOS pentesting", done: false },
     { id: 9, title: "Cloud Security", type: "course", target: "/courses/cloud-security", desc: "AWS/Azure security assessment", done: false },
-    { id: 10, title: "Red Team Exercise", type: "exam", target: "/self-study", desc: "Full-scope red team operation", done: false },
   ],
 };
 

@@ -57,18 +57,27 @@
   min-width: 0;
 }
 .sb-brand-img {
-  height: 36px;
+  height: 40px;
   width: auto;
-  max-width: 170px;
+  max-width: 185px;
 
   object-fit: contain;
   flex-shrink: 0;
 }
+.sb-brand-img--light {
+  height: 46px;
+  max-width: 200px;
+}
 .shell.sb-collapsed .sb-brand-img {
-  height: 34px;
-  width: 34px;
-  max-width: 34px;
+  height: 38px;
+  width: 38px;
+  max-width: 38px;
   object-fit: contain;
+}
+.shell.sb-collapsed .sb-brand-img--light {
+  height: 42px;
+  width: 42px;
+  max-width: 42px;
 }
 .shell.sb-collapsed .sb-brand {
   display: none;
@@ -325,6 +334,26 @@
 .sb-user-logout:hover { color: var(--bad); background: var(--bg-elev); }
 
 /* ── Main column ── */
+/* Scoped clamp for the Xakker AI route: `.content-full` is only ever
+   rendered on /xakker-ai (see AppShell.jsx), so `.shell:has(.content-full)`
+   targets exactly that route without touching every other page's normal
+   body-level scroll (which intentionally relies on .shell/.main growing
+   past 100vh as content grows — see .sb's position:sticky). On the AI
+   route the whole chain must be hard-clamped to the viewport height with
+   overflow:hidden, otherwise a missing `min-height:0` anywhere lets a
+   flex item's content-based floor win over the vh-based height, the box
+   silently overflows its visible ancestors, and the *document* ends up
+   scrolling instead of the internal .ai-messages list. */
+.shell:has(.content-full) {
+  height: 100vh;
+  overflow: hidden;
+}
+.shell:has(.content-full) .main {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .main {
   display: flex; flex-direction: column; min-height: 100vh;
   /* No opaque fill here — the fixed .xk-bg layer (mounted at the AppShell
@@ -440,6 +469,33 @@
   width: 100%; max-width: var(--content-max); margin: 0 auto;
 }
 
+/* Full-bleed app-shell variant for pages that want ChatGPT/Claude-style
+   edge-to-edge canvas (currently: /xakker-ai) instead of the standard
+   centered/padded article column. */
+.content.content-full {
+  max-width: none;
+  padding: 0;
+  height: calc(100vh - var(--topbar-h));
+  min-height: 0; /* flex items default to a content-based min-height floor
+    (min-height:auto) inside a column flex parent (.main) — without this,
+    that floor wins over the explicit vh-based height above the moment
+    message content grows taller than one screen, and .content silently
+    overflows .main instead of clipping, which is what let the whole
+    *document* scroll instead of the internal .ai-messages list. */
+  display: flex;
+  overflow: hidden;
+}
+.content.content-full > div {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+}
+
+@media (max-width: 860px) {
+  .content.content-full { height: calc(100dvh - var(--topbar-h)); }
+}
+
 /* ── Page header ── */
 .page-head {
   display: flex;
@@ -505,7 +561,8 @@
     opacity: 1; max-width: 160px;
   }
   .shell.sb-collapsed .sb .sb-brand { padding: 14px 16px; justify-content: flex-start; }
-  .shell.sb-collapsed .sb .sb-brand-img { height: 36px; width: auto; max-width: 170px; }
+  .shell.sb-collapsed .sb .sb-brand-img { height: 40px; width: auto; max-width: 185px; }
+  .shell.sb-collapsed .sb .sb-brand-img--light { height: 46px; max-width: 200px; }
   .shell.sb-collapsed .sb .sb-link { justify-content: flex-start; padding: 8px 10px; }
   .shell.sb-collapsed .sb .sb-user { justify-content: flex-start; padding: 10px 12px; }
   .shell.sb-collapsed .sb.is-open .sb-brand { display: flex; }

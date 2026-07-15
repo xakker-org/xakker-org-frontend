@@ -20,7 +20,6 @@ export const tasks = createResource("/admin/tasks/");
 export const taskQuestions = createResource("/admin/task-questions/");
 export const lessons = createResource("/admin/lessons/");
 export const lessonQuestions = createResource("/admin/lesson-questions/");
-export const questions = createResource("/admin/questions/");
 export const plans = createResource("/admin/plans/");
 export const missions = createResource("/admin/missions/");
 export const missionPasses = createResource("/admin/mission-passes/");
@@ -39,7 +38,6 @@ export const users = {
 export const progress = {
   tasks: createResource("/admin/progress/tasks/"),
   taskQuestionAttempts: createResource("/admin/progress/task-question-attempts/"),
-  questionAttempts: createResource("/admin/progress/question-attempts/"),
   lessons: createResource("/admin/progress/lessons/"),
   missions: createResource("/admin/progress/missions/"),
   missionExamAttempts: createResource("/admin/progress/mission-exam-attempts/"),
@@ -47,3 +45,9 @@ export const progress = {
 };
 
 export const auditLogs = createResource("/admin/audit-logs/");
+
+export const assistantPromptNotes = createResource("/admin/assistant-prompt-notes/");
+export const assistantPrompt = {
+  get: () => api.get("/admin/assistant-prompt/"),
+  update: (data) => api.put("/admin/assistant-prompt/", data),
+};

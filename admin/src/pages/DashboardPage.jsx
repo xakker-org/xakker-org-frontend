@@ -13,7 +13,6 @@ const QUICK_LINKS = [
   { to: "/content/courses", icon: "courses", label: { az: "Kurslar", en: "Courses" } },
   { to: "/content/rooms", icon: "labs", label: { az: "Otaqlar", en: "Rooms" } },
   { to: "/content/missions", icon: "map", label: { az: "Missiyalar", en: "Missions" } },
-  { to: "/content/questions", icon: "study", label: { az: "Suallar", en: "Questions" } },
   { to: "/users", icon: "profile", label: { az: "İstifadəçilər", en: "Users" } },
   { to: "/analytics", icon: "leaderboard", label: { az: "Analitika", en: "Analytics" } },
 ];

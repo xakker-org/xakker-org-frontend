@@ -35,18 +35,6 @@ export const endpoints = {
   plans: () => api.get("/courses/plans/"),
   plan: (slug) => api.get(`/courses/plans/${slug}/`),
 
-  questions: (params = {}) => {
-    const qs = new URLSearchParams();
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== "") qs.append(k, v);
-    });
-    const suffix = qs.toString() ? `?${qs.toString()}` : "";
-    return api.get(`/courses/questions/${suffix}`);
-  },
-  questionDetail: (id) => api.get(`/courses/questions/${id}/`),
-  submitQuestionAnswer: (id, payload) => api.post(`/courses/questions/${id}/submit-answer/`, payload),
-  questionProgress: () => api.get("/courses/user/questions-progress/"),
-
   // Profile extended endpoints
   profileStats: () => api.get("/auth/profile/stats/"),
   activityGraph: (year = null) => api.get(`/auth/profile/activity-graph/${year ? `?year=${year}` : ""}`),
@@ -71,4 +59,11 @@ export const endpoints = {
   missionExamSubmit: (slug, attemptId, payload) =>
     api.post(`/courses/missions/${slug}/exam/${attemptId}/submit/`, payload),
   myMissionProgress: () => api.get("/courses/missions/my-progress/"),
+
+  // ── Xakker AI (chatbot) ──────────────────────────────────
+  aiChatSend: ({ conversation_id, message, lang }) =>
+    api.post("/ai-chat/message", { conversation_id: conversation_id ?? null, message, lang: lang || "az" }),
+  aiChatConversations: () => api.get("/ai-chat/conversations"),
+  aiChatConversation: (id) => api.get(`/ai-chat/conversations/${id}`),
+  aiChatDeleteConversation: (id) => api.delete(`/ai-chat/conversations/${id}`),
 };

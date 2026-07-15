@@ -272,7 +272,6 @@ function RecentCard({ activity, t }) {
           <div className="xk-card-eyebrow">{t.recentActivity}</div>
           <h3 className="xk-card-title">{t.yourAnswers}</h3>
         </div>
-        <Link to="/self-study" className="xk-link">{t.allMissions} →</Link>
       </div>
       {activity.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "24px 0", color: "var(--ink-3)", fontSize: 13, textAlign: "center" }}>
@@ -335,100 +334,6 @@ function LeaderCard({ leaderboard, currentUser, t }) {
             );
           })}
         </div>
-      )}
-    </div>
-  );
-}
-
-/* ─── Question of the day ───────────────────────────────────── */
-function QuestionCard({ t }) {
-  const [question, setQuestion] = useState(null);
-  const [picked, setPicked]     = useState(null);
-  const [loading, setLoading]   = useState(true);
-
-  useEffect(() => {
-    endpoints.questions({ limit: 10 })
-      .then(({ data }) => {
-        const list = Array.isArray(data) ? data : (data?.results || []);
-        if (list.length > 0) {
-          const idx = Math.floor(Math.random() * Math.min(list.length, 10));
-          setQuestion(list[idx]);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  const answered = picked !== null;
-
-  if (loading) {
-    return (
-      <div className="xk-card xk-question-grad" style={{ animationDelay: "640ms" }}>
-        <div className="xk-card-head">
-          <div><div className="xk-card-eyebrow">{t.todayQuestion}</div><h3 className="xk-card-title">{t.dailyQuestion}</h3></div>
-          <span className="xk-q-xp">+10 XP</span>
-        </div>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-3)", fontSize: 13 }}>…</div>
-      </div>
-    );
-  }
-
-  if (!question) {
-    return (
-      <div className="xk-card xk-question-grad" style={{ animationDelay: "640ms" }}>
-        <div className="xk-card-head">
-          <div><div className="xk-card-eyebrow">{t.todayQuestion}</div><h3 className="xk-card-title">{t.dailyQuestion}</h3></div>
-        </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "24px 0", color: "var(--ink-3)", fontSize: 13, textAlign: "center" }}>
-          <span>{t.noQuestions}</span>
-          <Link to="/self-study" className="xk-btn outline sm">{t.viewQuestions}</Link>
-        </div>
-      </div>
-    );
-  }
-
-  const options = question.options || question.choices || [];
-  const correctIndex = typeof question.correct_option === "number"
-    ? question.correct_option
-    : options.findIndex(o => o.is_correct);
-
-  return (
-    <div className="xk-card xk-question-grad" style={{ animationDelay: "640ms" }}>
-      <div className="xk-card-head">
-        <div>
-          <div className="xk-card-eyebrow">{t.todayQuestion}</div>
-          <h3 className="xk-card-title">{t.dailyQuestion}</h3>
-        </div>
-        <span className="xk-q-xp">+10 XP</span>
-      </div>
-      <p className="xk-q-prompt">
-        {question.text || question.title || question.question || t.loadError}
-      </p>
-      {options.length > 0 ? (
-        <>
-          <div className="xk-q-opts">
-            {options.map((o, i) => {
-              const optText = typeof o === "string" ? o : (o.text || o.label || o.option || "");
-              const isCorrect = i === correctIndex || (typeof o === "object" && o.is_correct);
-              const cls = !answered ? "" : isCorrect ? "right" : i === picked ? "wrong" : "dim";
-              return (
-                <button key={i} className={`xk-q-opt ${cls}`} disabled={answered} onClick={() => setPicked(i)}>
-                  <span className="xk-q-key">{String.fromCharCode(65 + i)}</span>
-                  <span>{optText}</span>
-                </button>
-              );
-            })}
-          </div>
-          {answered && (
-            <div className={`xk-q-result ${picked === correctIndex ? "ok" : "no"}`}>
-              {picked === correctIndex ? t.correct : t.wrong}
-            </div>
-          )}
-        </>
-      ) : (
-        <Link to={`/self-study/question/${question.id}`} className="xk-btn primary block" style={{ marginTop: "auto" }}>
-          {t.goToQuestion}
-        </Link>
       )}
     </div>
   );
@@ -549,7 +454,6 @@ export default function DashboardPage() {
         </div>
         <div className="xk-greet-actions">
           <Link to="/missions" className="xk-btn ghost">{t.missions}</Link>
-          <Link to="/self-study" className="xk-btn primary">{t.cont} →</Link>
         </div>
       </div>
 
@@ -570,7 +474,6 @@ export default function DashboardPage() {
       <div className="xk-bot-grid">
         <RecentCard activity={data.activity} t={t} />
         <LeaderCard leaderboard={data.leaderboard} currentUser={currentUser} t={t} />
-        <QuestionCard t={t} />
       </div>
     </>
   );

@@ -13,11 +13,10 @@ import PlansPage from "./pages/PlansPage";
 import PlanDetailPage from "./pages/PlanDetailPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ProfilePage from "./pages/ProfilePage";
-import SelfStudyPage from "./pages/SelfStudyPage";
-import QuestionDetailPage from "./pages/QuestionDetailPage";
 import CoursesPage from "./pages/CoursesPage";
 import CoursePage from "./pages/CoursePage";
 import LessonPage from "./pages/LessonPage";
+import AiAssistantPage from "./pages/AiAssistantPage";
 
 export default function App() {
   const location = useLocation();
@@ -61,9 +60,8 @@ export default function App() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 
-        {/* Labs */}
-        <Route path="/self-study" element={<SelfStudyPage />} />
-        <Route path="/self-study/question/:id" element={<QuestionDetailPage />} />
+        {/* Xakker AI */}
+        <Route path="/xakker-ai" element={<AiAssistantPage />} />
       </Route>
 
       {/* Catch-all */}

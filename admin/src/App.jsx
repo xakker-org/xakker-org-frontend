@@ -9,6 +9,7 @@ import UsersPage from "./pages/UsersPage";
 import AdminsPage from "./pages/AdminsPage";
 import UserDetailPage from "./pages/UserDetailPage";
 import ProgressPage from "./pages/ProgressPage";
+import AssistantPromptPage from "./pages/AssistantPromptPage";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/admins" element={<AdminsPage />} />
         <Route path="/users/:id" element={<UserDetailPage />} />
         <Route path="/progress" element={<ProgressPage />} />
+        <Route path="/settings/assistant-prompt" element={<AssistantPromptPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>

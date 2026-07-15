@@ -162,6 +162,12 @@ export default function Icon({ name, size = 16, className = "", style }) {
         <circle cx="8" cy="8" r="2.15" stroke="currentColor" strokeWidth="1.5"/>
       </>
     ),
+    sparkles: (
+      <>
+        <path d="M8 2.5L9.1 6.4L13 7.5L9.1 8.6L8 12.5L6.9 8.6L3 7.5L6.9 6.4L8 2.5Z" fill="currentColor"/>
+        <path d="M12.5 10.5L13 12L14.5 12.5L13 13L12.5 14.5L12 13L10.5 12.5L12 12L12.5 10.5Z" fill="currentColor" opacity=".7"/>
+      </>
+    ),
     eyeOff: (
       <>
         <path d="M1.5 8C1.5 8 4 3.5 8 3.5C12 3.5 14.5 8 14.5 8C14.5 8 12 12.5 8 12.5C4 12.5 1.5 8 1.5 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" opacity=".5"/>
