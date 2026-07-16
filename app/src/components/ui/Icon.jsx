@@ -163,6 +163,12 @@ export default function Icon({ name, size = 16, strokeWidth, className = "", sty
     arrowLeft: (
       <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round"/>
     ),
+    refresh: (
+      <>
+        <path d="M13 8A5 5 0 1 1 11.2 4.2" stroke="currentColor" strokeWidth={sw} strokeLinecap="round"/>
+        <path d="M13 3.5V7H9.5" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round"/>
+      </>
+    ),
     map: (
       <>
         <path d="M2 4.5L6 2.5L10 4.5L14 2.5V11.5L10 13.5L6 11.5L2 13.5V4.5Z" stroke="currentColor" strokeWidth={sw} strokeLinejoin="round"/>

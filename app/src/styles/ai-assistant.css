@@ -394,11 +394,96 @@
   margin-bottom: var(--s3);
 }
 
-.ai-error {
+/* ── Branded error state (send failure) ──
+   Reuses the .ai-empty-video-wrap circular video look. Two variants:
+   the default (full-size, standalone empty-state replacement) and
+   `.is-compact` (sits below an already-visible composer in an active
+   conversation, so it stays small and doesn't fight the message list
+   for attention). */
+.ai-error-state {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  gap: var(--s3);
+  padding: var(--s5) 0;
+}
+
+.ai-error-video-wrap {
+  width: 128px;
+  height: 128px;
+  filter: drop-shadow(0 10px 26px rgba(var(--bad-rgb, 217, 61, 61), 0.2));
+}
+
+.ai-error-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-md);
+  color: var(--ink-1);
+}
+
+.ai-error-sub {
   font-size: var(--text-sm);
-  color: var(--bad);
-  margin: 0 var(--s5) var(--s3);
+  color: var(--ink-3);
+  line-height: var(--leading-normal);
+  margin-top: calc(var(--s2) * -1);
+}
+
+.ai-error-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-top: var(--s1);
+}
+
+.ai-error-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s4);
+  border-radius: var(--r-pill);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--fast), border-color var(--dur-1) var(--fast),
+    transform var(--dur-1) var(--fast), opacity var(--dur-1) var(--fast);
+}
+.ai-error-btn:hover { transform: translateY(-1px); }
+.ai-error-btn:active { transform: translateY(0) scale(0.97); }
+
+.ai-error-btn.ghost {
+  border: 1px solid var(--line-2);
+  background: var(--bg-card-2);
+  color: var(--ink-2);
+}
+.ai-error-btn.ghost:hover { background: var(--hover-strong); border-color: var(--line-3); }
+
+.ai-error-btn.primary {
+  border: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.ai-error-btn.primary:hover { opacity: 0.92; }
+
+/* Compact variant — active conversation, error shown under the composer */
+.ai-error-state.is-compact {
+  padding: var(--s3) var(--s5) var(--s4);
+  gap: var(--s2);
+}
+.ai-error-state.is-compact .ai-error-video-wrap {
+  width: 72px;
+  height: 72px;
+}
+.ai-error-state.is-compact .ai-error-title {
+  font-size: var(--text-sm);
+}
+.ai-error-state.is-compact .ai-error-actions {
+  margin-top: 2px;
 }
 
 /* ── Responsive tweaks (history drawer already overlays at every width) ── */
@@ -406,6 +491,6 @@
   .ai-main-title span:not(:first-child) { display: none; }
   .ai-drawer-toggle span { display: none; }
   .ai-composer { margin-left: var(--s3); margin-right: var(--s3); }
-  .ai-error { margin-left: var(--s3); margin-right: var(--s3); }
+  .ai-error-state { padding-left: var(--s3); padding-right: var(--s3); }
   .ai-bubble { max-width: 84%; }
 }

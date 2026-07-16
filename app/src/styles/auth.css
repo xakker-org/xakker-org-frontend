@@ -1,22 +1,20 @@
 /* ==========================================
-   AUTH PAGE — Redesign
-   Landing-uyğun, animasiyalı, müasir
+   AUTH PAGE — rebased onto tokens.css
+   Dark hacker surfaces + single red signature accent.
+   No bespoke cyan palette — --accent/--ink/--bg only.
    ========================================== */
 
-/* Bridge variables: this file expects legacy auth tokens that may not exist globally. */
 :root {
   --space-md: var(--s3, 12px);
   --space-lg: var(--s4, 16px);
   --space-xl: var(--s5, 24px);
   --space-2xl: var(--s6, 32px);
 
-  --text-primary: var(--ink-1, #ffffff);
-  --text-secondary: var(--ink-2, #c8cdd6);
-  --text-tertiary: var(--ink-3, #7a8392);
+  --text-primary: var(--ink-1);
+  --text-secondary: var(--ink-2);
+  --text-tertiary: var(--ink-3);
 
-  --blue: #8ed8e8;
-  --blue-light: #bfeef6;
-  --font-sans: var(--font-text, "Inter", system-ui, sans-serif);
+  --font-sans: var(--font-text);
 }
 
 @keyframes float {
@@ -49,15 +47,9 @@
   overflow: hidden;
   padding: var(--space-xl) var(--space-lg);
   background:
-    linear-gradient(
-      125deg,
-      #020610 0%,
-      #050e1f 25%,
-      #0c1528 42%,
-      #160a14 58%,
-      #180510 75%,
-      #0d0208 100%
-    );
+    radial-gradient(ellipse 900px 700px at 14% -8%, rgba(var(--accent-rgb), 0.10), transparent 60%),
+    radial-gradient(ellipse 800px 640px at 100% 108%, rgba(var(--accent-rgb), 0.07), transparent 60%),
+    var(--bg);
 }
 
 /* dot-grid overlay */
@@ -65,8 +57,9 @@
   content: "";
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(rgba(142, 216, 232, 0.04) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 30px 30px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, #000 30%, transparent 85%);
   pointer-events: none;
   z-index: 0;
 }
@@ -90,7 +83,7 @@
   left: -10%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(53, 130, 200, 0.14), transparent 70%);
+  background: radial-gradient(circle, var(--accent-glow), transparent 70%);
   animation: float 28s ease-in-out infinite;
 }
 
@@ -99,7 +92,7 @@
   right: -8%;
   width: 520px;
   height: 520px;
-  background: radial-gradient(circle, rgba(180, 30, 55, 0.14), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.10), transparent 70%);
   animation: float-reverse 33s ease-in-out infinite;
 }
 
@@ -108,7 +101,7 @@
   left: 42%;
   width: 380px;
   height: 380px;
-  background: radial-gradient(circle, rgba(120, 20, 50, 0.07), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.05), transparent 70%);
   animation: float 22s ease-in-out 4s infinite;
   transform: translate(-50%, -50%);
 }
@@ -122,9 +115,9 @@
   display: flex;
   gap: 2px;
   padding: 3px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(142, 216, 232, 0.14);
-  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-inner);
   backdrop-filter: blur(6px);
 }
 
@@ -137,9 +130,9 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   padding: 5px 10px;
-  border-radius: 6px;
+  border-radius: var(--r-inner);
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color var(--dur-2) var(--fast), background var(--dur-2) var(--fast);
 }
 
 .auth-lang-btn:hover {
@@ -147,8 +140,8 @@
 }
 
 .auth-lang-btn.active {
-  color: var(--blue-light);
-  background: rgba(142, 216, 232, 0.12);
+  color: var(--accent-ink);
+  background: var(--accent);
 }
 
 /* ── Container ──────────────────────────── */
@@ -156,281 +149,133 @@
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  max-width: 1060px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  max-width: 1120px;
   width: 100%;
-  border-radius: 22px;
-  overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(142, 216, 232, 0.09),
-    0 40px 120px rgba(0, 0, 0, 0.65);
-  animation: authEnter 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes authEnter {
-  from {
-    opacity: 0;
-    transform: translateY(28px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  align-items: stretch;
 }
 
 /* ══════════════════════════════════════════
-   LEFT PANEL
+   RAIL — narrow typographic sidebar, layered
+   *behind* the elevated form card (structural
+   replacement for the old symmetric 50/50 split)
    ══════════════════════════════════════════ */
-.auth-left {
+.auth-rail {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: var(--space-2xl);
-  padding: 44px 38px;
-  background: linear-gradient(160deg, rgba(7, 13, 24, 0.99), rgba(4, 8, 16, 0.97));
-  border-right: 1px solid rgba(142, 216, 232, 0.08);
-  position: relative;
+  justify-content: space-between;
+  gap: var(--space-xl);
+  padding: 44px 40px 36px;
+  background: linear-gradient(160deg, var(--bg-card-2), var(--bg));
+  border-radius: 20px 0 0 20px;
+  box-shadow: 0 0 0 1px var(--line-2), var(--shadow-tile);
   overflow: hidden;
+  animation: railEnter 0.5s var(--ease) both;
 }
 
-/* animated left-edge line */
-.auth-left::after {
-  content: "";
+@keyframes railEnter {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* giant outlined vertical wordmark — the rail's dominant visual */
+.rail-wordmark-bg {
   position: absolute;
-  top: 0;
-  right: -1px;
-  width: 1px;
-  height: 100%;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(142, 216, 232, 0.35) 30%,
-    rgba(191, 238, 246, 0.2) 70%,
-    transparent 100%
-  );
+  right: -20px;
+  top: -6px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 96px;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(var(--accent-rgb), 0.14);
+  pointer-events: none;
+  user-select: none;
 }
 
-/* Logo */
-.auth-logo-block {
+.rail-brand {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
 }
 
 .auth-logo-img {
-  height: 58px;
+  height: 46px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 14px rgba(142, 216, 232, 0.18));
+  filter: drop-shadow(0 0 14px var(--accent-glow));
 }
 
-/* ── Radar ──────────────────────────────── */
-.auth-radar {
+/* ── Status ticker — replaces the old radar with a moving log ── */
+.rail-ticker {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  gap: 13px;
+  font-family: var(--font-mono);
 }
 
-.radar-circle {
-  position: relative;
-  width: 170px;
-  height: 170px;
-  border-radius: 50%;
-  border: 1px solid rgba(142, 216, 232, 0.22);
-  background: rgba(142, 216, 232, 0.018);
-  overflow: hidden;
-  flex-shrink: 0;
+.rail-tick {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  animation: tickIn 0.4s var(--ease) both;
 }
 
-/* crosshair lines via pseudo */
-.radar-circle::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 1px;
-  height: 100%;
-  background: rgba(142, 216, 232, 0.09);
-  transform: translateX(-50%);
+.rail-tick:nth-child(1) { animation-delay: 0.08s; }
+.rail-tick:nth-child(2) { animation-delay: 0.16s; }
+.rail-tick:nth-child(3) { animation-delay: 0.24s; }
+.rail-tick:nth-child(4) { animation-delay: 0.32s; }
+
+@keyframes tickIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.radar-circle::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 100%;
-  height: 1px;
-  background: rgba(142, 216, 232, 0.09);
-  transform: translateY(-50%);
-}
-
-.radar-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(142, 216, 232, 0.13);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.radar-ring-1 {
-  width: 60%;
-  height: 60%;
-}
-
-.radar-ring-2 {
-  width: 30%;
-  height: 30%;
-}
-
-/* sweeping arc */
-.radar-sweep {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    transparent 295deg,
-    rgba(142, 216, 232, 0.07) 325deg,
-    rgba(142, 216, 232, 0.28) 360deg
-  );
-  animation: radarSpin 3.8s linear infinite;
-}
-
-@keyframes radarSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* trailing fade after sweep */
-.radar-sweep::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    transparent 260deg,
-    rgba(142, 216, 232, 0.03) 295deg,
-    transparent 360deg
-  );
-}
-
-/* radar dots */
-.radar-dot {
-  position: absolute;
+.rt-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--blue);
-  box-shadow: 0 0 7px rgba(142, 216, 232, 0.9), 0 0 14px rgba(142, 216, 232, 0.4);
-  transform: translate(-50%, -50%);
-}
-
-.dot-1 {
-  top: 32%;
-  left: 64%;
-  animation: dotBlink 3.2s ease-in-out 0.4s infinite;
-}
-
-.dot-2 {
-  top: 68%;
-  left: 26%;
-  animation: dotBlink 3.2s ease-in-out 1.1s infinite;
-}
-
-.dot-3 {
-  top: 20%;
-  left: 38%;
-  animation: dotBlink 3.2s ease-in-out 1.9s infinite;
-}
-
-.dot-4 {
-  top: 75%;
-  left: 70%;
-  animation: dotBlink 3.2s ease-in-out 0.8s infinite;
-}
-
-@keyframes dotBlink {
-  0%, 100% {
-    opacity: 1;
-    box-shadow: 0 0 7px rgba(142, 216, 232, 0.9), 0 0 14px rgba(142, 216, 232, 0.4);
-  }
-  50% {
-    opacity: 0.25;
-    box-shadow: 0 0 2px rgba(142, 216, 232, 0.3);
-  }
-}
-
-.radar-center {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--blue-light);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow:
-    0 0 10px rgba(191, 238, 246, 0.9),
-    0 0 22px rgba(142, 216, 232, 0.5);
-  z-index: 2;
-}
-
-.radar-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  text-transform: lowercase;
-  letter-spacing: 0.12em;
-  color: rgba(142, 216, 232, 0.45);
-}
-
-/* ── Terminal lines ─────────────────────── */
-.auth-terminal-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px 20px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(142, 216, 232, 0.1);
-  border-radius: 12px;
-  font-family: var(--font-mono);
-}
-
-.auth-terminal-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-}
-
-.atl-prompt {
-  color: rgba(142, 216, 232, 0.5);
-  font-weight: 700;
+  background: var(--ok);
+  box-shadow: 0 0 6px rgba(25, 195, 125, 0.6);
   flex-shrink: 0;
 }
 
-.atl-text {
+.rt-text {
   color: var(--text-secondary);
-  flex: 1;
   letter-spacing: 0.01em;
+  line-height: 1.4;
 }
 
-.atl-ok {
-  font-size: 10px;
+.rt-ok {
+  font-size: 9px;
   font-weight: 700;
-  color: #27c93f;
+  color: var(--ink-4);
   letter-spacing: 0.08em;
-  flex-shrink: 0;
 }
 
-.atl-blink .atl-text {
-  color: rgba(142, 216, 232, 0.65);
+.rail-tick-live .rt-dot {
+  background: var(--accent);
+  box-shadow: 0 0 7px rgba(var(--accent-rgb), 0.8);
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.rail-tick-live .rt-text {
+  color: var(--ink-2);
   animation: cursorBlink 1.1s step-end infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
 }
 
 @keyframes cursorBlink {
@@ -438,16 +283,49 @@
   50% { opacity: 0.4; }
 }
 
+.rail-status {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: lowercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-4);
+  margin: 0;
+}
+
 /* ══════════════════════════════════════════
-   RIGHT PANEL
+   FORM PANEL — elevated card overlapping the
+   rail (negative margin + independent shadow),
+   the "layered" composition replacing the old
+   flat two-column card.
    ══════════════════════════════════════════ */
-.auth-right {
+.auth-form-panel {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-xl);
-  padding: 44px 38px;
-  background: rgba(5, 10, 19, 0.93);
+  padding: 44px 40px;
+  background: var(--bg-card);
+  border-radius: 0 20px 20px 0;
+  box-shadow: 0 0 0 1px var(--line-2), var(--shadow-pop);
+  clip-path: inset(0 0 0 0 round 20px);
+  animation: cardReveal 0.55s var(--ease) both 0.08s;
+}
+
+@keyframes cardReveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0 round 20px);
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0% 0 round 20px);
+    transform: translateY(0);
+  }
 }
 
 /* ── Card ───────────────────────────────── */
@@ -463,7 +341,7 @@
   align-items: center;
   gap: 7px;
   padding-bottom: var(--space-md);
-  border-bottom: 1px solid rgba(142, 216, 232, 0.07);
+  border-bottom: 1px solid var(--line);
 }
 
 .t-dot {
@@ -475,7 +353,7 @@
 
 .t-red    { background: #ff5f57; }
 .t-yellow { background: #ffbd2e; }
-.t-green  { background: #27c93f; }
+.t-green  { background: var(--ok); }
 
 .t-title {
   font-family: var(--font-mono);
@@ -485,57 +363,66 @@
   letter-spacing: 0.07em;
 }
 
-/* ── Tabs ───────────────────────────────── */
+/* ── Tabs — one segmented bar, sliding fill marks the active side ── */
 .auth-tabs {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: rgba(0, 0, 0, 0.32);
-  border: 1px solid rgba(142, 216, 232, 0.08);
-  border-radius: 11px;
+  gap: 4px;
   padding: 4px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--r-inner);
 }
 
 .tab {
   position: relative;
-  z-index: 1;
-  padding: 10px var(--space-lg);
+  z-index: 2;
+  padding: 10px 12px;
   border: none;
+  border-radius: calc(var(--r-inner) - 4px);
   background: transparent;
-  color: var(--text-tertiary);
-  font-weight: 600;
+  color: var(--ink-3);
+  font-weight: 700;
   cursor: pointer;
-  border-radius: 8px;
-  transition: color 0.22s ease;
-  font-size: 14px;
-  font-family: var(--font-sans);
-  letter-spacing: 0.01em;
+  transition: color var(--dur-2) var(--fast);
+  font-size: 15px;
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-snug);
+  text-align: center;
 }
 
 .tab:hover {
-  color: var(--text-secondary);
+  color: var(--ink-2);
 }
 
 .tab.active {
-  color: var(--blue-light);
+  color: var(--ink-1);
 }
 
-/* sliding pill */
+/* keyboard focus only — scoped locally so a mouse click never paints
+   the global accent outline against the segmented bar's own shape */
+.tab:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--accent-ring);
+}
+
+/* sliding fill — the one real emphasis difference between the two tabs */
 .tab-slider {
   position: absolute;
+  z-index: 1;
   top: 4px;
   bottom: 4px;
-  width: calc(50% - 4px);
-  background: rgba(142, 216, 232, 0.09);
-  border: 1px solid rgba(142, 216, 232, 0.18);
-  border-radius: 8px;
-  box-shadow: 0 0 18px rgba(142, 216, 232, 0.1);
-  transition: left 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: calc(50% - 6px);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent-ring), 0 4px 14px var(--accent-glow);
+  border-radius: calc(var(--r-inner) - 4px);
+  transition: left var(--dur-3) var(--ease);
   pointer-events: none;
 }
 
 .auth-tabs.auth-tabs-login    .tab-slider { left: 4px; }
-.auth-tabs.auth-tabs-register .tab-slider { left: calc(50%); }
+.auth-tabs.auth-tabs-register .tab-slider { left: calc(50% + 2px); }
 
 /* ── Form ───────────────────────────────── */
 .auth-form {
@@ -545,12 +432,13 @@
 }
 
 .form-header h2 {
+  font-family: var(--font-display);
   font-size: clamp(19px, 1.9vw, 25px);
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 7px;
   line-height: 1.22;
-  letter-spacing: -0.012em;
+  letter-spacing: var(--tracking-tight);
 }
 
 .form-subtitle {
@@ -561,7 +449,31 @@
   letter-spacing: 0.003em;
 }
 
-/* ── Field wrap ─────────────────────────── */
+/* ── Stage wrapper — remounts on mode/reset-stage change so the
+   whole field set glides in, giving the tab/step switch a real
+   sense of motion instead of an instant content swap. ── */
+.auth-stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  animation: stageIn 0.32s var(--ease) both;
+}
+
+@keyframes stageIn {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Field wrap — underline inputs, not boxed ──
+   Interaction pattern change from Round 20: no border/background box;
+   a rest-state hairline sits under the input, and an accent bar draws
+   in via scaleX on focus (transform, not just a color swap). ── */
 .field-wrap {
   position: relative;
   display: flex;
@@ -588,30 +500,29 @@
 
 .field-icon {
   position: absolute;
-  left: 14px;
+  left: 2px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: rgba(142, 216, 232, 0.42);
+  color: var(--ink-3);
   font-weight: 700;
   pointer-events: none;
   z-index: 1;
   user-select: none;
   letter-spacing: -0.02em;
+  transition: color var(--dur-2) var(--fast);
 }
 
 .field-wrap input {
   width: 100%;
-  padding: 18px 14px 10px 48px;
-  background: rgba(4, 9, 18, 0.75);
-  border: 1.5px solid rgba(142, 216, 232, 0.1);
-  border-radius: 10px;
+  padding: 18px 4px 10px 26px;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--line-3);
+  border-radius: 0;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 14px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
+  transition: border-color var(--dur-2) var(--fast);
 }
 
 .field-wrap input::placeholder {
@@ -620,16 +531,32 @@
 
 .field-wrap input:focus {
   outline: none;
-  border-color: rgba(142, 216, 232, 0.38);
-  background: rgba(142, 216, 232, 0.03);
-  box-shadow:
-    0 0 0 3px rgba(142, 216, 232, 0.07),
-    0 0 16px rgba(142, 216, 232, 0.08);
+  border-color: transparent;
+}
+
+/* accent bar that draws in left-to-right on focus */
+.field-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.5px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-3) var(--ease);
+  pointer-events: none;
+}
+
+.field-wrap:focus-within::after {
+  transform: scaleX(1);
 }
 
 .field-wrap input:focus + .field-icon,
 .field-wrap:focus-within .field-icon {
-  color: rgba(142, 216, 232, 0.75);
+  color: var(--accent);
 }
 
 .field-disabled input,
@@ -641,19 +568,18 @@
 /* ── Floating Label ─────────────────────── */
 .field-label {
   position: absolute;
-  left: 48px;
+  left: 26px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 13px;
-  color: rgba(142, 216, 232, 0.38);
+  color: var(--ink-3);
   pointer-events: none;
   transition:
-    top 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-    font-size 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.22s ease,
-    left 0.22s ease,
-    padding 0.22s ease,
-    background 0.22s ease;
+    top var(--dur-2) var(--fast),
+    font-size var(--dur-2) var(--fast),
+    color var(--dur-2) var(--fast),
+    left var(--dur-2) var(--fast),
+    padding var(--dur-2) var(--fast);
   line-height: 1;
   user-select: none;
   white-space: nowrap;
@@ -661,16 +587,36 @@
 
 .field-wrap input:focus ~ .field-label,
 .field-wrap input:not(:placeholder-shown) ~ .field-label {
-  top: 0;
-  left: 44px;
+  top: -6px;
+  left: 2px;
   font-size: 10px;
   font-weight: 600;
-  color: rgba(142, 216, 232, 0.85);
-  background: rgba(5, 10, 20, 0.97);
-  padding: 1px 7px;
-  border-radius: 4px;
-  letter-spacing: 0.04em;
+  color: var(--accent);
+  padding: 0;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
+}
+
+/* ── Autofill neutralizer ──
+   Chrome forces a white/yellow UA background on autofilled inputs,
+   overriding any `background` we set — it clashes hard against this
+   dark card. Force the fill color back to the card surface (the field
+   is transparent, so it visually reads as --bg-card) via an inset
+   box-shadow trick, which IS the standard way to beat this UA style. */
+.field-wrap input:-webkit-autofill,
+.field-wrap input:-webkit-autofill:hover,
+.field-wrap input:-webkit-autofill:focus,
+.otp-box:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-card) inset;
+  box-shadow: 0 0 0 1000px var(--bg-card) inset;
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: var(--text-primary);
+}
+
+.otp-box:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-elev) inset;
+  box-shadow: 0 0 0 1000px var(--bg-elev) inset;
 }
 
 /* ── Eye toggle button ──────────────────── */
@@ -683,17 +629,17 @@
   border: none;
   padding: 4px;
   cursor: pointer;
-  color: rgba(142, 216, 232, 0.4);
+  color: var(--ink-4);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 5px;
-  transition: color 0.2s ease;
+  transition: color var(--dur-2) var(--fast);
   z-index: 2;
 }
 
 .eye-btn:hover {
-  color: rgba(142, 216, 232, 0.85);
+  color: var(--ink-1);
 }
 
 .eye-btn svg {
@@ -716,9 +662,9 @@
 .otp-label {
   font-size: 10px;
   font-weight: 600;
-  color: rgba(142, 216, 232, 0.6);
+  color: var(--ink-2);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
 }
 
 .otp-input-group {
@@ -732,26 +678,26 @@
   min-width: 0;
   text-align: center;
   padding: 0;
-  background: rgba(4, 9, 18, 0.75);
-  border: 1.5px solid rgba(142, 216, 232, 0.1);
-  border-radius: 10px;
+  background: var(--bg-elev);
+  border: 1.5px solid var(--line-3);
+  border-radius: var(--r-inner);
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 20px;
   font-weight: 600;
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
+    border-color var(--dur-2) var(--fast),
+    box-shadow var(--dur-2) var(--fast),
+    background var(--dur-2) var(--fast);
 }
 
 .otp-box:focus {
   outline: none;
-  border-color: rgba(142, 216, 232, 0.38);
-  background: rgba(142, 216, 232, 0.03);
+  border-color: rgba(var(--accent-rgb), 0.55);
+  background: rgba(var(--accent-rgb), 0.045);
   box-shadow:
-    0 0 0 3px rgba(142, 216, 232, 0.07),
-    0 0 16px rgba(142, 216, 232, 0.08);
+    0 0 0 3px var(--accent-ring),
+    0 0 16px var(--accent-glow);
 }
 
 /* ── Forgot link ────────────────────────── */
@@ -767,14 +713,14 @@
   font: inherit;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--blue);
+  color: var(--accent);
   cursor: pointer;
   letter-spacing: 0.005em;
-  transition: color 0.2s ease;
+  transition: color var(--dur-2) var(--fast);
 }
 
 .forgot-link:hover {
-  color: var(--blue-light);
+  color: var(--ink-1);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -793,17 +739,17 @@
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: color 0.2s ease, gap 0.2s ease;
+  transition: color var(--dur-2) var(--fast), gap var(--dur-2) var(--fast);
 }
 
 .back-to-login:hover {
-  color: var(--blue-light);
+  color: var(--accent);
   gap: 10px;
 }
 
 .back-arrow {
   font-size: 15px;
-  transition: transform 0.2s ease;
+  transition: transform var(--dur-2) var(--fast);
 }
 
 .back-to-login:hover .back-arrow {
@@ -816,7 +762,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 9px;
+  border-radius: var(--r-inner);
   font-size: 13px;
   font-weight: 500;
   animation: msgIn 0.28s ease;
@@ -837,40 +783,41 @@
   font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
+  display: inline-flex;
 }
 
 .auth-error {
-  background: rgba(255, 45, 85, 0.1);
-  border: 1px solid rgba(255, 45, 85, 0.24);
-  color: #ff7a9a;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  color: #ff8f8f;
 }
 
 .auth-success {
-  background: rgba(0, 200, 100, 0.1);
-  border: 1px solid rgba(0, 200, 100, 0.24);
-  color: #00d67a;
+  background: rgba(25, 195, 125, 0.1);
+  border: 1px solid rgba(25, 195, 125, 0.28);
+  color: var(--ok);
 }
 
 /* backward-compat classes from old JSX */
 .error-message {
   padding: 10px 14px;
-  border-radius: 9px;
+  border-radius: var(--r-inner);
   font-size: 13px;
   font-weight: 500;
-  background: rgba(255, 45, 85, 0.1);
-  border: 1px solid rgba(255, 45, 85, 0.24);
-  color: #ff7a9a;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  color: #ff8f8f;
   animation: msgIn 0.28s ease;
 }
 
 .success-message {
   padding: 10px 14px;
-  border-radius: 9px;
+  border-radius: var(--r-inner);
   font-size: 13px;
   font-weight: 500;
-  background: rgba(0, 200, 100, 0.1);
-  border: 1px solid rgba(0, 200, 100, 0.24);
-  color: #00d67a;
+  background: rgba(25, 195, 125, 0.1);
+  border: 1px solid rgba(25, 195, 125, 0.28);
+  color: var(--ok);
   animation: msgIn 0.28s ease;
 }
 
@@ -879,14 +826,10 @@
   position: relative;
   width: 100%;
   padding: 14px var(--space-xl);
-  background: linear-gradient(
-    135deg,
-    rgba(142, 216, 232, 0.18),
-    rgba(53, 103, 168, 0.15)
-  );
-  border: 1.5px solid rgba(142, 216, 232, 0.28);
-  border-radius: 11px;
-  color: var(--blue-light);
+  background: linear-gradient(135deg, var(--accent), #d92c2c);
+  border: 1.5px solid rgba(var(--accent-rgb), 0.5);
+  border-radius: var(--r-inner);
+  color: var(--accent-ink);
   font-size: 15px;
   font-weight: 700;
   font-family: var(--font-sans);
@@ -897,10 +840,12 @@
   gap: 10px;
   overflow: hidden;
   transition:
-    border-color 0.22s ease,
-    box-shadow 0.22s ease,
-    background 0.22s ease;
+    border-color var(--dur-2) var(--fast),
+    box-shadow var(--dur-2) var(--fast),
+    background var(--dur-2) var(--fast),
+    transform var(--dur-1) var(--fast);
   letter-spacing: 0.015em;
+  box-shadow: 0 8px 24px var(--accent-glow);
 }
 
 /* shimmer sweep */
@@ -914,7 +859,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(191, 238, 246, 0.09),
+    rgba(255, 255, 255, 0.16),
     transparent
   );
   transition: left 0.55s ease;
@@ -925,15 +870,14 @@
 }
 
 .auth-submit-btn:not(:disabled):hover {
-  background: linear-gradient(
-    135deg,
-    rgba(142, 216, 232, 0.26),
-    rgba(53, 103, 168, 0.22)
-  );
-  border-color: rgba(142, 216, 232, 0.52);
   box-shadow:
-    0 0 22px rgba(142, 216, 232, 0.18),
-    0 6px 24px rgba(0, 0, 0, 0.28);
+    0 0 26px var(--accent-glow),
+    0 10px 30px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.auth-submit-btn:not(:disabled):active {
+  transform: translateY(0);
 }
 
 .auth-submit-btn:disabled {
@@ -944,7 +888,7 @@
 .submit-arrow {
   font-size: 17px;
   display: inline-block;
-  transition: transform 0.2s ease;
+  transition: transform var(--dur-2) var(--fast);
 }
 
 .auth-submit-btn:not(:disabled):hover .submit-arrow {
@@ -954,8 +898,8 @@
 .submit-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(191, 238, 246, 0.25);
-  border-top-color: rgba(191, 238, 246, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.65s linear infinite;
   flex-shrink: 0;
@@ -987,17 +931,17 @@
 .switch-btn {
   background: none;
   border: none;
-  color: var(--blue);
+  color: var(--accent);
   cursor: pointer;
   font-weight: 600;
   padding: 0;
   font: inherit;
   font-size: 13px;
-  transition: color 0.2s ease;
+  transition: color var(--dur-2) var(--fast);
 }
 
 .switch-btn:hover {
-  color: var(--blue-light);
+  color: var(--ink-1);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -1023,15 +967,15 @@
   .auth-container {
     grid-template-columns: 1fr;
     max-width: 480px;
-    border-radius: 18px;
   }
 
-  .auth-left {
+  .auth-rail {
     display: none;
   }
 
-  .auth-right {
+  .auth-form-panel {
     padding: 36px 30px;
+    border-radius: 18px;
   }
 }
 
@@ -1044,20 +988,49 @@
 
   .auth-container {
     max-width: 100%;
+  }
+
+  .auth-form-panel {
+    padding: 28px 20px;
     border-radius: 16px;
   }
 
-  .auth-right {
-    padding: 28px 20px;
-  }
-
   .tab {
-    font-size: 13px;
-    padding: 9px var(--space-md);
+    font-size: 14px;
   }
 
   .auth-trust-row {
     gap: var(--space-md);
     font-size: 10px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .auth-glow-1,
+  .auth-glow-2,
+  .auth-glow-3,
+  .auth-rail,
+  .auth-form-panel,
+  .rail-tick,
+  .rail-tick-live .rt-dot,
+  .rail-tick-live .rt-text,
+  .auth-container,
+  .auth-stage,
+  .field-wrap,
+  .field-wrap::after,
+  .otp-field,
+  .auth-message,
+  .error-message,
+  .success-message,
+  .submit-spinner {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .auth-submit-btn::before {
+    display: none;
   }
 }

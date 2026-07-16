@@ -257,6 +257,8 @@ export default function AuthPage() {
     }
   };
 
+  const stageKey = `${activeTab}-${resetStage}`;
+
   const eyeIcon = (open) =>
     open ? (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -298,9 +300,11 @@ export default function AuthPage() {
       </div>
 
       <div className="auth-container">
-        {/* ── LEFT PANEL ─────────────────────── */}
-        <div className="auth-left">
-          <div className="auth-logo-block">
+        {/* ── RAIL ───────────────────────────── */}
+        <div className="auth-rail">
+          <span className="rail-wordmark-bg" aria-hidden="true">XAKKER</span>
+
+          <div className="rail-brand">
             <img
               src={logoSrc}
               alt="Xakker"
@@ -309,46 +313,33 @@ export default function AuthPage() {
             />
           </div>
 
-          {/* Radar visual */}
-          <div className="auth-radar">
-            <div className="radar-circle">
-              <div className="radar-ring radar-ring-1" />
-              <div className="radar-ring radar-ring-2" />
-              <div className="radar-sweep" />
-              <div className="radar-dot dot-1" />
-              <div className="radar-dot dot-2" />
-              <div className="radar-dot dot-3" />
-              <div className="radar-dot dot-4" />
-              <div className="radar-center" />
+          <div className="rail-ticker">
+            <div className="rail-tick">
+              <span className="rt-dot" />
+              <span className="rt-text">{t("xakker.org-a qoşulur...", "connecting to xakker.org...")}</span>
+              <span className="rt-ok">OK</span>
             </div>
-            <p className="radar-label">// {t("təhlükə monitorinqi aktivdir", "threat monitoring active")}</p>
+            <div className="rail-tick">
+              <span className="rt-dot" />
+              <span className="rt-text">{t("təhlükəsiz seans yüklənir...", "loading secure session...")}</span>
+              <span className="rt-ok">OK</span>
+            </div>
+            <div className="rail-tick">
+              <span className="rt-dot" />
+              <span className="rt-text">encryption: AES-256</span>
+              <span className="rt-ok">READY</span>
+            </div>
+            <div className="rail-tick rail-tick-live">
+              <span className="rt-dot" />
+              <span className="rt-text">{t("kimlik məlumatı gözlənilir_", "awaiting credentials_")}</span>
+            </div>
           </div>
 
-          <div className="auth-terminal-lines">
-            <div className="auth-terminal-line">
-              <span className="atl-prompt">$</span>
-              <span className="atl-text">{t("xakker.org-a qoşulur...", "connecting to xakker.org...")}</span>
-              <span className="atl-ok">OK</span>
-            </div>
-            <div className="auth-terminal-line">
-              <span className="atl-prompt">$</span>
-              <span className="atl-text">{t("təhlükəsiz seans yüklənir...", "loading secure session...")}</span>
-              <span className="atl-ok">OK</span>
-            </div>
-            <div className="auth-terminal-line">
-              <span className="atl-prompt">$</span>
-              <span className="atl-text">encryption: AES-256</span>
-              <span className="atl-ok">READY</span>
-            </div>
-            <div className="auth-terminal-line atl-blink">
-              <span className="atl-prompt">$</span>
-              <span className="atl-text">{t("kimlik məlumatı gözlənilir_", "awaiting credentials_")}</span>
-            </div>
-          </div>
+          <p className="rail-status">// {t("təhlükə monitorinqi aktivdir", "threat monitoring active")}</p>
         </div>
 
-        {/* ── RIGHT PANEL ────────────────────── */}
-        <div className="auth-right">
+        {/* ── FORM PANEL ─────────────────────── */}
+        <div className="auth-form-panel">
           <div className="auth-card">
             {/* Terminal bar */}
             <div className="auth-terminal-bar">
@@ -385,10 +376,12 @@ export default function AuthPage() {
                   : t("Girişə qayıt", "Back to login")}
               </button>
             ) : (
-              <div className={`auth-tabs auth-tabs-${activeTab}`}>
+              <div className={`auth-tabs auth-tabs-${activeTab}`} role="tablist">
                 <button
                   className={`tab ${activeTab === "login" ? "active" : ""}`}
                   type="button"
+                  role="tab"
+                  aria-selected={activeTab === "login"}
                   onClick={() => switchMode("login")}
                 >
                   {t("Giriş", "Login")}
@@ -396,6 +389,8 @@ export default function AuthPage() {
                 <button
                   className={`tab ${activeTab === "register" ? "active" : ""}`}
                   type="button"
+                  role="tab"
+                  aria-selected={activeTab === "register"}
                   onClick={() => switchMode("register")}
                 >
                   {t("Qeydiyyat", "Register")}
@@ -411,6 +406,7 @@ export default function AuthPage() {
                 <p className="form-subtitle">{subtitle}</p>
               </div>
 
+              <div className="auth-stage" key={stageKey}>
               {isForgot ? (
                 resetStage === "request" ? (
                   /* Forgot-password step 1: email only */
@@ -596,6 +592,7 @@ export default function AuthPage() {
                   )}
                 </>
               )}
+              </div>
 
               {error && (
                 <div className="auth-message auth-error" role="alert">

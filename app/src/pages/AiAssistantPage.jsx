@@ -17,6 +17,9 @@ const T = {
     thinking: "Düşünür...",
     loadError: "Söhbətlər yüklənə bilmədi.",
     sendError: "Mesaj göndərilmədi. Yenidən cəhd edin.",
+    errorTitle: "Nəsə səhv getdi",
+    newMessage: "Yeni mesaj aç",
+    retry: "Yenidən cəhd et",
     deleteConfirm: "Bu söhbəti silmək istəyirsiniz?",
     you: "Siz",
     assistant: "Xakker AI",
@@ -36,6 +39,9 @@ const T = {
     thinking: "Thinking...",
     loadError: "Couldn't load conversations.",
     sendError: "Message failed to send. Try again.",
+    errorTitle: "Something went wrong",
+    newMessage: "New message",
+    retry: "Retry",
     deleteConfirm: "Delete this conversation?",
     you: "You",
     assistant: "Xakker AI",
@@ -87,6 +93,7 @@ export default function AiAssistantPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [failedMessage, setFailedMessage] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const listRef = useRef(null);
@@ -163,14 +170,16 @@ export default function AiAssistantPage() {
     setActiveId(null);
     setMessages([]);
     setError("");
+    setFailedMessage(null);
     stickToBottomRef.current = true;
   };
 
-  const send = () => {
-    const value = input.trim();
+  const send = (explicitText) => {
+    const value = (explicitText ?? input).trim();
     if (!value || sending) return;
-    setInput("");
+    if (explicitText == null) setInput("");
     setError("");
+    setFailedMessage(null);
     const userMsg = { id: `local-${Date.now()}`, role: "user", content: value, created_at: new Date().toISOString() };
     stickToBottomRef.current = true;
     setMessages((prev) => [...prev, userMsg]);
@@ -210,10 +219,18 @@ export default function AiAssistantPage() {
       })
       .catch(() => {
         setError(t.sendError);
+        setFailedMessage(value);
         setMessages((prev) => prev.filter((m) => m.id !== userMsg.id));
-        setInput(value);
       })
       .finally(() => setSending(false));
+  };
+
+  const retrySend = () => {
+    if (!failedMessage) return;
+    const text = failedMessage;
+    setError("");
+    setFailedMessage(null);
+    send(text);
   };
 
   const handleKeyDown = (e) => {
@@ -236,6 +253,40 @@ export default function AiAssistantPage() {
   };
 
   const isEmpty = messages.length === 0;
+
+  const renderErrorState = (compact) => (
+    <motion.div
+      className={`ai-error-state${compact ? " is-compact" : ""}`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="ai-empty-video-wrap ai-error-video-wrap" aria-hidden="true">
+        <video
+          className="ai-empty-video"
+          src="/static/logo/error.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          disablePictureInPicture
+          aria-hidden="true"
+        />
+      </div>
+      <p className="ai-error-title">{t.errorTitle}</p>
+      <p className="ai-error-sub">{error}</p>
+      <div className="ai-error-actions">
+        <button type="button" className="ai-error-btn ghost" onClick={startNewChat}>
+          <Icon name="plus" size={14} />
+          {t.newMessage}
+        </button>
+        <button type="button" className="ai-error-btn primary" onClick={retrySend}>
+          <Icon name="refresh" size={14} />
+          {t.retry}
+        </button>
+      </div>
+    </motion.div>
+  );
 
   return (
     <>
@@ -260,47 +311,50 @@ export default function AiAssistantPage() {
 
           {isEmpty ? (
             <div className="ai-empty">
-              <motion.div
-                className="ai-empty-inner"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <div className="ai-empty-video-wrap" aria-hidden="true">
-                  <video
-                    className="ai-empty-video"
-                    src="/static/logo/salamlama-animasiyasi.mp4"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    disablePictureInPicture
-                    aria-hidden="true"
-                  />
-                </div>
-                <p className="ai-empty-sub">{t.greetingSub}</p>
+              {error ? (
+                renderErrorState()
+              ) : (
+                <motion.div
+                  className="ai-empty-inner"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <div className="ai-empty-video-wrap" aria-hidden="true">
+                    <video
+                      className="ai-empty-video"
+                      src="/static/logo/salamlama-animasiyasi.mp4"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      disablePictureInPicture
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <p className="ai-empty-sub">{t.greetingSub}</p>
 
-                <div className="ai-composer ai-composer-center">
-                  <textarea
-                    className="ai-input"
-                    rows={1}
-                    value={input}
-                    placeholder={t.placeholder}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                  />
-                  <button
-                    type="button"
-                    className="ai-send"
-                    disabled={!input.trim() || sending}
-                    onClick={send}
-                    aria-label={t.send}
-                  >
-                    <Icon name="arrowRight" size={16} />
-                  </button>
-                </div>
-                {error && <div className="ai-error">{error}</div>}
-              </motion.div>
+                  <div className="ai-composer ai-composer-center">
+                    <textarea
+                      className="ai-input"
+                      rows={1}
+                      value={input}
+                      placeholder={t.placeholder}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                    />
+                    <button
+                      type="button"
+                      className="ai-send"
+                      disabled={!input.trim() || sending}
+                      onClick={() => send()}
+                      aria-label={t.send}
+                    >
+                      <Icon name="arrowRight" size={16} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </div>
           ) : (
             <>
@@ -354,14 +408,14 @@ export default function AiAssistantPage() {
                   type="button"
                   className="ai-send"
                   disabled={!input.trim() || sending}
-                  onClick={send}
+                  onClick={() => send()}
                   aria-label={t.send}
                 >
                   <Icon name="arrowRight" size={16} />
                 </button>
               </div>
               <div className="ai-hint">{t.enterHint}</div>
-              {error && <div className="ai-error">{error}</div>}
+              {error && renderErrorState(true)}
             </>
           )}
         </section>
