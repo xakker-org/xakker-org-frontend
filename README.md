@@ -57,3 +57,4 @@ falls back to `https://self-study.xakker.org` (hardcoded once, in `build.js`).
 ## Both together locally
 
 `docker compose up --build` (root of this repo) runs `app` on :5173 and `landing` on :5174.
+
